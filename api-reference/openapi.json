@@ -1,54 +1,82 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "nunu.ai API",
+    "description": "The nunu.ai Public API allows you to programmatically interact with your projects, manage test runs, and upload builds.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://nunu.ai/api/v1"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "apiKeyAuth": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/runs": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "operationId": "listRuns",
+        "summary": "List Runs",
+        "description": "Retrieve a paginated list of runs for your project.",
+        "tags": ["Runs"],
         "parameters": [
           {
-            "name": "limit",
+            "name": "state",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "Filter by state",
+            "schema": {
+              "type": "string",
+              "enum": ["running", "completed", "all"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-indexed)",
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "default": 0
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Results per page (1-100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/ListRunsResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "401": {
+            "description": "Unauthorized - Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - API key lacks required permission",
             "content": {
               "application/json": {
                 "schema": {
@@ -60,31 +88,53 @@
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "operationId": "startRun",
+        "summary": "Start a Run",
+        "description": "Start a new test run using either a multiplayer test or a test plan.",
+        "tags": ["Runs"],
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/StartRunRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
-          "200": {
-            "description": "plant response",
+          "201": {
+            "description": "Run started successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/StartRunResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Test or deployment config not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -96,28 +146,47 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/runs/{runId}": {
+      "get": {
+        "operationId": "getRunDetails",
+        "summary": "Get Run Details",
+        "description": "Retrieve detailed information about a specific run, including step-by-step results and artifacts.",
+        "tags": ["Runs"],
         "parameters": [
           {
-            "name": "id",
+            "name": "runId",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
+            "description": "The multiplayer run ID (12 lowercase alphanumeric characters)",
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "pattern": "^[a-z0-9]{12}$"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunDetails"
+                }
+              }
+            }
           },
-          "400": {
-            "description": "unexpected error",
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Run not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -128,25 +197,342 @@
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/runs/{runId}/bugs": {
+      "get": {
+        "operationId": "listRunBugs",
+        "summary": "List Run Bugs",
+        "description": "Retrieve all bugs detected during a specific run.",
+        "tags": ["Runs"],
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "description": "The multiplayer run ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListBugsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Run not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/stop": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "operationId": "stopRuns",
+        "summary": "Stop Runs",
+        "description": "Stop one or more running tests. Only jobs belonging to your project will be stopped.",
+        "tags": ["Runs"],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/StopRunsRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "All jobs stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopRunsResponse"
+                }
+              }
+            }
+          },
+          "207": {
+            "description": "Partial success - some jobs failed to stop",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopRunsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No jobs found matching the provided IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopRunsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/builds/upload": {
+      "post": {
+        "operationId": "initiateUpload",
+        "summary": "Initiate Upload",
+        "description": "Initiate a build upload (single-part or multipart).",
+        "tags": ["Builds"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/SinglePartUploadResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MultipartUploadResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Storage capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "cancelUpload",
+        "summary": "Cancel Upload",
+        "description": "Cancel an in-progress upload.",
+        "tags": ["Builds"],
+        "parameters": [
+          {
+            "name": "build_id",
+            "in": "query",
+            "required": true,
+            "description": "Build ID to cancel",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "object_key",
+            "in": "query",
+            "required": true,
+            "description": "Object key for the upload",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload_id",
+            "in": "query",
+            "description": "Upload ID (required for multipart uploads)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Upload not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/builds/upload/parts": {
+      "get": {
+        "operationId": "getUploadParts",
+        "summary": "Get Upload URLs for Parts",
+        "description": "Get presigned URLs for uploading parts in a multipart upload. The upload_id serves as authentication for this endpoint.",
+        "tags": ["Builds"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "query",
+            "required": true,
+            "description": "The upload ID (serves as authentication)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "object_key",
+            "in": "query",
+            "required": true,
+            "description": "The object key for the upload",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part_numbers",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated list of part numbers to get URLs for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Presigned URLs for parts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadPartsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/builds/upload/complete": {
+      "post": {
+        "operationId": "completeUpload",
+        "summary": "Complete Upload",
+        "description": "Complete a build upload (single-part or multipart).",
+        "tags": ["Builds"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Upload not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -154,63 +540,742 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Error": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
+          "error": {
             "type": "string"
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "code": {
             "type": "string"
+          },
+          "details": {
+            "type": "object"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "Run": {
+        "type": "object",
+        "properties": {
+          "multiplayer_run_id": {
+            "type": "string",
+            "description": "Unique identifier for the run (12 lowercase alphanumeric chars)"
           },
-          {
-            "required": [
-              "id"
-            ],
+          "project_id": {
+            "type": "string",
+            "description": "Project the run belongs to"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["initializing", "running", "completed"],
+            "description": "Current state of the run"
+          },
+          "result": {
+            "type": "string",
+            "enum": ["success", "failure", "error"],
+            "nullable": true,
+            "description": "Result of the run (null if not completed)"
+          },
+          "bug_info": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "bug_label": {
+                "type": "string"
+              },
+              "bug_count": {
+                "type": "integer"
+              }
+            }
+          },
+          "test": {
             "type": "object",
             "properties": {
               "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          },
+          "build": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "duration_ms": {
+            "type": "integer",
+            "nullable": true
+          },
+          "initiator": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "object"
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Player"
+            }
+          }
+        }
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          },
+          "player_number": {
+            "type": "integer"
+          },
+          "test_name": {
+            "type": "string"
+          },
+          "composite_test_id": {
+            "type": "string"
+          },
+          "step_count": {
+            "type": "integer"
+          },
+          "completed_step_count": {
+            "type": "integer"
+          },
+          "platform": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "device": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ListRunsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Run"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer"
+              },
+              "page_size": {
+                "type": "integer"
+              },
+              "total_count": {
+                "type": "integer"
+              },
+              "total_pages": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "StartRunRequest": {
+        "type": "object",
+        "properties": {
+          "multiplayer_test_id": {
+            "type": "string",
+            "description": "UUID of the test to run (provide this OR test_plan_id)"
+          },
+          "test_plan_id": {
+            "type": "string",
+            "description": "UUID of the test plan to run (provide this OR multiplayer_test_id)"
+          },
+          "deployment_config_id": {
+            "type": "string",
+            "description": "UUID of the deployment configuration"
+          },
+          "additional_tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags to add to the run"
+          },
+          "render_templates": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable template rendering"
+          },
+          "template_data": {
+            "type": "object",
+            "description": "Key-value pairs for template variables"
+          },
+          "options": {
+            "$ref": "#/components/schemas/RunOptions"
+          }
+        },
+        "required": ["deployment_config_id"]
+      },
+      "RunOptions": {
+        "type": "object",
+        "properties": {
+          "min_time_seconds": {
+            "type": "integer",
+            "description": "Minimum test duration"
+          },
+          "max_time_seconds": {
+            "type": "integer",
+            "description": "Maximum test duration (timeout)"
+          },
+          "performance_monitoring": {
+            "type": "boolean",
+            "description": "Enable performance data collection"
+          },
+          "mobile_auto_grant_permissions": {
+            "type": "boolean",
+            "description": "Auto-grant app permissions on mobile"
+          },
+          "mobile_geolocation": {
+            "type": "string",
+            "description": "Geolocation mode: none, auto, or coordinates"
+          }
+        }
+      },
+      "StartRunResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "job_id": {
+                "type": "string"
+              },
+              "multiplayer_run_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "RunDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Run"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "templating_enabled": {
+                "type": "boolean"
+              },
+              "template_data": {
+                "type": "object"
               }
             }
           }
         ]
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "BugOccurrence": {
         "type": "object",
         "properties": {
-          "error": {
+          "id": {
+            "type": "string",
+            "description": "Unique occurrence ID"
+          },
+          "bug_id": {
+            "type": "string",
+            "description": "Bug identifier (same bug across runs shares this ID)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short bug title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description"
+          },
+          "category": {
+            "type": "string",
+            "description": "Bug category (e.g., ui, gameplay, performance)"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Severity level"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Detection confidence"
+          },
+          "reproduction_steps": {
+            "type": "string",
+            "description": "Steps to reproduce"
+          },
+          "player_number": {
             "type": "integer",
-            "format": "int32"
+            "description": "Which player encountered the bug (0-indexed)"
+          },
+          "test_step": {
+            "type": "integer",
+            "description": "Test step where bug was detected"
+          },
+          "turn": {
+            "type": "integer",
+            "description": "Agent turn number when detected"
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional bug-specific details"
+          }
+        }
+      },
+      "ListBugsResponse": {
+        "type": "object",
+        "properties": {
+          "multiplayer_run_id": {
+            "type": "string"
+          },
+          "bug_occurrences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BugOccurrence"
+            }
+          }
+        }
+      },
+      "StopRunsRequest": {
+        "type": "object",
+        "properties": {
+          "job_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Array of job IDs to stop"
+          }
+        },
+        "required": ["job_ids"]
+      },
+      "StopRunsResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
           },
           "message": {
+            "type": "string"
+          },
+          "received_count": {
+            "type": "integer"
+          },
+          "stopped_count": {
+            "type": "integer"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "job_id": {
+                  "type": "string"
+                },
+                "ok": {
+                  "type": "boolean"
+                },
+                "status": {
+                  "type": "integer"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InitiateUploadRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Project ID for the build"
+          },
+          "name": {
+            "type": "string",
+            "description": "Build name (1-255 chars)"
+          },
+          "file_name": {
+            "type": "string",
+            "description": "File name (1-255 chars)"
+          },
+          "file_size": {
+            "type": "integer",
+            "description": "Size in bytes (positive integer)"
+          },
+          "platform": {
+            "type": "string",
+            "enum": ["windows", "macos", "linux", "android", "ios-native", "ios-simulator", "xbox", "playstation"],
+            "description": "Target platform"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description (max 1000 chars)"
+          },
+          "multipart": {
+            "type": "boolean",
+            "description": "Use multipart upload? (Auto for files ≥3GB)"
+          },
+          "auto_delete": {
+            "type": "boolean",
+            "default": false,
+            "description": "Auto-delete old builds when capacity reached"
+          },
+          "deletion_policy": {
+            "type": "string",
+            "enum": ["least_recent", "oldest"],
+            "default": "least_recent"
+          },
+          "upload_timeout": {
+            "type": "integer",
+            "description": "Timeout in minutes (1-1440)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of tags (1-50 chars each)"
+          },
+          "details": {
+            "$ref": "#/components/schemas/BuildDetails"
+          }
+        },
+        "required": ["project_id", "name", "file_name", "file_size", "platform"]
+      },
+      "BuildDetails": {
+        "type": "object",
+        "description": "Optional build metadata",
+        "properties": {
+          "vcs": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["git", "mercurial", "svn"]
+              },
+              "provider": {
+                "type": "string",
+                "enum": ["github", "gitlab", "bitbucket", "azure-devops"]
+              },
+              "repository_url": {
+                "type": "string"
+              },
+              "commit": {
+                "type": "object",
+                "properties": {
+                  "hash": {
+                    "type": "string"
+                  },
+                  "short_hash": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "author": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  }
+                }
+              },
+              "branch": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "pr": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "source_branch": {
+                    "type": "string"
+                  },
+                  "target_branch": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "ci": {
+            "type": "object",
+            "properties": {
+              "system": {
+                "type": "string",
+                "enum": ["github-actions", "jenkins", "gitlab-ci", "circleci", "travis", "azure-pipelines", "bitrise", "custom"]
+              },
+              "build_number": {
+                "type": "string"
+              },
+              "job_name": {
+                "type": "string"
+              },
+              "run_id": {
+                "type": "string"
+              },
+              "run_url": {
+                "type": "string"
+              },
+              "triggered_by": {
+                "type": "string"
+              },
+              "agent": {
+                "type": "string"
+              }
+            }
+          },
+          "app": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "version_code": {
+                "type": "integer"
+              },
+              "build_number": {
+                "type": "string"
+              },
+              "bundle_id": {
+                "type": "string"
+              }
+            }
+          },
+          "build": {
+            "type": "object",
+            "properties": {
+              "configuration": {
+                "type": "string",
+                "enum": ["debug", "release", "staging", "production"]
+              },
+              "timestamp": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "integer"
+              },
+              "compiler": {
+                "type": "string"
+              },
+              "dependencies": {
+                "type": "object"
+              }
+            }
+          },
+          "upload": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["cli", "api", "github-action", "jenkins-plugin", "web"]
+              },
+              "cli_version": {
+                "type": "string"
+              },
+              "uploader": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "SinglePartUploadResponse": {
+        "type": "object",
+        "properties": {
+          "upload_type": {
+            "type": "string",
+            "const": "single-part"
+          },
+          "build_id": {
+            "type": "string"
+          },
+          "upload_url": {
+            "type": "string"
+          },
+          "object_key": {
+            "type": "string"
+          }
+        }
+      },
+      "MultipartUploadResponse": {
+        "type": "object",
+        "properties": {
+          "upload_type": {
+            "type": "string",
+            "const": "multipart"
+          },
+          "build_id": {
+            "type": "string"
+          },
+          "upload_id": {
+            "type": "string"
+          },
+          "object_key": {
+            "type": "string"
+          },
+          "total_parts": {
+            "type": "integer"
+          },
+          "part_size": {
+            "type": "integer"
+          }
+        }
+      },
+      "UploadPartsResponse": {
+        "type": "object",
+        "properties": {
+          "upload_urls": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_number": {
+                  "type": "integer"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CompleteUploadRequest": {
+        "type": "object",
+        "properties": {
+          "build_id": {
+            "type": "string",
+            "description": "Build ID"
+          },
+          "upload_id": {
+            "type": "string",
+            "description": "Upload ID (required for multipart)"
+          },
+          "object_key": {
+            "type": "string",
+            "description": "Object key (required for multipart)"
+          },
+          "parts": {
+            "type": "array",
+            "description": "Parts array (required for multipart)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "part_number": {
+                  "type": "integer"
+                },
+                "etag": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": ["build_id"]
+      },
+      "CompleteUploadResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "build_id": {
             "type": "string"
           }
         }
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "API key for authentication"
       }
     }
   }

@@ -1,0 +1,244 @@
+---
+title: 'List Run Bugs'
+openapi: 'GET /runs/{runId}/bugs'
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Retrieve all bugs detected during a specific run.
+
+## Path Parameters
+
+<ParamField path="runId" type="string" required>
+  The multiplayer run ID (12 lowercase alphanumeric characters)
+</ParamField>
+
+## Response
+
+<ResponseField name="multiplayer_run_id" type="string" required>
+  The run ID this bug list belongs to
+</ResponseField>
+
+<ResponseField name="bug_occurrences" type="BugOccurrence[]" required>
+  Array of bug occurrences found during the run
+</ResponseField>
+
+### Bug Occurrence Object
+
+<ResponseField name="id" type="string" required>
+  Unique occurrence ID
+</ResponseField>
+
+<ResponseField name="bug_id" type="string" required>
+  Bug identifier (same bug across runs shares this ID)
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  Short bug title
+</ResponseField>
+
+<ResponseField name="description" type="string" required>
+  Detailed description of the bug
+</ResponseField>
+
+<ResponseField name="category" type="string" required>
+  Bug category: `ui`, `gameplay`, `performance`, `crash`, `audio`, `visual`
+</ResponseField>
+
+<ResponseField name="severity" type="string" required>
+  Severity level: `low`, `medium`, `high`, `critical`
+</ResponseField>
+
+<ResponseField name="confidence" type="string" required>
+  Detection confidence: `low`, `medium`, `high`
+</ResponseField>
+
+<ResponseField name="reproduction_steps" type="string" required>
+  Steps to reproduce the bug
+</ResponseField>
+
+<ResponseField name="player_number" type="integer" required>
+  Which player encountered the bug (0-indexed)
+</ResponseField>
+
+<ResponseField name="test_step" type="integer" required>
+  Test step where bug was detected
+</ResponseField>
+
+<ResponseField name="turn" type="integer" required>
+  Agent turn number when detected
+</ResponseField>
+
+<ResponseField name="detected_at" type="string" required>
+  ISO 8601 timestamp when bug was detected
+</ResponseField>
+
+<ResponseField name="details" type="object">
+  Additional bug-specific details (screenshots, element IDs, etc.)
+</ResponseField>
+
+## Severity Levels
+
+<AccordionGroup>
+  <Accordion title="Critical" icon="circle-exclamation">
+    Blocks core functionality or causes crashes. Requires immediate attention.
+  </Accordion>
+  <Accordion title="High" icon="triangle-exclamation">
+    Major feature broken or significantly impaired. Should be fixed before release.
+  </Accordion>
+  <Accordion title="Medium" icon="circle-info">
+    Feature works but with noticeable issues. Should be addressed in normal development cycle.
+  </Accordion>
+  <Accordion title="Low" icon="circle-check">
+    Minor issues with minimal impact. Can be fixed when convenient.
+  </Accordion>
+</AccordionGroup>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/runs/1g20ccrgksb/bugs" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const runId = "1g20ccrgksb";
+
+const response = await fetch(`https://nunu.ai/api/v1/runs/${runId}/bugs`, {
+  headers: {
+    "X-Api-Key": process.env.NUNU_API_TOKEN,
+  },
+});
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+run_id = "1g20ccrgksb"
+
+response = requests.get(
+    f"https://nunu.ai/api/v1/runs/{run_id}/bugs",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]}
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "multiplayer_run_id": "1g20ccrgksb",
+  "bug_occurrences": [
+    {
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "bug_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "title": "Button not responding",
+      "description": "The 'Start Game' button does not respond to taps after returning from settings menu.",
+      "category": "ui",
+      "severity": "high",
+      "confidence": "high",
+      "reproduction_steps": "1. Open app\n2. Go to settings\n3. Return to main menu\n4. Try to tap Start Game button",
+      "player_number": 0,
+      "test_step": 2,
+      "turn": 15,
+      "detected_at": "2025-01-12T10:08:30Z",
+      "details": {
+        "screenshot_url": "https://bouncer.nunu.ai/artifacts/...",
+        "element_id": "btn_start_game"
+      }
+    }
+  ]
+}
+```
+</ResponseExample>
+
+---
+
+## Aggregate Bugs Across Runs
+
+Here's an example of fetching bugs from multiple recent runs:
+
+<CodeGroup>
+
+```python Python
+import requests
+import os
+
+API_TOKEN = os.environ["NUNU_API_TOKEN"]
+BASE_URL = "https://nunu.ai/api/v1"
+headers = {"X-Api-Key": API_TOKEN}
+
+def get_recent_bugs(limit=10):
+    """Fetch bugs from the most recent completed runs."""
+    all_bugs = []
+    
+    # Get recent completed runs
+    response = requests.get(
+        f"{BASE_URL}/runs",
+        headers=headers,
+        params={"state": "completed", "page_size": limit}
+    )
+    runs = response.json()["data"]
+    
+    # Fetch bugs for each run
+    for run in runs:
+        run_id = run["multiplayer_run_id"]
+        bugs_response = requests.get(
+            f"{BASE_URL}/runs/{run_id}/bugs",
+            headers=headers
+        )
+        bugs_data = bugs_response.json()
+        
+        for bug in bugs_data["bug_occurrences"]:
+            all_bugs.append({
+                "run_id": run_id,
+                "test_name": run["test"]["name"],
+                **bug
+            })
+    
+    return all_bugs
+
+bugs = get_recent_bugs()
+for bug in bugs:
+    print(f"[{bug['severity'].upper()}] {bug['title']} - {bug['test_name']}")
+```
+
+```typescript JavaScript
+const API_TOKEN = process.env.NUNU_API_TOKEN;
+const BASE_URL = "https://nunu.ai/api/v1";
+
+async function getRecentBugs(limit = 10) {
+  const headers = { "X-Api-Key": API_TOKEN };
+  
+  const runsResponse = await fetch(
+    `${BASE_URL}/runs?state=completed&page_size=${limit}`,
+    { headers }
+  );
+  const { data: runs } = await runsResponse.json();
+  
+  const allBugs = [];
+  
+  for (const run of runs) {
+    const bugsResponse = await fetch(
+      `${BASE_URL}/runs/${run.multiplayer_run_id}/bugs`,
+      { headers }
+    );
+    const { bug_occurrences } = await bugsResponse.json();
+    
+    for (const bug of bug_occurrences) {
+      allBugs.push({
+        run_id: run.multiplayer_run_id,
+        test_name: run.test.name,
+        ...bug
+      });
+    }
+  }
+  
+  return allBugs;
+}
+```
+
+</CodeGroup>

@@ -1,33 +1,121 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Programmatically interact with nunu.ai to manage test runs, upload builds, and integrate with your CI/CD pipelines'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The nunu.ai Public API allows you to programmatically interact with your projects, manage test runs, and upload builds. Use it to integrate nunu.ai into your CI/CD pipelines, build custom tooling, or automate your testing workflows.
 
-## Welcome
+## Base URL
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+All API requests should be made to:
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://nunu.ai/api/v1
+```
+
+## Available Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Runs" icon="play" href="/api-reference/runs/list-runs">
+    Start tests, monitor progress, retrieve results, and access bug reports
+  </Card>
+  <Card title="Builds" icon="box" href="/api-reference/builds/initiate-upload">
+    Upload and manage builds in nunu.ai's cloud storage
+  </Card>
+</CardGroup>
+
+### Runs Endpoints
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/runs`](/api-reference/runs/list-runs) | GET | List runs with filtering and pagination |
+| [`/runs`](/api-reference/runs/start-run) | POST | Start a test or test plan |
+| [`/runs/{runId}`](/api-reference/runs/get-run) | GET | Get detailed run information with artifacts |
+| [`/runs/{runId}/bugs`](/api-reference/runs/list-bugs) | GET | List bugs found in a run |
+| [`/runs/stop`](/api-reference/runs/stop-runs) | POST | Stop one or more running tests |
+
+### Builds Endpoints
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/builds/upload`](/api-reference/builds/initiate-upload) | POST | Initiate a build upload |
+| [`/builds/upload/parts`](/api-reference/builds/get-upload-parts) | GET | Get presigned URLs for multipart upload |
+| [`/builds/upload/complete`](/api-reference/builds/complete-upload) | POST | Complete an upload |
+| [`/builds/upload`](/api-reference/builds/cancel-upload) | DELETE | Cancel an in-progress upload |
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require authentication via an API key. Include your API key in the `X-Api-Key` header:
+
+```http
+X-Api-Key: YOUR_API_TOKEN
+```
+
+Get your API keys from **Project Admin → API Keys** in the nunu.ai dashboard. Each key requires specific permissions based on the endpoints you want to access.
+
+<Card title="Learn more about authentication" icon="key" href="/api-reference/authentication">
+  API key management, permissions, and security best practices
+</Card>
+
+## Permissions
+
+API keys are scoped to specific permissions. Use only the permissions you need:
+
+| Permission | Description | Required For |
+| --- | --- | --- |
+| `project:read-runs` | Read run data, artifacts, and bugs | Listing runs, getting run details |
+| `project:operate-runs` | Start and stop test runs | Starting tests, stopping runs |
+| `project:manage-build-storage` | Upload and manage builds | All build upload operations |
+
+## Response Format
+
+All responses are returned as JSON. Successful responses typically include:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "data": { ... },
+  "pagination": { ... }  // For paginated endpoints
+}
 ```
+
+Error responses follow this format:
+
+```json
+{
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "details": { ... }
+}
+```
+
+## HTTP Status Codes
+
+| Code | Description |
+| --- | --- |
+| `200` | Success |
+| `201` | Created (for POST requests that create resources) |
+| `207` | Multi-Status (partial success for batch operations) |
+| `400` | Bad Request - Invalid parameters |
+| `401` | Unauthorized - Missing or invalid API key |
+| `403` | Forbidden - API key lacks required permission |
+| `404` | Not Found - Resource doesn't exist |
+| `402` | Payment Required - Quota exceeded |
+| `413` | Payload Too Large - File exceeds limits |
+| `500` | Internal Server Error |
+
+## Rate Limits
+
+The API uses rate limiting to ensure fair usage. If you exceed the rate limit, you'll receive a `429 Too Many Requests` response. Implement exponential backoff when retrying requests.
+
+## SDKs and Tools
+
+While you can use the API directly, we recommend using our official tools for common use cases:
+
+<CardGroup cols={2}>
+  <Card title="CLI Tool" icon="terminal" href="/ci-cd-integration/build-storage/quick-start">
+    Upload builds from any environment
+  </Card>
+  <Card title="GitHub Action" icon="github" href="/ci-cd-integration/build-storage/integrations/github-action">
+    Integrate with GitHub Actions
+  </Card>
+</CardGroup>

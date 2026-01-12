@@ -1,97 +1,84 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "nunu.ai API Reference"
+description: "Programmatically integrate nunu.ai into your CI/CD pipelines, manage test runs, and upload game builds."
 ---
 
-## Setting up
+## Getting Started
 
-Get your documentation site up and running in minutes.
+Integrate nunu.ai's AI-powered game testing into your development workflow.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
+    title="Introduction"
+    icon="book-open"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+    Overview of the API, base URL, and response formats
   </Card>
   <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
+    title="Authentication"
+    icon="key"
+    href="/api-reference/authentication"
   >
-    Add sample code to demonstrate how to use your product.
+    Create and manage API keys with scoped permissions
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## API Endpoints
+
+<CardGroup cols={2}>
+  <Card
+    title="Runs"
+    icon="play"
+    href="/api-reference/runs/list-runs"
+  >
+    Start tests, monitor progress, retrieve results, and access bug reports
+  </Card>
+  <Card
+    title="Builds"
+    icon="box"
+    href="/api-reference/builds/initiate-upload"
+  >
+    Upload and manage game builds in nunu.ai's cloud storage
+  </Card>
+</CardGroup>
+
+## Quick Reference
+
+### Runs
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/runs`](/api-reference/runs/list-runs) | GET | List runs with filtering and pagination |
+| [`/runs`](/api-reference/runs/start-run) | POST | Start a test or test plan |
+| [`/runs/{runId}`](/api-reference/runs/get-run) | GET | Get detailed run information with artifacts |
+| [`/runs/{runId}/bugs`](/api-reference/runs/list-bugs) | GET | List bugs found in a run |
+| [`/runs/stop`](/api-reference/runs/stop-runs) | POST | Stop one or more running tests |
+
+### Builds
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/builds/upload`](/api-reference/builds/initiate-upload) | POST | Initiate a multipart build upload |
+| [`/builds/upload/parts`](/api-reference/builds/get-upload-parts) | GET | Get presigned URLs for upload parts |
+| [`/builds/upload/complete`](/api-reference/builds/complete-upload) | POST | Complete the upload |
+| [`/builds/upload`](/api-reference/builds/cancel-upload) | DELETE | Cancel an in-progress upload |
+
+## Authentication
+
+All API requests require an API key in the `X-Api-Key` header:
+
+```bash
+curl -X GET "https://nunu.ai/api/v1/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+Get your API keys from **Project Admin → API Keys** in the nunu.ai dashboard.
 
 <Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
+  title="Learn more about authentication"
+  icon="shield-check"
+  href="/api-reference/authentication"
 >
-  Browse our showcase of exceptional documentation sites.
+  API key management, permissions, and security best practices
 </Card>

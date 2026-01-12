@@ -1,0 +1,226 @@
+---
+title: 'List Runs'
+openapi: 'GET /runs'
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Retrieve a paginated list of runs for your project.
+
+## Query Parameters
+
+<ParamField query="state" type="string" default="all">
+  Filter by state: `running`, `completed`, or `all`
+</ParamField>
+
+<ParamField query="page" type="integer" default="0">
+  Page number (0-indexed)
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="20">
+  Results per page (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="Run[]" required>
+  Array of run objects
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Pagination information
+
+  <Expandable title="pagination properties">
+    <ResponseField name="pagination.page" type="integer">
+      Current page number
+    </ResponseField>
+    <ResponseField name="pagination.page_size" type="integer">
+      Results per page
+    </ResponseField>
+    <ResponseField name="pagination.total_count" type="integer">
+      Total number of runs
+    </ResponseField>
+    <ResponseField name="pagination.total_pages" type="integer">
+      Total number of pages
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Run Object
+
+<ResponseField name="multiplayer_run_id" type="string" required>
+  Unique identifier for the run (12 lowercase alphanumeric chars)
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project the run belongs to
+</ResponseField>
+
+<ResponseField name="state" type="string" required>
+  Current state: `initializing`, `running`, or `completed`
+</ResponseField>
+
+<ResponseField name="result" type="string">
+  Result: `success`, `failure`, `error`, or `null` if not completed
+</ResponseField>
+
+<ResponseField name="bug_info" type="object">
+  Bug summary (for verification tests only)
+
+  <Expandable title="bug_info properties">
+    <ResponseField name="bug_info.bug_label" type="string">
+      Bug label classification
+    </ResponseField>
+    <ResponseField name="bug_info.bug_count" type="integer">
+      Number of bugs found
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="test" type="object" required>
+  Test information
+
+  <Expandable title="test properties">
+    <ResponseField name="test.id" type="string">
+      Test ID
+    </ResponseField>
+    <ResponseField name="test.name" type="string">
+      Test name
+    </ResponseField>
+    <ResponseField name="test.type" type="string">
+      Test type (e.g., `verification`)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="build" type="object">
+  Build used for the run
+
+  <Expandable title="build properties">
+    <ResponseField name="build.id" type="string">
+      Build ID
+    </ResponseField>
+    <ResponseField name="build.name" type="string">
+      Build name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string" required>
+  ISO 8601 timestamp when run was created
+</ResponseField>
+
+<ResponseField name="started_at" type="string">
+  ISO 8601 timestamp when run started
+</ResponseField>
+
+<ResponseField name="completed_at" type="string">
+  ISO 8601 timestamp when run completed
+</ResponseField>
+
+<ResponseField name="duration_ms" type="integer">
+  Run duration in milliseconds
+</ResponseField>
+
+<ResponseField name="initiator" type="object" required>
+  Who/what started the run
+</ResponseField>
+
+<ResponseField name="tags" type="string[]">
+  Tags assigned to the run
+</ResponseField>
+
+<ResponseField name="players" type="Player[]" required>
+  Individual player runs (for multiplayer tests)
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/runs?state=completed&page=0&page_size=10" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const response = await fetch(
+  "https://nunu.ai/api/v1/runs?state=completed&page=0&page_size=10",
+  {
+    headers: {
+      "X-Api-Key": process.env.NUNU_API_TOKEN,
+    },
+  }
+);
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+response = requests.get(
+    "https://nunu.ai/api/v1/runs",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
+    params={"state": "completed", "page": 0, "page_size": 10}
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "multiplayer_run_id": "1g20ccrgksb",
+      "project_id": "123e4567-e89b-12d3-a456-426614174000",
+      "state": "completed",
+      "result": "success",
+      "bug_info": {
+        "bug_label": "no_bugs",
+        "bug_count": 0
+      },
+      "test": {
+        "id": "789e0123-e89b-12d3-a456-426614174000",
+        "name": "Main Menu Navigation Test",
+        "type": "verification"
+      },
+      "build": {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Production v1.2.3"
+      },
+      "created_at": "2025-01-12T10:00:00Z",
+      "started_at": "2025-01-12T10:00:30Z",
+      "completed_at": "2025-01-12T10:15:45Z",
+      "duration_ms": 915000,
+      "initiator": {
+        "type": "api",
+        "value": { "key_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479" }
+      },
+      "tags": ["nightly", "regression"],
+      "players": [
+        {
+          "id": "ab12cd34ef56",
+          "state": "completed",
+          "result": "success",
+          "player_number": 0,
+          "test_name": "Player 1 Test",
+          "step_count": 5,
+          "completed_step_count": 5,
+          "platform": {
+            "type": "android",
+            "device": "Samsung Galaxy S24"
+          }
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 10,
+    "total_count": 47,
+    "total_pages": 5
+  }
+}
+```
+</ResponseExample>

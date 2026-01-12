@@ -1,0 +1,231 @@
+---
+title: 'Get Run Details'
+openapi: 'GET /runs/{runId}'
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Retrieve detailed information about a specific run, including step-by-step results and artifacts.
+
+## Path Parameters
+
+<ParamField path="runId" type="string" required>
+  The multiplayer run ID (12 lowercase alphanumeric characters, e.g., `1g20ccrgksb`)
+</ParamField>
+
+## Response
+
+The response includes all fields from [List Runs](/api-reference/runs/list-runs), plus additional detailed information.
+
+### Additional Fields
+
+<ResponseField name="templating_enabled" type="boolean">
+  Whether template rendering was enabled for this run
+</ResponseField>
+
+<ResponseField name="template_data" type="object">
+  Template variables used for this run
+</ResponseField>
+
+### Player Details
+
+Each player in the `players` array includes additional fields:
+
+<ResponseField name="players[].artifacts" type="Artifact[]">
+  Files generated during the run
+
+  <Expandable title="artifact properties">
+    <ResponseField name="filename" type="string" required>
+      Name of the artifact file
+    </ResponseField>
+    <ResponseField name="url" type="string" required>
+      Presigned URL to download the artifact
+    </ResponseField>
+    <ResponseField name="size" type="integer" required>
+      File size in bytes
+    </ResponseField>
+    <ResponseField name="uploaded_at" type="string" required>
+      ISO 8601 timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="players[].steps" type="Step[]">
+  Step-by-step execution details
+
+  <Expandable title="step properties">
+    <ResponseField name="step_number" type="integer" required>
+      Step sequence number
+    </ResponseField>
+    <ResponseField name="start_time" type="string" required>
+      ISO 8601 timestamp when step started
+    </ResponseField>
+    <ResponseField name="end_time" type="string" required>
+      ISO 8601 timestamp when step ended
+    </ResponseField>
+    <ResponseField name="duration_ms" type="integer" required>
+      Step duration in milliseconds
+    </ResponseField>
+    <ResponseField name="run_state" type="string" required>
+      Step state: `pending`, `running`, `completed`
+    </ResponseField>
+    <ResponseField name="run_result" type="string" required>
+      Step result: `success`, `failure`, `error`
+    </ResponseField>
+    <ResponseField name="report" type="string">
+      AI-generated report for this step
+    </ResponseField>
+    <ResponseField name="test" type="object" required>
+      Test definition for this step
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Step Test Object
+
+<ResponseField name="test.test_step_id" type="string" required>
+  Unique step identifier
+</ResponseField>
+
+<ResponseField name="test.goal" type="string" required>
+  What the step is trying to accomplish
+</ResponseField>
+
+<ResponseField name="test.finish_condition" type="string" required>
+  Condition that marks the step as complete
+</ResponseField>
+
+<ResponseField name="test.test_type" type="string" required>
+  Type of test: `verification`, `exploration`, etc.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/runs/1g20ccrgksb" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const runId = "1g20ccrgksb";
+
+const response = await fetch(`https://nunu.ai/api/v1/runs/${runId}`, {
+  headers: {
+    "X-Api-Key": process.env.NUNU_API_TOKEN,
+  },
+});
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+run_id = "1g20ccrgksb"
+
+response = requests.get(
+    f"https://nunu.ai/api/v1/runs/{run_id}",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]}
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "multiplayer_run_id": "1g20ccrgksb",
+  "project_id": "123e4567-e89b-12d3-a456-426614174000",
+  "state": "completed",
+  "result": "success",
+  "bug_info": {
+    "bug_label": "no_bugs",
+    "bug_count": 0
+  },
+  "test": {
+    "id": "789e0123-e89b-12d3-a456-426614174000",
+    "name": "Main Menu Navigation Test",
+    "type": "verification"
+  },
+  "build": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Production v1.2.3"
+  },
+  "created_at": "2025-01-12T10:00:00Z",
+  "started_at": "2025-01-12T10:00:30Z",
+  "completed_at": "2025-01-12T10:15:45Z",
+  "duration_ms": 915000,
+  "initiator": {
+    "type": "api",
+    "value": { "key_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479" }
+  },
+  "tags": ["nightly", "regression"],
+  "templating_enabled": true,
+  "template_data": {
+    "player_name": "TestPlayer"
+  },
+  "players": [
+    {
+      "id": "ab12cd34ef56",
+      "state": "completed",
+      "result": "success",
+      "player_number": 0,
+      "test_name": "Player 1 Test",
+      "step_count": 2,
+      "completed_step_count": 2,
+      "platform": {
+        "type": "android",
+        "device": "Samsung Galaxy S24"
+      },
+      "artifacts": [
+        {
+          "filename": "recording.mp4",
+          "url": "https://bouncer.nunu.ai/artifacts/...",
+          "size": 15728640,
+          "uploaded_at": "2025-01-12T10:16:00Z"
+        },
+        {
+          "filename": "logs.txt",
+          "url": "https://bouncer.nunu.ai/artifacts/...",
+          "size": 45678,
+          "uploaded_at": "2025-01-12T10:16:00Z"
+        }
+      ],
+      "steps": [
+        {
+          "step_number": 1,
+          "start_time": "2025-01-12T10:00:30Z",
+          "end_time": "2025-01-12T10:05:00Z",
+          "duration_ms": 270000,
+          "run_state": "completed",
+          "run_result": "success",
+          "report": "Successfully navigated to main menu...",
+          "test": {
+            "test_step_id": "step-1",
+            "goal": "Navigate to main menu",
+            "finish_condition": "Main menu is visible",
+            "test_type": "verification"
+          }
+        },
+        {
+          "step_number": 2,
+          "start_time": "2025-01-12T10:05:00Z",
+          "end_time": "2025-01-12T10:10:00Z",
+          "duration_ms": 300000,
+          "run_state": "completed",
+          "run_result": "success",
+          "report": "Settings button clicked...",
+          "test": {
+            "test_step_id": "step-2",
+            "goal": "Open settings menu",
+            "finish_condition": "Settings menu is displayed",
+            "test_type": "verification"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+</ResponseExample>

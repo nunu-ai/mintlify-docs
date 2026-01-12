@@ -1,0 +1,163 @@
+---
+title: 'Complete Upload'
+openapi: 'POST /builds/upload/complete'
+---
+
+<Info>
+  **Permission Required**: `project:manage-build-storage`
+</Info>
+
+Complete a build upload. This finalizes the upload and makes the build available for use in test runs.
+
+## Request Body (Single-Part)
+
+<ParamField body="build_id" type="string" required>
+  Build ID returned from [initiate upload](/api-reference/builds/initiate-upload)
+</ParamField>
+
+## Request Body (Multipart)
+
+<ParamField body="build_id" type="string" required>
+  Build ID returned from initiate upload
+</ParamField>
+
+<ParamField body="upload_id" type="string" required>
+  Upload ID returned from initiate upload
+</ParamField>
+
+<ParamField body="object_key" type="string" required>
+  Object key returned from initiate upload
+</ParamField>
+
+<ParamField body="parts" type="Part[]" required>
+  Array of uploaded parts with their ETags
+
+  <Expandable title="part properties">
+    <ParamField body="parts[].part_number" type="integer" required>
+      Part number (1-indexed, sequential)
+    </ParamField>
+    <ParamField body="parts[].etag" type="string" required>
+      ETag returned from uploading that part
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Warning>
+  For multipart uploads, parts must be in order by `part_number`. Missing or incorrectly ordered parts will cause completion to fail.
+</Warning>
+
+## Response (Single-Part)
+
+<ResponseField name="status" type="string" required>
+  Always `success`
+</ResponseField>
+
+## Response (Multipart)
+
+<ResponseField name="build_id" type="string" required>
+  The completed build ID
+</ResponseField>
+
+<RequestExample>
+```bash cURL (Single-Part)
+curl -X POST "https://nunu.ai/api/v1/builds/upload/complete" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "build_id": "123e4567-e89b-12d3-a456-426614174000"
+  }'
+```
+
+```bash cURL (Multipart)
+curl -X POST "https://nunu.ai/api/v1/builds/upload/complete" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "build_id": "123e4567-e89b-12d3-a456-426614174000",
+    "upload_id": "ExampleUploadId123",
+    "object_key": "abc123-def456/large-app.apk",
+    "parts": [
+      { "part_number": 1, "etag": "abc123def456" },
+      { "part_number": 2, "etag": "def456ghi789" },
+      { "part_number": 3, "etag": "ghi789jkl012" }
+    ]
+  }'
+```
+
+```typescript JavaScript (Single-Part)
+const response = await fetch("https://nunu.ai/api/v1/builds/upload/complete", {
+  method: "POST",
+  headers: {
+    "X-Api-Key": process.env.NUNU_API_TOKEN,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    build_id: "123e4567-e89b-12d3-a456-426614174000",
+  }),
+});
+const data = await response.json();
+```
+
+```python Python (Multipart)
+import requests
+import os
+
+response = requests.post(
+    "https://nunu.ai/api/v1/builds/upload/complete",
+    headers={
+        "X-Api-Key": os.environ["NUNU_API_TOKEN"],
+        "Content-Type": "application/json"
+    },
+    json={
+        "build_id": "123e4567-e89b-12d3-a456-426614174000",
+        "upload_id": "ExampleUploadId123",
+        "object_key": "abc123-def456/large-app.apk",
+        "parts": [
+            {"part_number": 1, "etag": "abc123def456"},
+            {"part_number": 2, "etag": "def456ghi789"},
+            {"part_number": 3, "etag": "ghi789jkl012"}
+        ]
+    }
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json Single-Part Success
+{
+  "status": "success"
+}
+```
+
+```json Multipart Success
+{
+  "build_id": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+
+```json 404 Not Found
+{
+  "error": "Upload not found",
+  "code": "UPLOAD_NOT_FOUND"
+}
+```
+</ResponseExample>
+
+---
+
+## After Completion
+
+Once the upload is complete, you can:
+
+<CardGroup cols={3}>
+  <Card title="Use in Test Runs" icon="play" href="/api-reference/runs/start-run">
+    Reference the `build_id` when starting runs
+  </Card>
+  <Card title="View in Dashboard" icon="browser">
+    See the build under **Builds** in nunu.ai
+  </Card>
+  <Card title="Manage Storage" icon="trash">
+    Old builds can be deleted via auto-delete policy
+  </Card>
+</CardGroup>

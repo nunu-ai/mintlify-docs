@@ -1,0 +1,256 @@
+---
+title: 'Get Upload URLs for Parts'
+openapi: 'GET /builds/upload/parts'
+---
+
+<Note>
+  This endpoint uses the `upload_id` as authentication. No `X-Api-Key` header is needed.
+</Note>
+
+Get presigned URLs for uploading parts in a multipart upload. Request URLs in batches for parallel uploads.
+
+## Query Parameters
+
+<ParamField query="upload_id" type="string" required>
+  The upload ID returned from [initiate upload](/api-reference/builds/initiate-upload). Serves as authentication.
+</ParamField>
+
+<ParamField query="object_key" type="string" required>
+  The object key returned from initiate upload
+</ParamField>
+
+<ParamField query="part_numbers" type="string" required>
+  Comma-separated list of part numbers to get URLs for (e.g., `1,2,3`)
+</ParamField>
+
+## Response
+
+<ResponseField name="upload_urls" type="UploadUrl[]" required>
+  Array of presigned URLs for each requested part
+
+  <Expandable title="upload_url properties">
+    <ResponseField name="part_number" type="integer" required>
+      Part number (1-indexed)
+    </ResponseField>
+    <ResponseField name="url" type="string" required>
+      Presigned URL to PUT the part data
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/builds/upload/parts?upload_id=ExampleUploadId123&object_key=abc123-def456/large-app.apk&part_numbers=1,2,3"
+```
+
+```typescript JavaScript
+const params = new URLSearchParams({
+  upload_id: "ExampleUploadId123",
+  object_key: "abc123-def456/large-app.apk",
+  part_numbers: "1,2,3",
+});
+
+const response = await fetch(
+  `https://nunu.ai/api/v1/builds/upload/parts?${params}`
+);
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://nunu.ai/api/v1/builds/upload/parts",
+    params={
+        "upload_id": "ExampleUploadId123",
+        "object_key": "abc123-def456/large-app.apk",
+        "part_numbers": "1,2,3"
+    }
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "upload_urls": [
+    {
+      "part_number": 1,
+      "url": "https://storage.example.com/...?partNumber=1"
+    },
+    {
+      "part_number": 2,
+      "url": "https://storage.example.com/...?partNumber=2"
+    },
+    {
+      "part_number": 3,
+      "url": "https://storage.example.com/...?partNumber=3"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+---
+
+## Uploading Parts
+
+After receiving the presigned URLs, upload each part:
+
+```http
+PUT {part_url}
+Content-Type: application/octet-stream
+Content-Length: 104857600
+
+[Binary data for this part]
+```
+
+The response includes an `ETag` header:
+
+```http
+200 OK
+ETag: "abc123def456789"
+```
+
+<Warning>
+  You **must** save the `ETag` from each part response. These are required when [completing the upload](/api-reference/builds/complete-upload).
+</Warning>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Batch Requests" icon="layer-group">
+    Request 3-10 part URLs at a time for optimal performance
+  </Card>
+  <Card title="Parallel Uploads" icon="arrows-split-up-and-left">
+    Upload 3-5 parts concurrently for faster uploads
+  </Card>
+  <Card title="Retry Failed Parts" icon="rotate">
+    Implement exponential backoff (1s, 2s, 4s, 8s) for failures
+  </Card>
+  <Card title="Track Progress" icon="list-check">
+    Store ETags and monitor uploaded parts for resumability
+  </Card>
+</CardGroup>
+
+<Info>
+  Presigned URLs typically expire after 1 hour. Upload immediately after receiving URLs.
+</Info>
+
+## Complete Multipart Example
+
+<CodeGroup>
+
+```typescript JavaScript
+async function uploadMultipart(projectId: string, file: File, name: string, platform: string) {
+  const token = process.env.NUNU_API_TOKEN;
+
+  // Step 1: Initiate
+  const initRes = await fetch("https://nunu.ai/api/v1/builds/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Api-Key": token },
+    body: JSON.stringify({
+      project_id: projectId, name, file_name: file.name,
+      file_size: file.size, platform
+    }),
+  });
+  const { upload_id, build_id, object_key, total_parts, part_size } = await initRes.json();
+
+  // Step 2 & 3: Get URLs and upload parts
+  const parts = [];
+  const concurrency = 3;
+
+  for (let i = 0; i < total_parts; i += concurrency) {
+    const partNumbers = Array.from(
+      { length: Math.min(concurrency, total_parts - i) },
+      (_, j) => i + j + 1
+    );
+
+    // Get URLs
+    const urlRes = await fetch(
+      `https://nunu.ai/api/v1/builds/upload/parts?` +
+      new URLSearchParams({ upload_id, object_key, part_numbers: partNumbers.join(",") })
+    );
+    const { upload_urls } = await urlRes.json();
+
+    // Upload parts in parallel
+    const uploaded = await Promise.all(
+      upload_urls.map(async ({ part_number, url }) => {
+        const start = (part_number - 1) * part_size;
+        const chunk = file.slice(start, Math.min(start + part_size, file.size));
+        const res = await fetch(url, {
+          method: "PUT", body: chunk,
+          headers: { "Content-Type": "application/octet-stream" }
+        });
+        return { part_number, etag: res.headers.get("etag")?.replace(/"/g, "") };
+      })
+    );
+    parts.push(...uploaded);
+    console.log(`Uploaded ${parts.length}/${total_parts} parts`);
+  }
+
+  // Step 4: Complete
+  await fetch("https://nunu.ai/api/v1/builds/upload/complete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Api-Key": token },
+    body: JSON.stringify({ build_id, upload_id, object_key, parts }),
+  });
+
+  return build_id;
+}
+```
+
+```python Python
+import requests
+import os
+
+def upload_multipart(project_id: str, file_path: str, name: str, platform: str) -> str:
+    token = os.environ["NUNU_API_TOKEN"]
+    file_size = os.path.getsize(file_path)
+
+    # Step 1: Initiate
+    init_res = requests.post(
+        "https://nunu.ai/api/v1/builds/upload",
+        headers={"Content-Type": "application/json", "X-Api-Key": token},
+        json={"project_id": project_id, "name": name, 
+              "file_name": os.path.basename(file_path),
+              "file_size": file_size, "platform": platform}
+    )
+    data = init_res.json()
+    upload_id, build_id = data["upload_id"], data["build_id"]
+    object_key, total_parts = data["object_key"], data["total_parts"]
+    part_size = data["part_size"]
+
+    # Step 2 & 3: Get URLs and upload parts
+    parts = []
+    with open(file_path, "rb") as f:
+        for i in range(0, total_parts, 3):
+            part_numbers = list(range(i + 1, min(i + 4, total_parts + 1)))
+            
+            url_res = requests.get(
+                "https://nunu.ai/api/v1/builds/upload/parts",
+                params={"upload_id": upload_id, "object_key": object_key,
+                        "part_numbers": ",".join(map(str, part_numbers))}
+            )
+            
+            for part_info in url_res.json()["upload_urls"]:
+                f.seek((part_info["part_number"] - 1) * part_size)
+                chunk = f.read(part_size)
+                res = requests.put(part_info["url"], data=chunk,
+                                   headers={"Content-Type": "application/octet-stream"})
+                parts.append({"part_number": part_info["part_number"],
+                              "etag": res.headers["ETag"].strip('"')})
+            print(f"Uploaded {len(parts)}/{total_parts} parts")
+
+    # Step 4: Complete
+    requests.post(
+        "https://nunu.ai/api/v1/builds/upload/complete",
+        headers={"Content-Type": "application/json", "X-Api-Key": token},
+        json={"build_id": build_id, "upload_id": upload_id,
+              "object_key": object_key, "parts": parts}
+    )
+    return build_id
+```
+
+</CodeGroup>

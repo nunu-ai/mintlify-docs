@@ -1,0 +1,121 @@
+---
+title: 'Cancel Upload'
+openapi: 'DELETE /builds/upload'
+---
+
+<Info>
+  **Permission Required**: `project:manage-build-storage`
+</Info>
+
+Cancel an in-progress upload. This is especially useful for multipart uploads where you want to abort before completion.
+
+## Query Parameters
+
+<ParamField query="build_id" type="string" required>
+  Build ID to cancel
+</ParamField>
+
+<ParamField query="object_key" type="string" required>
+  Object key from [initiate upload](/api-reference/builds/initiate-upload) response
+</ParamField>
+
+<ParamField query="upload_id" type="string">
+  Upload ID (required for multipart uploads)
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean" required>
+  Always `true` on successful cancellation
+</ResponseField>
+
+<RequestExample>
+```bash cURL (Single-Part)
+curl -X DELETE "https://nunu.ai/api/v1/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```bash cURL (Multipart)
+curl -X DELETE "https://nunu.ai/api/v1/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk&upload_id=ExampleUploadId123" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const params = new URLSearchParams({
+  build_id: "123e4567-e89b-12d3-a456-426614174000",
+  object_key: "abc123-def456/app.apk",
+  // For multipart, also add:
+  // upload_id: "ExampleUploadId123",
+});
+
+const response = await fetch(
+  `https://nunu.ai/api/v1/builds/upload?${params}`,
+  {
+    method: "DELETE",
+    headers: {
+      "X-Api-Key": process.env.NUNU_API_TOKEN,
+    },
+  }
+);
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+params = {
+    "build_id": "123e4567-e89b-12d3-a456-426614174000",
+    "object_key": "abc123-def456/app.apk"
+    # For multipart, also add:
+    # "upload_id": "ExampleUploadId123"
+}
+
+response = requests.delete(
+    "https://nunu.ai/api/v1/builds/upload",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
+    params=params
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 Success
+{
+  "success": true
+}
+```
+
+```json 404 Not Found
+{
+  "error": "Upload not found",
+  "code": "UPLOAD_NOT_FOUND"
+}
+```
+</ResponseExample>
+
+---
+
+## When to Use
+
+<CardGroup cols={2}>
+  <Card title="Abort Failed Upload" icon="xmark">
+    Cancel a stuck or failed upload immediately
+  </Card>
+  <Card title="Reclaim Storage" icon="database">
+    Free up reserved storage capacity before timeout
+  </Card>
+</CardGroup>
+
+## Automatic Cleanup
+
+<Info>
+  Uploads have a configurable timeout (default: 10 minutes for single-part, 60 minutes for multipart). After timeout:
+  
+  - Reserved storage capacity is reclaimed
+  - Incomplete uploads are marked for cleanup
+  - Partially uploaded parts are removed
+</Info>
+
+You can set a custom timeout when [initiating the upload](/api-reference/builds/initiate-upload) with the `upload_timeout` field (1-1440 minutes).

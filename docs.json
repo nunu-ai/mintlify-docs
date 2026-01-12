@@ -1,68 +1,48 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "nunu.ai",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#E55CD8",
+    "light": "#F79EDE",
+    "dark": "#9A2EA4"
+  },
+  "background": {
+    "color": {
+      "dark": "#0A0A1C",
+      "light": "#fafafa"
+    }
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Overview",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "api-reference/introduction",
+              "api-reference/authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Runs",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "api-reference/runs/list-runs",
+              "api-reference/runs/start-run",
+              "api-reference/runs/get-run",
+              "api-reference/runs/list-bugs",
+              "api-reference/runs/stop-runs"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Builds",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/builds/initiate-upload",
+              "api-reference/builds/get-upload-parts",
+              "api-reference/builds/complete-upload",
+              "api-reference/builds/cancel-upload"
             ]
           }
         ]
@@ -71,13 +51,8 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "anchor": "Nexus Documentation",
+          "href": "https://docs.nunu.ai",
           "icon": "newspaper"
         }
       ]
@@ -90,33 +65,31 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Nexus Docs",
+        "href": "https://docs.nunu.ai"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Nexus",
+      "href": "https://nunu.ai/nexus"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/nunu_ai",
+      "github": "https://github.com/nunu-ai",
+      "linkedin": "https://linkedin.com/company/nunu-ai",
+      "discord": "https://discord.gg/nunu"
     }
-  }
+  },
+  "openapi": "api-reference/openapi.json"
 }
