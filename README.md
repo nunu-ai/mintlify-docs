@@ -1,43 +1,64 @@
-# Mintlify Starter Kit
+# nunu.ai API Reference Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+This repository contains the API reference documentation for nunu.ai, covering programmatic access to AI-powered game testing capabilities.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## Documentation Structure
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+The documentation is organized into the following sections:
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+### Overview
+- **Introduction** - API overview, base URL, and response formats
+- **Authentication** - API key management and security
 
-## Development
+### Runs API
+Endpoints for managing test runs:
+- `GET /runs` - List runs with filtering and pagination
+- `POST /runs` - Start a test or test plan
+- `GET /runs/{runId}` - Get detailed run information with artifacts
+- `GET /runs/{runId}/bugs` - List bugs found in a run
+- `POST /runs/stop` - Stop one or more running tests
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+### Builds API
+Endpoints for managing game builds:
+- `POST /builds/upload` - Initiate a multipart build upload
+- `GET /builds/upload/parts` - Get presigned URLs for upload parts
+- `POST /builds/upload/complete` - Complete the upload
+- `DELETE /builds/upload` - Cancel an in-progress upload
 
-```
+## Local Development
+
+Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview documentation changes locally:
+
+```bash
 npm i -g mint
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+Run the development server from this directory:
 
-```
+```bash
 mint dev
 ```
 
 View your local preview at `http://localhost:3000`.
 
-## Publishing changes
+## Publishing Changes
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+Changes pushed to the default branch are automatically deployed to production via our GitHub app integration.
 
-## Need help?
+## Documentation Links
 
-### Troubleshooting
+- **API Reference**: The documentation deployed from this repository
+- **Main Documentation**: https://docs.nunu.ai (Nexus documentation)
+- **Dashboard**: https://nunu.ai/nexus
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+## Troubleshooting
 
-### Resources
+- If the dev environment isn't running: Run `mint update` to ensure you have the latest CLI version
+- If a page loads as a 404: Ensure you're running in a folder with a valid `docs.json`
+
+## Resources
+
 - [Mintlify documentation](https://mintlify.com/docs)
+- [nunu.ai website](https://nunu.ai)
+- [GitHub](https://github.com/nunu-ai)
+- [Discord community](https://discord.gg/nunu)
