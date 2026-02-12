@@ -57,7 +57,10 @@ Start a new test run using either a multiplayer test or a test plan.
       Auto-grant app permissions on mobile
     </ParamField>
     <ParamField body="options.mobile_geolocation" type="string">
-      Geolocation mode: `none`, `auto`, or coordinates
+      IP geolocation proxy location (e.g., `"United States"`, `"London"`, `"San Francisco, California (US)"`). Routes device traffic through a proxy in the specified region.
+    </ParamField>
+    <ParamField body="options.mobile_gpslocation" type="string | object">
+      GPS coordinates to report to the app. Use `"auto"` to automatically use coordinates matching the selected `mobile_geolocation`, or provide explicit coordinates: `{ "lat": "37.7749", "long": "-122.4194" }`. Note: `"auto"` requires `mobile_geolocation` to be set.
     </ParamField>
   </Expandable>
 </ParamField>
