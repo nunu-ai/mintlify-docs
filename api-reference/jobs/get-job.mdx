@@ -1,0 +1,66 @@
+---
+title: 'Get Job Details'
+openapi: 'GET /jobs/{jobId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Retrieve details for a specific job, including associated runs.
+
+## Path Parameters
+
+<ParamField path="jobId" type="string" required>
+  The job ID (UUID)
+</ParamField>
+
+## Response
+
+The response uses the same Job object described in [List Jobs](/api-reference/jobs/list-jobs).
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/jobs/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "project_id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "COMPLETED",
+  "created_at": "2025-01-12T10:00:00Z",
+  "completed_at": "2025-01-12T10:15:45Z",
+  "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
+  "test_name": "Main Menu Navigation Test",
+  "platform": "android",
+  "build_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "test_plan_execution_id": null,
+  "queue_rejection_reason": null,
+  "templating_enabled": true,
+  "template_data": {
+    "player_name": "TestPlayer"
+  },
+  "stopped_by": null,
+  "tags": ["nightly", "regression"],
+  "retries": {
+    "total": 2,
+    "remaining": 0
+  },
+  "runs": [
+    {
+      "multiplayer_run_id": "1g20ccrgksb",
+      "state": "completed",
+      "result": "success",
+      "started_at": "2025-01-12T10:00:30Z",
+      "completed_at": "2025-01-12T10:15:45Z",
+      "players": 2
+    }
+  ]
+}
+```
+</ResponseExample>

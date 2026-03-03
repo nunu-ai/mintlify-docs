@@ -299,6 +299,150 @@
                 }
             }
         },
+        "/jobs": {
+            "get": {
+                "operationId": "listJobs",
+                "summary": "List Jobs",
+                "description": "Retrieve a paginated list of jobs for your project.",
+                "tags": ["Runs"],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by job status",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["queued", "running", "completed", "all"],
+                            "default": "all"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (0-indexed)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "description": "Results per page (1-100)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListJobsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid query parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs/{jobId}": {
+            "get": {
+                "operationId": "getJobDetails",
+                "summary": "Get Job Details",
+                "description": "Retrieve a specific job and its associated runs.",
+                "tags": ["Runs"],
+                "parameters": [
+                    {
+                        "name": "jobId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The job ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Job"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Job not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/builds/upload": {
             "post": {
                 "operationId": "initiateUpload",
@@ -557,6 +701,10 @@
             "Run": {
                 "type": "object",
                 "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "description": "Job identifier that created this run"
+                    },
                     "multiplayer_run_id": {
                         "type": "string",
                         "description": "Unique identifier for the run (12 lowercase alphanumeric chars)"
@@ -704,6 +852,152 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Run"
+                        }
+                    },
+                    "pagination": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer"
+                            },
+                            "page_size": {
+                                "type": "integer"
+                            },
+                            "total_count": {
+                                "type": "integer"
+                            },
+                            "total_pages": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "JobRunSummary": {
+                "type": "object",
+                "properties": {
+                    "multiplayer_run_id": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "result": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "players": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "JobRetries": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "integer"
+                    },
+                    "remaining": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Job": {
+                "type": "object",
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["QUEUED", "STARTING", "RUNNING", "STOPPING", "CLEANING_UP", "COMPLETED"]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "multiplayer_test_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "test_name": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "platform": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "test_plan_execution_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "queue_rejection_reason": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "templating_enabled": {
+                        "type": "boolean"
+                    },
+                    "template_data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "stopped_by": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "retries": {
+                        "$ref": "#/components/schemas/JobRetries"
+                    },
+                    "runs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JobRunSummary"
+                        }
+                    }
+                }
+            },
+            "ListJobsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Job"
                         }
                     },
                     "pagination": {
