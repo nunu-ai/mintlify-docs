@@ -41,7 +41,9 @@
               "api-reference/runs/start-run",
               "api-reference/runs/get-run",
               "api-reference/runs/list-bugs",
-              "api-reference/runs/stop-runs"
+              "api-reference/runs/stop-runs",
+              "api-reference/jobs/list-jobs",
+              "api-reference/jobs/get-job"
             ]
           },
           {
