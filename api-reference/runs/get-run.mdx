@@ -13,7 +13,7 @@ Retrieve detailed information about a specific run, including step-by-step resul
 ## Path Parameters
 
 <ParamField path="runId" type="string" required>
-  The multiplayer run ID (12 lowercase alphanumeric characters, e.g., `1g20ccrgksb`)
+  The multiplayer run ID (12 lowercase alphanumeric characters, e.g., `lkkg6t5612m`)
 </ParamField>
 
 ## Response
@@ -104,12 +104,12 @@ Each player in the `players` array includes additional fields:
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/runs/1g20ccrgksb" \
+curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
-const runId = "1g20ccrgksb";
+const runId = "lkkg6t5612m";
 
 const response = await fetch(`https://nunu.ai/api/v1/runs/${runId}`, {
   headers: {
@@ -123,7 +123,7 @@ const data = await response.json();
 import requests
 import os
 
-run_id = "1g20ccrgksb"
+run_id = "lkkg6t5612m"
 
 response = requests.get(
     f"https://nunu.ai/api/v1/runs/{run_id}",
@@ -136,93 +136,78 @@ data = response.json()
 <ResponseExample>
 ```json 200
 {
-  "multiplayer_run_id": "1g20ccrgksb",
-  "job_id": "550e8400-e29b-41d4-a716-446655440000",
-  "project_id": "123e4567-e89b-12d3-a456-426614174000",
-  "state": "completed",
-  "result": "success",
-  "bug_info": {
-    "bug_label": "no_bugs",
-    "bug_count": 0
-  },
+  "multiplayer_run_id": "lkkg6t5612m",
+  "job_id": "f80f6230-3a4f-431a-9d55-d11b867fed4e",
+  "project_id": "test",
+  "state": "COMPLETED",
+  "result": "SUCCESS",
+  "bug_info": null,
   "test": {
-    "id": "789e0123-e89b-12d3-a456-426614174000",
-    "name": "Main Menu Navigation Test",
-    "type": "verification"
+    "id": "a5060a07-d386-4279-98ce-b33fb884201e",
+    "name": "create design doc",
+    "type": "task"
   },
-  "build": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "Production v1.2.3"
-  },
-  "created_at": "2025-01-12T10:00:00Z",
-  "started_at": "2025-01-12T10:00:30Z",
-  "completed_at": "2025-01-12T10:15:45Z",
-  "duration_ms": 915000,
+  "build": null,
+  "created_at": "2026-03-03T15:50:23.601012+00:00",
+  "started_at": "2026-03-03T15:50:23.601048+00:00",
+  "completed_at": "2026-03-03T15:54:24.261038+00:00",
+  "duration_ms": 240659.99,
   "initiator": {
     "type": "api",
-    "value": { "key_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479" }
+    "value": { "key_id": "7f028653-0e85-4c37-87be-c59976796155" }
   },
-  "tags": ["nightly", "regression"],
+  "tags": ["gdd"],
   "templating_enabled": true,
   "template_data": {
-    "player_name": "TestPlayer"
+    "country": "Switzerland"
   },
   "players": [
     {
-      "id": "ab12cd34ef56",
-      "state": "completed",
-      "result": "success",
-      "player_number": 0,
-      "test_name": "Player 1 Test",
-      "step_count": 2,
-      "completed_step_count": 2,
+      "id": "lkkg6t5612m-1",
+      "state": "COMPLETED",
+      "result": "SUCCESS",
+      "player_number": 1,
+      "test_name": "create design doc",
+      "composite_test_id": "58207dda-e2ca-44bd-a4e2-82b81b3ea8fa",
+      "step_count": 1,
+      "completed_step_count": 1,
       "platform": {
-        "type": "android",
-        "device": "Samsung Galaxy S24"
+        "kind": "android-native",
+        "config": {
+          "device": {
+            "name": "Pixel 8",
+            "os_version": "14"
+          }
+        }
       },
       "artifacts": [
         {
           "filename": "recording.mp4",
           "url": "https://bouncer.nunu.ai/artifacts/...",
           "size": 15728640,
-          "uploaded_at": "2025-01-12T10:16:00Z"
+          "uploaded_at": "2026-03-03T15:55:00.000000+00:00"
         },
         {
           "filename": "logs.txt",
           "url": "https://bouncer.nunu.ai/artifacts/...",
           "size": 45678,
-          "uploaded_at": "2025-01-12T10:16:00Z"
+          "uploaded_at": "2026-03-03T15:55:00.000000+00:00"
         }
       ],
       "steps": [
         {
           "step_number": 1,
-          "start_time": "2025-01-12T10:00:30Z",
-          "end_time": "2025-01-12T10:05:00Z",
-          "duration_ms": 270000,
-          "run_state": "completed",
-          "run_result": "success",
-          "report": "Successfully navigated to main menu...",
+          "start_time": "2026-03-03T15:50:23.601048+00:00",
+          "end_time": "2026-03-03T15:54:24.261038+00:00",
+          "duration_ms": 240659,
+          "run_state": "COMPLETED",
+          "run_result": "SUCCESS",
+          "report": "Successfully created a GDD for...",
           "test": {
             "test_step_id": "step-1",
-            "goal": "Navigate to main menu",
-            "finish_condition": "Main menu is visible",
-            "test_type": "verification"
-          }
-        },
-        {
-          "step_number": 2,
-          "start_time": "2025-01-12T10:05:00Z",
-          "end_time": "2025-01-12T10:10:00Z",
-          "duration_ms": 300000,
-          "run_state": "completed",
-          "run_result": "success",
-          "report": "Settings button clicked...",
-          "test": {
-            "test_step_id": "step-2",
-            "goal": "Open settings menu",
-            "finish_condition": "Settings menu is displayed",
-            "test_type": "verification"
+            "goal": "Create a design document for",
+            "finish_condition": "",
+            "test_type": "task"
           }
         }
       ]

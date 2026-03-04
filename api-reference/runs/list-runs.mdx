@@ -177,45 +177,45 @@ data = response.json()
 {
   "data": [
     {
-      "multiplayer_run_id": "1g20ccrgksb",
-      "job_id": "550e8400-e29b-41d4-a716-446655440000",
-      "project_id": "123e4567-e89b-12d3-a456-426614174000",
-      "state": "completed",
-      "result": "success",
-      "bug_info": {
-        "bug_label": "no_bugs",
-        "bug_count": 0
-      },
+      "job_id": "f80f6230-3a4f-431a-9d54-d11b867fed4e",
+      "multiplayer_run_id": "lkkg6t5612m",
+      "project_id": "test",
+      "state": "COMPLETED",
+      "result": "SUCCESS",
+      "bug_info": null,
       "test": {
-        "id": "789e0123-e89b-12d3-a456-426614174000",
-        "name": "Main Menu Navigation Test",
+        "id": "a5060a07-d386-4269-98ce-b33fb894201e",
+        "name": "sanity test",
         "type": "verification"
       },
-      "build": {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "Production v1.2.3"
-      },
-      "created_at": "2025-01-12T10:00:00Z",
-      "started_at": "2025-01-12T10:00:30Z",
-      "completed_at": "2025-01-12T10:15:45Z",
-      "duration_ms": 915000,
+      "build": null,
+      "created_at": "2026-03-03T15:50:23.601012+00:00",
+      "started_at": "2026-03-03T15:50:23.601048+00:00",
+      "completed_at": "2026-03-03T15:54:24.261038+00:00",
+      "duration_ms": 240659.99,
       "initiator": {
         "type": "api",
-        "value": { "key_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479" }
+        "value": { "key_id": "7f028653-0e85-4c37-87be-c59976796155" }
       },
-      "tags": ["nightly", "regression"],
+      "tags": ["nightly"],
       "players": [
         {
-          "id": "ab12cd34ef56",
-          "state": "completed",
-          "result": "success",
-          "player_number": 0,
-          "test_name": "Player 1 Test",
-          "step_count": 5,
-          "completed_step_count": 5,
+          "id": "lkkg6t5612m-1",
+          "state": "COMPLETED",
+          "result": "SUCCESS",
+          "player_number": 1,
+          "test_name": "sanity test",
+          "composite_test_id": "58207dda-e2ca-44bd-a4e2-82b81b3ea8fa",
+          "step_count": 1,
+          "completed_step_count": 1,
           "platform": {
-            "type": "android",
-            "device": "Samsung Galaxy S24"
+            "kind": "android-native",
+            "config": {
+              "device": {
+                "name": "Pixel 8",
+                "os_version": "14"
+              }
+            }
           }
         }
       ]
@@ -224,8 +224,8 @@ data = response.json()
   "pagination": {
     "page": 0,
     "page_size": 10,
-    "total_count": 47,
-    "total_pages": 5
+    "total_count": 501,
+    "total_pages": 51
   }
 }
 ```

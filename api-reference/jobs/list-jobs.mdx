@@ -137,35 +137,32 @@ curl -X GET "https://nunu.ai/api/v1/jobs?status=running&page=0&page_size=10" \
 {
   "data": [
     {
-      "job_id": "550e8400-e29b-41d4-a716-446655440000",
-      "project_id": "123e4567-e89b-12d3-a456-426614174000",
-      "status": "RUNNING",
-      "created_at": "2025-01-12T10:00:00Z",
-      "completed_at": null,
-      "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
-      "test_name": "Main Menu Navigation Test",
-      "platform": "android",
-      "build_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "job_id": "f80f6230-3a4f-431a-9d55-d11b867fed4e",
+      "project_id": "test",
+      "status": "COMPLETED",
+      "created_at": "2026-03-03T15:50:19.544603+00:00",
+      "completed_at": "2026-03-03T15:54:24.463635+00:00",
+      "multiplayer_test_id": "a5060a07-d386-4279-98ce-b33fb884201e",
+      "test_name": "ftue",
+      "platform": "lt_phone",
+      "build_id": null,
       "test_plan_execution_id": null,
       "queue_rejection_reason": null,
       "templating_enabled": true,
-      "template_data": {
-        "player_name": "TestPlayer"
-      },
       "stopped_by": null,
-      "tags": ["nightly", "regression"],
+      "tags": ["ftue"],
       "retries": {
-        "total": 2,
-        "remaining": 1
+        "total": 0,
+        "remaining": 0
       },
       "runs": [
         {
-          "multiplayer_run_id": "1g20ccrgksb",
-          "state": "running",
-          "result": null,
-          "started_at": "2025-01-12T10:00:30Z",
-          "completed_at": null,
-          "players": 2
+          "multiplayer_run_id": "lkkg6t5612m",
+          "state": "COMPLETED",
+          "result": "SUCCESS",
+          "started_at": "2026-03-03T15:50:23.601048+00:00",
+          "completed_at": "2026-03-03T15:54:24.261038+00:00",
+          "players": 1
         }
       ]
     }
