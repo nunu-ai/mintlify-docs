@@ -28,6 +28,10 @@ Start a new test run using either a multiplayer test or a test plan.
   UUID of the deployment configuration
 </ParamField>
 
+<ParamField body="build_id" type="string">
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use for this run. See [Using Build Storage Builds](#using-build-storage-builds) below.
+</ParamField>
+
 <ParamField body="additional_tags" type="string[]">
   Tags to add to the run
 </ParamField>
@@ -114,6 +118,7 @@ const response = await fetch("https://nunu.ai/api/v1/runs", {
   body: JSON.stringify({
     multiplayer_test_id: "789e0123-e89b-12d3-a456-426614174000",
     deployment_config_id: "456e7890-e89b-12d3-a456-426614174000",
+    build_id: "123e4567-e89b-12d3-a456-426614174000", // optional: use specific build
     additional_tags: ["ci", "pr-123"],
   }),
 });
@@ -162,6 +167,34 @@ data = response.json()
 }
 ```
 </ResponseExample>
+
+---
+
+## Using Build Storage Builds
+
+You can run tests against a specific build from [Build Storage](/api-reference/builds/list-builds) by providing the `build_id` parameter.
+
+<Warning>
+  The `build_id` parameter only works with deployment configs that use Build Storage as their build source. If the deployment config uses a different build source (e.g., direct URL), the request will return a `400` error.
+</Warning>
+
+### Example: Upload and Test
+
+```bash
+# 1. Upload a new build (see Build Storage docs)
+BUILD_ID="123e4567-e89b-12d3-a456-426614174000"
+
+# 2. Start a test using that build
+curl -X POST "https://nunu.ai/api/v1/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "build_id": "123e4567-e89b-12d3-a456-426614174000",
+    "additional_tags": ["ci", "build-test"]
+  }'
+```
 
 ---
 
