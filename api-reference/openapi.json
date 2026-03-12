@@ -34,6 +34,57 @@
                         }
                     },
                     {
+                        "name": "multiplayer_test_id",
+                        "in": "query",
+                        "description": "Filter by test ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "job_id",
+                        "in": "query",
+                        "description": "Filter by job ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "test_plan_execution_id",
+                        "in": "query",
+                        "description": "Filter by test plan execution ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "test_type",
+                        "in": "query",
+                        "description": "Filter by test type (e.g., verification)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Filter by tags (comma-separated). All specified tags must match.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bugs",
+                        "in": "query",
+                        "description": "Filter by runs that found bugs (true returns runs where bug_count > 0)",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Page number (0-indexed)",
@@ -317,6 +368,32 @@
                         }
                     },
                     {
+                        "name": "test_plan_execution_id",
+                        "in": "query",
+                        "description": "Filter by test plan execution ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "multiplayer_test_id",
+                        "in": "query",
+                        "description": "Filter by test ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Filter by tags (comma-separated). All specified tags must match.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Page number (0-indexed)",
@@ -432,6 +509,190 @@
                     },
                     "404": {
                         "description": "Job not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/builds": {
+            "get": {
+                "operationId": "listBuilds",
+                "summary": "List Builds",
+                "description": "Retrieve a paginated list of builds for your project.",
+                "tags": ["Builds"],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by build status (e.g., OK, UNHEALTHY)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pinned",
+                        "in": "query",
+                        "description": "Filter by pinned status",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "nunu_sdk",
+                        "in": "query",
+                        "description": "Filter by nunu SDK integration",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "platform",
+                        "in": "query",
+                        "description": "Filter by platform",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "windows",
+                                "macos",
+                                "linux",
+                                "android",
+                                "ios-native",
+                                "ios-simulator",
+                                "xbox",
+                                "playstation"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tags",
+                        "in": "query",
+                        "description": "Filter by tags (comma-separated). All specified tags must match.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (0-indexed)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "description": "Results per page (1-100)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListBuildsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid query parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/builds/{buildId}": {
+            "get": {
+                "operationId": "getBuild",
+                "summary": "Get Build Details",
+                "description": "Retrieve details for a specific build.",
+                "tags": ["Builds"],
+                "parameters": [
+                    {
+                        "name": "buildId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The build ID (UUID)",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BuildWithDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Build not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -987,6 +1248,110 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/JobRunSummary"
+                        }
+                    }
+                }
+            },
+            "Build": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Unique identifier for the build"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Build name"
+                    },
+                    "platform": {
+                        "type": "string",
+                        "description": "Target platform"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Build status (e.g., OK, UNHEALTHY)"
+                    },
+                    "file_name": {
+                        "type": "string",
+                        "description": "Original file name"
+                    },
+                    "file_size": {
+                        "type": "integer",
+                        "description": "File size in bytes"
+                    },
+                    "pinned": {
+                        "type": "boolean",
+                        "description": "Whether the build is pinned (protected from auto-deletion)"
+                    },
+                    "nunu_sdk": {
+                        "type": "boolean",
+                        "description": "Whether the build includes nunu SDK integration"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Tags associated with this build"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp when the build was created"
+                    },
+                    "last_used": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Timestamp when the build was last used in a run"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Build description"
+                    }
+                }
+            },
+            "BuildWithDetails": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Build"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "details": {
+                                "$ref": "#/components/schemas/BuildDetails"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ListBuildsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Build"
+                        }
+                    },
+                    "pagination": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer"
+                            },
+                            "page_size": {
+                                "type": "integer"
+                            },
+                            "total_count": {
+                                "type": "integer"
+                            },
+                            "total_pages": {
+                                "type": "integer"
+                            }
                         }
                     }
                 }

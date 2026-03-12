@@ -49,6 +49,8 @@
           {
             "group": "Builds",
             "pages": [
+              "api-reference/builds/list-builds",
+              "api-reference/builds/get-build",
               "api-reference/builds/initiate-upload",
               "api-reference/builds/get-upload-parts",
               "api-reference/builds/complete-upload",

@@ -16,6 +16,30 @@ Retrieve a paginated list of runs for your project.
   Filter by state: `running`, `completed`, or `all`
 </ParamField>
 
+<ParamField query="multiplayer_test_id" type="string">
+  Filter by test ID
+</ParamField>
+
+<ParamField query="job_id" type="string">
+  Filter by job ID
+</ParamField>
+
+<ParamField query="test_plan_execution_id" type="string">
+  Filter by test plan execution ID
+</ParamField>
+
+<ParamField query="test_type" type="string">
+  Filter by test type (e.g., `verification`)
+</ParamField>
+
+<ParamField query="tags" type="string">
+  Filter by tags (comma-separated). All specified tags must match. Example: `tags=nightly,regression`
+</ParamField>
+
+<ParamField query="bugs" type="boolean">
+  Filter by runs that found bugs (`bugs=true` returns runs where `bug_info.bug_count > 0`)
+</ParamField>
+
 <ParamField query="page" type="integer" default="0">
   Page number (0-indexed)
 </ParamField>
@@ -143,13 +167,13 @@ Retrieve a paginated list of runs for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/runs?state=completed&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const response = await fetch(
-  "https://nunu.ai/api/v1/runs?state=completed&page=0&page_size=10",
+  "https://nunu.ai/api/v1/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10",
   {
     headers: {
       "X-Api-Key": process.env.NUNU_API_TOKEN,
@@ -166,7 +190,7 @@ import os
 response = requests.get(
     "https://nunu.ai/api/v1/runs",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
-    params={"state": "completed", "page": 0, "page_size": 10}
+    params={"state": "completed", "tags": "nightly", "bugs": True, "page": 0, "page_size": 10}
 )
 data = response.json()
 ```

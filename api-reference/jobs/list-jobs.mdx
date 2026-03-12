@@ -16,6 +16,18 @@ Retrieve a paginated list of jobs for your project.
   Filter by status: `queued`, `running`, `completed`, or `all`
 </ParamField>
 
+<ParamField query="test_plan_execution_id" type="string">
+  Filter by test plan execution ID
+</ParamField>
+
+<ParamField query="multiplayer_test_id" type="string">
+  Filter by test ID
+</ParamField>
+
+<ParamField query="tags" type="string">
+  Filter by tags (comma-separated). All specified tags must match. Example: `tags=release,candidate`
+</ParamField>
+
 <ParamField query="page" type="integer" default="0">
   Page number (0-indexed)
 </ParamField>
@@ -127,7 +139,7 @@ Retrieve a paginated list of jobs for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/jobs?status=running&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/jobs?status=running&tags=nightly,regression&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>
