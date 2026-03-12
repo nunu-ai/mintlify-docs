@@ -87,11 +87,14 @@ Start a new test run using either a multiplayer test or a test plan.
   Response data
 
   <Expandable title="data properties">
-    <ResponseField name="data.job_id" type="string" required>
-      Job ID for tracking and stopping the run
+    <ResponseField name="data.job_ids" type="string[]" required>
+      Array of job IDs created. For a single test, this contains one job. For a test plan, this contains one job per test in the plan. Use with [Get Job Details](/api-reference/jobs/get-job) to poll for completion.
     </ResponseField>
-    <ResponseField name="data.multiplayer_run_id" type="string" required>
-      Run ID (12 lowercase alphanumeric chars like `lkkg6t5612m`)
+    <ResponseField name="data.build_id" type="string">
+      Build ID used for the run (if applicable)
+    </ResponseField>
+    <ResponseField name="data.message" type="string">
+      Status message
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -146,14 +149,17 @@ data = response.json()
 </RequestExample>
 
 <ResponseExample>
-```json 201 Success
+```json 200 Success
 {
   "ok": true,
-  "status": 201,
-  "message": "queued",
+  "status": 200,
+  "message": "successfully queued test!",
   "data": {
-    "job_id": "f80f6230-3a4f-431a-9d55-d11b867fed4e",
-    "multiplayer_run_id": "lkkg6t5612m"
+    "message": "successfully queued test!",
+    "build_id": "f14fa698-ee3e-4a3d-935d-bdbeb874ad25",
+    "job_ids": [
+      "cc6e3994-a714-4b6b-9879-0b3e53c0a3af"
+    ]
   }
 }
 ```
@@ -226,28 +232,29 @@ async function startAndWaitForTest(
   });
 
   const startResult = await startResponse.json();
-  
+
   if (!startResult.ok) {
     throw new Error(`Failed to start test: ${startResult.error}`);
   }
 
-  const runId = startResult.data.multiplayer_run_id;
-  console.log(`Test started: ${runId}`);
+  const jobId = startResult.data.job_ids[0];
+  console.log(`Test started with job: ${jobId}`);
 
-  // Poll for completion
+  // Poll job for completion
   while (true) {
-    const detailsResponse = await fetch(`${BASE_URL}/runs/${runId}`, {
+    const jobResponse = await fetch(`${BASE_URL}/jobs/${jobId}`, {
       headers: { "X-Api-Key": API_TOKEN },
     });
 
-    const details = await detailsResponse.json();
+    const job = await jobResponse.json();
 
-    if (details.state === "completed") {
-      console.log(`Test completed with result: ${details.result}`);
-      return details;
+    if (job.status === "COMPLETED") {
+      const result = job.runs[0]?.result ?? "unknown";
+      console.log(`Test completed with result: ${result}`);
+      return job;
     }
 
-    console.log(`Test still running... (state: ${details.state})`);
+    console.log(`Test still running... (status: ${job.status})`);
     await new Promise((resolve) => setTimeout(resolve, 30000));
   }
 }
@@ -263,7 +270,7 @@ BASE_URL = "https://nunu.ai/api/v1"
 
 def start_and_wait_for_test(test_id: str, deployment_config_id: str) -> dict:
     headers = {"X-Api-Key": API_TOKEN}
-    
+
     # Start the test
     start_response = requests.post(
         f"{BASE_URL}/runs",
@@ -273,28 +280,26 @@ def start_and_wait_for_test(test_id: str, deployment_config_id: str) -> dict:
             "deployment_config_id": deployment_config_id
         }
     )
-    
+
     start_result = start_response.json()
-    
+
     if not start_result.get("ok"):
         raise Exception(f"Failed to start test: {start_result.get('error')}")
-    
-    run_id = start_result["data"]["multiplayer_run_id"]
-    print(f"Test started: {run_id}")
-    
-    # Poll for completion
+
+    job_id = start_result["data"]["job_ids"][0]
+    print(f"Test started with job: {job_id}")
+
+    # Poll job for completion
     while True:
-        details_response = requests.get(
-            f"{BASE_URL}/runs/{run_id}",
-            headers=headers
-        )
-        details = details_response.json()
-        
-        if details["state"] == "completed":
-            print(f"Test completed with result: {details['result']}")
-            return details
-        
-        print(f"Test still running... (state: {details['state']})")
+        job_response = requests.get(f"{BASE_URL}/jobs/{job_id}", headers=headers)
+        job = job_response.json()
+
+        if job["status"] == "COMPLETED":
+            result = job["runs"][0]["result"] if job.get("runs") else "unknown"
+            print(f"Test completed with result: {result}")
+            return job
+
+        print(f"Test still running... (status: {job['status']})")
         time.sleep(30)
 ```
 
@@ -316,30 +321,30 @@ START_RESPONSE=$(curl -s -X POST "${BASE_URL}/runs" \
     \"deployment_config_id\": \"${DEPLOYMENT_ID}\"
   }")
 
-RUN_ID=$(echo "$START_RESPONSE" | jq -r '.data.multiplayer_run_id')
+JOB_ID=$(echo "$START_RESPONSE" | jq -r '.data.job_ids[0]')
 
-if [ "$RUN_ID" == "null" ]; then
+if [ "$JOB_ID" == "null" ]; then
   echo "Failed to start test: $START_RESPONSE"
   exit 1
 fi
 
-echo "Test started: $RUN_ID"
+echo "Test started with job: $JOB_ID"
 
-# Poll for completion
+# Poll job for completion
 while true; do
-  DETAILS=$(curl -s "${BASE_URL}/runs/${RUN_ID}" \
+  JOB=$(curl -s "${BASE_URL}/jobs/${JOB_ID}" \
     -H "X-Api-Key: ${API_TOKEN}")
-  
-  STATE=$(echo "$DETAILS" | jq -r '.state')
-  
-  if [ "$STATE" == "completed" ]; then
-    RESULT=$(echo "$DETAILS" | jq -r '.result')
+
+  STATUS=$(echo "$JOB" | jq -r '.status')
+
+  if [ "$STATUS" == "COMPLETED" ]; then
+    RESULT=$(echo "$JOB" | jq -r '.runs[0].result')
     echo "Test completed with result: $RESULT"
-    [ "$RESULT" != "success" ] && exit 1
+    [ "$RESULT" != "SUCCESS" ] && exit 1
     exit 0
   fi
-  
-  echo "Test running... (state: $STATE)"
+
+  echo "Test running... (status: $STATUS)"
   sleep 30
 done
 ```

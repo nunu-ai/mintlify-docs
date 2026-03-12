@@ -1399,6 +1399,11 @@
                         "type": "string",
                         "description": "UUID of the deployment configuration"
                     },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs."
+                    },
                     "additional_tags": {
                         "type": "array",
                         "items": {
@@ -1465,11 +1470,22 @@
                     "data": {
                         "type": "object",
                         "properties": {
-                            "job_id": {
-                                "type": "string"
+                            "job_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                },
+                                "description": "Array of job IDs created. Single test returns 1 job, test plan returns multiple."
                             },
-                            "multiplayer_run_id": {
-                                "type": "string"
+                            "build_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Build ID used for the run (if applicable)"
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Status message"
                             }
                         }
                     }
