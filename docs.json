@@ -29,7 +29,6 @@
     "tabs": [
       {
         "tab": "API Reference",
-        "openapi": "api-reference/openapi.json",
         "groups": [
           {
             "group": "Overview",
@@ -40,25 +39,33 @@
           },
           {
             "group": "Runs",
+            "openapi": "api-reference/openapi.json",
             "pages": [
-              "api-reference/runs/list-runs",
-              "api-reference/runs/start-run",
-              "api-reference/runs/get-run",
-              "api-reference/runs/list-bugs",
-              "api-reference/runs/stop-runs",
-              "api-reference/jobs/list-jobs",
-              "api-reference/jobs/get-job"
+              "GET /runs",
+              "POST /runs",
+              "GET /runs/{runId}",
+              "GET /runs/{runId}/bugs",
+              "POST /runs/stop"
+            ]
+          },
+          {
+            "group": "Jobs",
+            "openapi": "api-reference/openapi.json",
+            "pages": [
+              "GET /jobs",
+              "GET /jobs/{jobId}"
             ]
           },
           {
             "group": "Builds",
+            "openapi": "api-reference/openapi.json",
             "pages": [
-              "api-reference/builds/list-builds",
-              "api-reference/builds/get-build",
-              "api-reference/builds/initiate-upload",
-              "api-reference/builds/get-upload-parts",
-              "api-reference/builds/complete-upload",
-              "api-reference/builds/cancel-upload"
+              "GET /builds",
+              "GET /builds/{buildId}",
+              "POST /builds/upload",
+              "GET /builds/upload/parts",
+              "POST /builds/upload/complete",
+              "DELETE /builds/upload"
             ]
           }
         ]
