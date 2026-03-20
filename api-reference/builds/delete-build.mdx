@@ -1,0 +1,38 @@
+---
+title: 'Delete Build'
+openapi: 'DELETE /builds/{buildId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:manage-build-storage`
+</Info>
+
+Permanently delete a build from storage. This action cannot be undone.
+
+## Path Parameters
+
+<ParamField path="buildId" type="string" required>
+  The build ID (UUID)
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message confirming the build was deleted
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://nunu.ai/api/v1/builds/123e4567-e89b-12d3-a456-426614174000" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "build deleted successfully"
+}
+```
+</ResponseExample>

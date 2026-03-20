@@ -702,6 +702,76 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "operationId": "deleteBuild",
+                "summary": "Delete Build",
+                "description": "Permanently delete a build from storage.",
+                "tags": ["Builds"],
+                "parameters": [
+                    {
+                        "name": "buildId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The build ID (UUID)",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Build deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeleteBuildResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - buildId is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Build not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/builds/upload": {
@@ -1187,7 +1257,14 @@
                     },
                     "status": {
                         "type": "string",
-                        "enum": ["QUEUED", "STARTING", "RUNNING", "STOPPING", "CLEANING_UP", "COMPLETED"]
+                        "enum": [
+                            "QUEUED",
+                            "STARTING",
+                            "RUNNING",
+                            "STOPPING",
+                            "CLEANING_UP",
+                            "COMPLETED"
+                        ]
                     },
                     "created_at": {
                         "type": "string",
@@ -1985,6 +2062,15 @@
                     },
                     "build_id": {
                         "type": "string"
+                    }
+                }
+            },
+            "DeleteBuildResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "Success message"
                     }
                 }
             }

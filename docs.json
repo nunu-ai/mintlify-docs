@@ -62,6 +62,7 @@
             "pages": [
               "GET /builds",
               "GET /builds/{buildId}",
+              "DELETE /builds/{buildId}",
               "POST /builds/upload",
               "GET /builds/upload/parts",
               "POST /builds/upload/complete",
