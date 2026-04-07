@@ -1488,6 +1488,20 @@
                         },
                         "description": "Tags to add to the run"
                     },
+                    "retries": {
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 10,
+                        "description": "Number of times to retry the test if it fails. Only applies when using multiplayer_test_id."
+                    },
+                    "instances": {
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1,
+                        "maximum": 10,
+                        "description": "Number of parallel instances to run. Only applies when using multiplayer_test_id."
+                    },
                     "render_templates": {
                         "type": "boolean",
                         "default": false,
