@@ -141,7 +141,7 @@
             "post": {
                 "operationId": "startRun",
                 "summary": "Start a Run",
-                "description": "Start a new test run using either a multiplayer test or a test plan.",
+                "description": "Start a new test run using a multiplayer test, a test plan, or ephemeral instructions.",
                 "tags": ["Runs"],
                 "requestBody": {
                     "required": true,
@@ -1466,11 +1466,15 @@
                 "properties": {
                     "multiplayer_test_id": {
                         "type": "string",
-                        "description": "UUID of the test to run (provide this OR test_plan_id)"
+                        "description": "UUID of the test to run (provide this OR test_plan_id OR instructions)"
                     },
                     "test_plan_id": {
                         "type": "string",
-                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id)"
+                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id OR instructions)"
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "description": "Test instructions to execute as an ephemeral (one-off) test. Mutually exclusive with multiplayer_test_id and test_plan_id."
                     },
                     "deployment_config_id": {
                         "type": "string",
@@ -1481,12 +1485,21 @@
                         "format": "uuid",
                         "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs."
                     },
+                    "name": {
+                        "type": "string",
+                        "description": "Display name for the run. Only applies when using instructions. Defaults to '[api] ephemeral test'."
+                    },
+                    "agent_config_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of an agent configuration to use"
+                    },
                     "additional_tags": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
-                        "description": "Tags to add to the run"
+                        "description": "Tags to add to the run. When using instructions (ephemeral), the tag 'api' is automatically prepended."
                     },
                     "retries": {
                         "type": "integer",
@@ -1572,7 +1585,12 @@
                             "build_id": {
                                 "type": "string",
                                 "format": "uuid",
-                                "description": "Build ID used for the run (if applicable)"
+                                "description": "Build ID used for the run. Returned for multiplayer test and test plan runs."
+                            },
+                            "test_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "UUID of the created ephemeral test. Only returned for ephemeral (instructions) runs."
                             },
                             "message": {
                                 "type": "string",

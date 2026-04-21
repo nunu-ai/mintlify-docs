@@ -8,32 +8,47 @@ noindex: true
   **Permission Required**: `project:operate-runs`
 </Info>
 
-Start a new test run using either a multiplayer test or a test plan.
+Start a new test run using a multiplayer test, a test plan, or ephemeral instructions.
 
 ## Request Body
 
 <Note>
-  Provide either `multiplayer_test_id` **or** `test_plan_id`, not both.
+  Provide exactly one of `multiplayer_test_id`, `test_plan_id`, or `instructions`:
+  - **`multiplayer_test_id`** — run an existing test
+  - **`test_plan_id`** — run an existing test plan
+  - **`instructions`** — run an ephemeral (one-off) test without creating a test case first
 </Note>
 
 <ParamField body="multiplayer_test_id" type="string">
-  UUID of the test to run. Required if `test_plan_id` is not provided.
+  UUID of the test to run. Mutually exclusive with `test_plan_id` and `instructions`.
 </ParamField>
 
 <ParamField body="test_plan_id" type="string">
-  UUID of the test plan to run. Required if `multiplayer_test_id` is not provided.
+  UUID of the test plan to run. Mutually exclusive with `multiplayer_test_id` and `instructions`.
+</ParamField>
+
+<ParamField body="instructions" type="string">
+  Test instructions to execute as an ephemeral (one-off) test. Mutually exclusive with `multiplayer_test_id` and `test_plan_id`.
 </ParamField>
 
 <ParamField body="deployment_config_id" type="string" required>
   UUID of the deployment configuration
 </ParamField>
 
+<ParamField body="name" type="string">
+  Display name for the run. Only applies when using `instructions`. Defaults to `"[api] ephemeral test"`.
+</ParamField>
+
 <ParamField body="build_id" type="string">
   UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use for this run. See [Using Build Storage Builds](#using-build-storage-builds) below.
 </ParamField>
 
+<ParamField body="agent_config_id" type="string">
+  UUID of an agent configuration to use. Applies to all request variants.
+</ParamField>
+
 <ParamField body="additional_tags" type="string[]">
-  Tags to add to the run
+  Tags to add to the run. When using `instructions` (ephemeral), `"api"` is automatically prepended to the provided tags.
 </ParamField>
 
 <ParamField body="retries" type="integer" default="0">
@@ -99,7 +114,10 @@ Start a new test run using either a multiplayer test or a test plan.
       Array of job IDs created. For a single test, this contains one job. For a test plan, this contains one job per test in the plan. Use with [Get Job Details](/api-reference/jobs/get-job) to poll for completion.
     </ResponseField>
     <ResponseField name="data.build_id" type="string">
-      Build ID used for the run (if applicable)
+      Build ID used for the run. Returned for multiplayer test and test plan runs.
+    </ResponseField>
+    <ResponseField name="data.test_id" type="string">
+      UUID of the created ephemeral test. Only returned for ephemeral (`instructions`) runs.
     </ResponseField>
     <ResponseField name="data.message" type="string">
       Status message
@@ -108,7 +126,7 @@ Start a new test run using either a multiplayer test or a test plan.
 </ResponseField>
 
 <RequestExample>
-```bash cURL
+```bash cURL (Test)
 curl -X POST "https://nunu.ai/api/v1/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
@@ -116,6 +134,18 @@ curl -X POST "https://nunu.ai/api/v1/runs" \
     "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
     "additional_tags": ["ci", "pr-123"]
+  }'
+```
+
+```bash cURL (Ephemeral)
+curl -X POST "https://nunu.ai/api/v1/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "instructions": "Navigate to the main menu and verify all buttons are clickable",
+    "name": "PR #123 Smoke Test",
+    "additional_tags": ["pr-123", "smoke"]
   }'
 ```
 
@@ -157,7 +187,7 @@ data = response.json()
 </RequestExample>
 
 <ResponseExample>
-```json 200 Success
+```json 200 Success (Test / Test Plan)
 {
   "ok": true,
   "status": 200,
@@ -165,6 +195,20 @@ data = response.json()
   "data": {
     "message": "successfully queued test!",
     "build_id": "f14fa698-ee3e-4a3d-935d-bdbeb874ad25",
+    "job_ids": [
+      "cc6e3994-a714-4b6b-9879-0b3e53c0a3af"
+    ]
+  }
+}
+```
+
+```json 201 Success (Ephemeral)
+{
+  "ok": true,
+  "status": 201,
+  "message": "queued",
+  "data": {
+    "test_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "job_ids": [
       "cc6e3994-a714-4b6b-9879-0b3e53c0a3af"
     ]
