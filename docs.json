@@ -1,123 +1,123 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "nunu.ai",
-  "colors": {
-    "primary": "#E55CD8",
-    "light": "#F79EDE",
-    "dark": "#9A2EA4"
-  },
-  "background": {
-    "color": {
-      "dark": "#0A0A1C",
-      "light": "#fafafa"
-    }
-  },
-  "styling": {
-    "codeblocks": {
-      "theme": {
-        "light": "catppuccin-latte",
-        "dark": "catppuccin-mocha"
-      }
-    }
-  },
-  "api": {
-    "openapi": "api-reference/openapi.json"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction",
-              "api-reference/authentication"
-            ]
-          },
-          {
-            "group": "Runs",
-            "openapi": "api-reference/openapi.json",
-            "pages": [
-              "GET /runs",
-              "POST /runs",
-              "GET /runs/{runId}",
-              "GET /runs/{runId}/bugs",
-              "POST /runs/stop"
-            ]
-          },
-          {
-            "group": "Jobs",
-            "openapi": "api-reference/openapi.json",
-            "pages": [
-              "GET /jobs",
-              "GET /jobs/{jobId}"
-            ]
-          },
-          {
-            "group": "Builds",
-            "openapi": "api-reference/openapi.json",
-            "pages": [
-              "GET /builds",
-              "GET /builds/{buildId}",
-              "DELETE /builds/{buildId}",
-              "POST /builds/upload",
-              "GET /builds/upload/parts",
-              "POST /builds/upload/complete",
-              "DELETE /builds/upload"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Nexus Documentation",
-          "href": "https://docs.nunu.ai",
-          "icon": "newspaper"
+    "$schema": "https://mintlify.com/docs.json",
+    "theme": "mint",
+    "name": "nunu.ai",
+    "colors": {
+        "primary": "#E55CD8",
+        "light": "#F79EDE",
+        "dark": "#9A2EA4"
+    },
+    "background": {
+        "color": {
+            "dark": "#0A0A1C",
+            "light": "#fafafa"
         }
-      ]
+    },
+    "styling": {
+        "codeblocks": {
+            "theme": {
+                "light": "catppuccin-latte",
+                "dark": "catppuccin-mocha"
+            }
+        }
+    },
+    "api": {
+        "openapi": "api-reference/openapi.json"
+    },
+    "favicon": "/favicon.svg",
+    "navigation": {
+        "tabs": [
+            {
+                "tab": "API Reference",
+                "groups": [
+                    {
+                        "group": "Overview",
+                        "pages": [
+                            "api-reference/introduction",
+                            "api-reference/authentication"
+                        ]
+                    },
+                    {
+                        "group": "Runs",
+                        "pages": [
+                            "api-reference/runs/list-runs",
+                            "api-reference/runs/start-run",
+                            "api-reference/runs/get-run",
+                            "api-reference/runs/list-bugs",
+                            "api-reference/runs/stop-runs"
+                        ]
+                    },
+                    {
+                        "group": "Jobs",
+                        "pages": [
+                            "api-reference/jobs/list-jobs",
+                            "api-reference/jobs/get-job"
+                        ]
+                    },
+                    {
+                        "group": "Test Plans",
+                        "pages": [
+                            "api-reference/test-plans/list-test-plans",
+                            "api-reference/test-plans/get-test-plan",
+                            "api-reference/test-plans/list-test-plan-executions"
+                        ]
+                    },
+                    {
+                        "group": "Builds",
+                        "pages": [
+                            "api-reference/builds/list-builds",
+                            "api-reference/builds/get-build",
+                            "api-reference/builds/delete-build",
+                            "api-reference/builds/initiate-upload",
+                            "api-reference/builds/get-upload-parts",
+                            "api-reference/builds/complete-upload",
+                            "api-reference/builds/cancel-upload"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "global": {
+            "anchors": [
+                {
+                    "anchor": "Nexus Documentation",
+                    "href": "https://docs.nunu.ai",
+                    "icon": "newspaper"
+                }
+            ]
+        }
+    },
+    "logo": {
+        "light": "/logo/light.svg",
+        "dark": "/logo/dark.svg"
+    },
+    "navbar": {
+        "links": [
+            {
+                "label": "Nexus Docs",
+                "href": "https://docs.nunu.ai"
+            }
+        ],
+        "primary": {
+            "type": "button",
+            "label": "Nexus",
+            "href": "https://nunu.ai/nexus"
+        }
+    },
+    "contextual": {
+        "options": ["copy", "chatgpt", "claude", "perplexity"]
+    },
+    "footer": {
+        "socials": {
+            "x": "https://x.com/nunu_ai",
+            "github": "https://github.com/nunu-ai",
+            "linkedin": "https://linkedin.com/company/nunu-ai",
+            "discord": "https://discord.gg/nunu"
+        }
+    },
+    "seo": {
+        "metatags": {
+            "robots": "noindex"
+        }
     }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Nexus Docs",
-        "href": "https://docs.nunu.ai"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Nexus",
-      "href": "https://nunu.ai/nexus"
-    }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "chatgpt",
-      "claude",
-      "perplexity"
-    ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/nunu_ai",
-      "github": "https://github.com/nunu-ai",
-      "linkedin": "https://linkedin.com/company/nunu-ai",
-      "discord": "https://discord.gg/nunu"
-    }
-  },
-  "seo": {
-    "metatags": {
-      "robots": "noindex"
-    }
-  }
 }

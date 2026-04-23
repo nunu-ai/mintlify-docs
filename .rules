@@ -1,0 +1,10 @@
+## docs.json navigation
+
+- Reference pages by file path (`"api-reference/runs/start-run"`), NEVER by OpenAPI operation (`"GET /runs"`)
+- `"openapi"` key goes ONLY at top level under `"api"` — NEVER on tab or group objects (Mintlify will auto-generate pages from the spec and silently ignore .mdx files, losing all custom content)
+
+## Adding a new API route
+
+1. Add path + schemas to `api-reference/openapi.json`
+2. Create `.mdx` in `api-reference/<group>/` with `openapi: 'METHOD /path'` frontmatter — must exactly match a path in `openapi.json` or the API playground won't render
+3. Add file path to the correct group in `docs.json` — the page won't appear in the sidebar without this

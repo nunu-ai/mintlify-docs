@@ -520,6 +520,266 @@
                 }
             }
         },
+        "/test-plans": {
+            "get": {
+                "operationId": "listTestPlans",
+                "summary": "List Test Plans",
+                "description": "Retrieve a paginated list of test plans for your project.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by test plan name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Field to sort by",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "name",
+                                "test_count",
+                                "modified_at",
+                                "created_at"
+                            ],
+                            "default": "name"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Sort direction",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["asc", "desc"],
+                            "default": "asc"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (0-indexed)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "description": "Results per page (1-100)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListTestPlansResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/test-plans/{testPlanId}": {
+            "get": {
+                "operationId": "getTestPlan",
+                "summary": "Get Test Plan",
+                "description": "Retrieve a specific test plan by ID, including its test items.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    {
+                        "name": "testPlanId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The test plan ID (UUID)",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TestPlan"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Test plan not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/test-plan-executions": {
+            "get": {
+                "operationId": "listTestPlanExecutions",
+                "summary": "List Test Plan Executions",
+                "description": "Retrieve a paginated list of test plan executions for your project.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    {
+                        "name": "test_plan_id",
+                        "in": "query",
+                        "description": "Filter by test plan ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "build_id",
+                        "in": "query",
+                        "description": "Filter by build ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by execution status",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["completed", "in_progress", "queued"]
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Field to sort by",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "start_time",
+                                "test_plan_name",
+                                "build_name"
+                            ],
+                            "default": "start_time"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Sort direction",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["asc", "desc"],
+                            "default": "desc"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (0-indexed)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "in": "query",
+                        "description": "Results per page (1-100)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListTestPlanExecutionsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/builds": {
             "get": {
                 "operationId": "listBuilds",
@@ -1325,6 +1585,243 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/JobRunSummary"
+                        }
+                    }
+                }
+            },
+            "TestPlanTestItem": {
+                "type": "object",
+                "properties": {
+                    "multiplayer_test_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID of the test to include in the plan"
+                    },
+                    "retries": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0,
+                        "description": "Number of retries for this test item"
+                    }
+                },
+                "required": ["multiplayer_test_id"]
+            },
+            "TestPlan": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Unique identifier for the test plan"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Project the test plan belongs to"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Test plan name"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "modified_by": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "test_items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TestPlanTestItem"
+                        },
+                        "description": "Ordered list of tests in this plan"
+                    }
+                }
+            },
+            "TestPlanSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "test_count": {
+                        "type": "integer",
+                        "description": "Number of tests in the plan"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "modified_by": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "ListTestPlansResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TestPlanSummary"
+                        }
+                    },
+                    "pagination": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer"
+                            },
+                            "page_size": {
+                                "type": "integer"
+                            },
+                            "total_count": {
+                                "type": "integer"
+                            },
+                            "total_pages": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "TestPlanExecutionTestStatus": {
+                "type": "object",
+                "properties": {
+                    "passed": {
+                        "type": "integer"
+                    },
+                    "failed": {
+                        "type": "integer"
+                    },
+                    "stopped": {
+                        "type": "integer"
+                    },
+                    "queued": {
+                        "type": "integer"
+                    },
+                    "running": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "TestPlanExecutionSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Execution ID"
+                    },
+                    "test_plan_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "ID of the test plan that was executed"
+                    },
+                    "test_plan_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Name of the test plan"
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "ID of the build used"
+                    },
+                    "build_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Name of the build used"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["completed", "in_progress", "queued"],
+                        "description": "Current execution status"
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "started_by": {
+                        "nullable": true,
+                        "description": "Who started the execution"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "total_tests": {
+                        "type": "integer",
+                        "description": "Total number of tests in this execution"
+                    },
+                    "test_status": {
+                        "$ref": "#/components/schemas/TestPlanExecutionTestStatus"
+                    },
+                    "duration_ms": {
+                        "type": "number",
+                        "nullable": true,
+                        "description": "Total execution duration in milliseconds"
+                    }
+                }
+            },
+            "ListTestPlanExecutionsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TestPlanExecutionSummary"
+                        }
+                    },
+                    "pagination": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer"
+                            },
+                            "page_size": {
+                                "type": "integer"
+                            },
+                            "total_count": {
+                                "type": "integer"
+                            },
+                            "total_pages": {
+                                "type": "integer"
+                            }
                         }
                     }
                 }
