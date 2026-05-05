@@ -342,7 +342,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/StopRunsResponse"
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
@@ -613,6 +613,22 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "operationId": "createTestPlan",
+                "summary": "Create Test Plan",
+                "description": "Create a new test plan for the authenticated project.",
+                "tags": ["Test Plans"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateTestPlanRequest" } } }
+                },
+                "responses": {
+                    "201": { "description": "Test plan created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TestPlan" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
             }
         },
         "/test-plans/{testPlanId}": {
@@ -664,6 +680,41 @@
                             }
                         }
                     }
+                }
+            },
+            "patch": {
+                "operationId": "updateTestPlan",
+                "summary": "Update Test Plan",
+                "description": "Apply a partial update to a test plan.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    { "name": "testPlanId", "in": "path", "required": true, "description": "Test plan ID (UUID)", "schema": { "type": "string", "format": "uuid" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTestPlanRequest" } } }
+                },
+                "responses": {
+                    "200": { "description": "Test plan updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TestPlan" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test plan not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTestPlan",
+                "summary": "Delete Test Plan",
+                "description": "Delete a test plan.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    { "name": "testPlanId", "in": "path", "required": true, "description": "Test plan ID (UUID)", "schema": { "type": "string", "format": "uuid" } }
+                ],
+                "responses": {
+                    "200": { "description": "Test plan deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test plan not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
                 }
             }
         },
@@ -1269,6 +1320,373 @@
                             }
                         }
                     }
+                }
+            }
+        },
+        "/runs/{runId}/live": {
+            "get": {
+                "operationId": "getLiveRunSnapshot",
+                "summary": "Get Live Run Snapshot",
+                "description": "Return a live snapshot for an active run, including latest game state and (optionally) per-player screenshots.",
+                "tags": ["Runs"],
+                "parameters": [
+                    {
+                        "name": "runId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The multiplayer run ID (12 lowercase alphanumeric characters)",
+                        "schema": { "type": "string", "pattern": "^[a-z0-9]{12}$" }
+                    },
+                    {
+                        "name": "include_screenshot",
+                        "in": "query",
+                        "description": "Whether to include per-player screenshots",
+                        "schema": { "type": "boolean", "default": true }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Live run snapshot",
+                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LiveRunSnapshot" } } }
+                    },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Run not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/runs/export": {
+            "post": {
+                "operationId": "exportRuns",
+                "summary": "Export Runs",
+                "description": "Stream a ZIP archive containing one JSON file per composite run.",
+                "tags": ["Runs"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ExportRunsRequest" } } }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ZIP archive (chunked)",
+                        "content": { "application/zip": { "schema": { "type": "string", "format": "binary" } } }
+                    },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - run does not belong to the authenticated project, or feature is restricted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "No runs found for the provided IDs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/bugs": {
+            "get": {
+                "operationId": "listReviewedBugs",
+                "summary": "List Reviewed Bugs",
+                "description": "Retrieve a paginated list of reviewed bugs for your project.",
+                "tags": ["Bugs"],
+                "parameters": [
+                    { "name": "status", "in": "query", "description": "Filter by status", "schema": { "type": "string", "enum": ["active", "archived", "all"], "default": "active" } },
+                    { "name": "search", "in": "query", "description": "Free-text search across title/description/reproduction steps", "schema": { "type": "string" } },
+                    { "name": "severity", "in": "query", "description": "Filter by severity", "schema": { "type": "string", "enum": ["low", "medium", "high", "critical"] } },
+                    { "name": "category", "in": "query", "description": "Filter by bug category", "schema": { "type": "string" } },
+                    { "name": "sort_by", "in": "query", "description": "Field to sort by", "schema": { "type": "string" } },
+                    { "name": "sort_order", "in": "query", "description": "Sort direction", "schema": { "type": "string", "enum": ["asc", "desc"] } },
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListReviewedBugsResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - bug review feature disabled or missing permission", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/bugs/{bugId}": {
+            "get": {
+                "operationId": "getReviewedBug",
+                "summary": "Get Reviewed Bug",
+                "description": "Retrieve a single reviewed bug, including all per-run occurrences.",
+                "tags": ["Bugs"],
+                "parameters": [
+                    { "name": "bugId", "in": "path", "required": true, "description": "Bug ID", "schema": { "type": "string" } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReviewedBugDetails" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - bug review feature disabled or missing permission", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Bug not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/tests": {
+            "get": {
+                "operationId": "listTests",
+                "summary": "List Tests",
+                "description": "Retrieve a paginated list of test cases for your project, optionally filtered to a single folder.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "folder_path", "in": "query", "description": "Folder path filter (mutually exclusive with folder_id). \"/\" or omitted means root.", "schema": { "type": "string" } },
+                    { "name": "folder_id", "in": "query", "description": "Folder UUID filter (mutually exclusive with folder_path)", "schema": { "type": "string", "format": "uuid" } },
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListTestsResponse" } } } },
+                    "400": { "description": "Bad Request - both folder_path and folder_id supplied", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            },
+            "post": {
+                "operationId": "createTest",
+                "summary": "Create Test",
+                "description": "Create a new test case in the authenticated project.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "include_shared_collection_steps", "in": "query", "description": "Whether shared collection steps are expanded inline in the response", "schema": { "type": "boolean", "default": true } },
+                    { "name": "shared_collection_steps_mode", "in": "query", "description": "How to treat shared collection items with inline steps", "schema": { "type": "string", "enum": ["error", "drop"], "default": "error" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateTestRequest" } } }
+                },
+                "responses": {
+                    "201": { "description": "Test created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TestCase" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/tests/{testId}": {
+            "get": {
+                "operationId": "getTest",
+                "summary": "Get Test",
+                "description": "Retrieve a single test case, optionally by version.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "testId", "in": "path", "required": true, "description": "The test ID (UUID)", "schema": { "type": "string", "format": "uuid" } },
+                    { "name": "version", "in": "query", "description": "Specific version (positive integer)", "schema": { "type": "integer", "minimum": 1 } },
+                    { "name": "include_shared_collection_steps", "in": "query", "description": "Whether shared collection steps are expanded inline", "schema": { "type": "boolean", "default": true } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TestCase" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            },
+            "patch": {
+                "operationId": "updateTest",
+                "summary": "Update Test",
+                "description": "Apply a partial update to a test case. Uses optimistic concurrency control via expected_version.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "testId", "in": "path", "required": true, "description": "The test ID (UUID)", "schema": { "type": "string", "format": "uuid" } },
+                    { "name": "include_shared_collection_steps", "in": "query", "description": "Whether shared collection steps are expanded inline", "schema": { "type": "boolean", "default": true } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTestRequest" } } }
+                },
+                "responses": {
+                    "200": { "description": "Test updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TestCase" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "409": { "description": "Version conflict", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VersionConflictError" } } } }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTest",
+                "summary": "Delete Test",
+                "description": "Delete a test case from the authenticated project.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "testId", "in": "path", "required": true, "description": "The test ID (UUID)", "schema": { "type": "string", "format": "uuid" } }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteTestRequest" } } }
+                },
+                "responses": {
+                    "200": { "description": "Test deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "409": { "description": "Test has associated runs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/test-folders": {
+            "get": {
+                "operationId": "listTestFolders",
+                "summary": "List Test Folders",
+                "description": "Retrieve a paginated list of test folders for the authenticated project.",
+                "tags": ["Tests"],
+                "parameters": [
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListTestFoldersResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/shared-steps": {
+            "get": {
+                "operationId": "listSharedSteps",
+                "summary": "List Shared Steps",
+                "description": "Retrieve a list of shared step collections for the authenticated project.",
+                "tags": ["Shared Steps"],
+                "parameters": [
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0, "minimum": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListSharedStepsResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            },
+            "post": {
+                "operationId": "createSharedStep",
+                "summary": "Create Shared Step",
+                "description": "Create a new shared step collection.",
+                "tags": ["Shared Steps"],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateSharedStepRequest" } } }
+                },
+                "responses": {
+                    "201": { "description": "Shared step created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SharedStep" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/shared-steps/{sharedStepId}": {
+            "get": {
+                "operationId": "getSharedStep",
+                "summary": "Get Shared Step",
+                "description": "Retrieve a shared step collection, optionally by version.",
+                "tags": ["Shared Steps"],
+                "parameters": [
+                    { "name": "sharedStepId", "in": "path", "required": true, "description": "Shared step collection ID", "schema": { "type": "string" } },
+                    { "name": "version", "in": "query", "description": "Specific version (positive integer)", "schema": { "type": "integer", "minimum": 1 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SharedStep" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Shared step not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            },
+            "patch": {
+                "operationId": "updateSharedStep",
+                "summary": "Update Shared Step",
+                "description": "Apply a partial update to a shared step collection. Uses optimistic concurrency control via expected_version.",
+                "tags": ["Shared Steps"],
+                "parameters": [
+                    { "name": "sharedStepId", "in": "path", "required": true, "description": "Shared step collection ID", "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateSharedStepRequest" } } }
+                },
+                "responses": {
+                    "200": { "description": "Shared step updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SharedStep" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Shared step not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "409": { "description": "Version conflict", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VersionConflictError" } } } }
+                }
+            },
+            "delete": {
+                "operationId": "deleteSharedStep",
+                "summary": "Delete Shared Step",
+                "description": "Delete a shared step collection. Fails with 409 if the collection is still referenced by tests.",
+                "tags": ["Shared Steps"],
+                "parameters": [
+                    { "name": "sharedStepId", "in": "path", "required": true, "description": "Shared step collection ID", "schema": { "type": "string" } }
+                ],
+                "responses": {
+                    "200": { "description": "Shared step deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:edit-tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Shared step not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "409": { "description": "Shared step is referenced by tests", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/test-plans/{testPlanId}/runs": {
+            "post": {
+                "operationId": "startTestPlanRun",
+                "summary": "Start Test Plan Run",
+                "description": "Start a run for a specific test plan.",
+                "tags": ["Test Plans"],
+                "parameters": [
+                    { "name": "testPlanId", "in": "path", "required": true, "description": "Test plan ID (UUID)", "schema": { "type": "string", "format": "uuid" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StartTestPlanRunRequest" } } }
+                },
+                "responses": {
+                    "201": { "description": "Run queued", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StartRunResponse" } } } },
+                    "400": { "description": "Bad Request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:operate-runs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Test plan not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/agent-configs": {
+            "get": {
+                "operationId": "listAgentConfigs",
+                "summary": "List Agent Configs",
+                "description": "Retrieve a paginated list of agent configurations for your project.",
+                "tags": ["Configs"],
+                "parameters": [
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListAgentConfigsResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:view-configs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/deployment-configs": {
+            "get": {
+                "operationId": "listDeploymentConfigs",
+                "summary": "List Deployment Configs",
+                "description": "Retrieve a paginated list of deployment configurations for your project.",
+                "tags": ["Configs"],
+                "parameters": [
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListDeploymentConfigsResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:view-configs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/credential-kinds": {
+            "get": {
+                "operationId": "listCredentialKinds",
+                "summary": "List Credential Kinds",
+                "description": "Retrieve a paginated list of credential kinds for your project.",
+                "tags": ["Configs"],
+                "parameters": [
+                    { "name": "page", "in": "query", "description": "Page number (0-indexed)", "schema": { "type": "integer", "default": 0 } },
+                    { "name": "page_size", "in": "query", "description": "Results per page (1-100)", "schema": { "type": "integer", "default": 25, "minimum": 1, "maximum": 100 } }
+                ],
+                "responses": {
+                    "200": { "description": "Successful response", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListCredentialKindsResponse" } } } },
+                    "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - missing project:view-configs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
                 }
             }
         }
@@ -2058,42 +2476,31 @@
             },
             "StartRunResponse": {
                 "type": "object",
+                "description": "Response body for POST /runs and POST /test-plans/{testPlanId}/runs. Returned with HTTP 201 on success. The body contains the started-run data directly (no { ok, status, message, data } envelope).",
                 "properties": {
-                    "ok": {
-                        "type": "boolean"
+                    "job_ids": {
+                        "type": "array",
+                        "items": { "type": "string", "format": "uuid" },
+                        "description": "Array of job IDs created. Single test returns 1 job; test plan returns one job per test."
                     },
-                    "status": {
-                        "type": "integer"
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Build ID used for the run. Returned for multiplayer test and test plan runs."
+                    },
+                    "test_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of the created ephemeral test. Only returned for ephemeral (instructions) runs."
+                    },
+                    "test_plan_execution_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Test plan execution ID. Returned for test plan runs."
                     },
                     "message": {
-                        "type": "string"
-                    },
-                    "data": {
-                        "type": "object",
-                        "properties": {
-                            "job_ids": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                    "format": "uuid"
-                                },
-                                "description": "Array of job IDs created. Single test returns 1 job, test plan returns multiple."
-                            },
-                            "build_id": {
-                                "type": "string",
-                                "format": "uuid",
-                                "description": "Build ID used for the run. Returned for multiplayer test and test plan runs."
-                            },
-                            "test_id": {
-                                "type": "string",
-                                "format": "uuid",
-                                "description": "UUID of the created ephemeral test. Only returned for ephemeral (instructions) runs."
-                            },
-                            "message": {
-                                "type": "string",
-                                "description": "Status message"
-                            }
-                        }
+                        "type": "string",
+                        "description": "Optional status message returned for multiplayer test and test plan runs."
                     }
                 }
             },
@@ -2176,17 +2583,15 @@
             },
             "ListBugsResponse": {
                 "type": "object",
+                "description": "Bugs detected during a multiplayer run. Bug occurrences per run are naturally bounded, so the response always returns the full list in a single page; the pagination envelope is kept to match the shape of other list routes.",
                 "properties": {
-                    "multiplayer_run_id": {
-                        "type": "string"
-                    },
-                    "bug_occurrences": {
+                    "data": {
                         "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BugOccurrence"
-                        }
-                    }
-                }
+                        "items": { "$ref": "#/components/schemas/BugOccurrence" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                },
+                "required": ["data", "pagination"]
             },
             "StopRunsRequest": {
                 "type": "object",
@@ -2601,6 +3006,407 @@
                         "type": "string",
                         "description": "Success message"
                     }
+                }
+            },
+            "Pagination": {
+                "type": "object",
+                "properties": {
+                    "page": { "type": "integer" },
+                    "page_size": { "type": "integer" },
+                    "total_count": { "type": "integer" },
+                    "total_pages": { "type": "integer" }
+                }
+            },
+            "DeleteResponse": {
+                "type": "object",
+                "description": "Standard response for DELETE operations on tests, test plans, and shared steps.",
+                "properties": {
+                    "id": { "type": "string", "description": "ID of the deleted resource (echoes the path param)" },
+                    "deleted": { "type": "boolean", "enum": [true], "description": "Always true on success" }
+                },
+                "required": ["id", "deleted"]
+            },
+            "VersionConflictError": {
+                "type": "object",
+                "properties": {
+                    "error": { "type": "string", "example": "version conflict" },
+                    "expected_version": { "type": "integer" },
+                    "latest_version": { "type": "integer" }
+                }
+            },
+            "LiveRunSnapshot": {
+                "type": "object",
+                "properties": {
+                    "multiplayer_run_id": { "type": "string" },
+                    "state": { "type": "string", "enum": ["initializing", "running", "completed"] },
+                    "test": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "name": { "type": "string" }
+                        }
+                    },
+                    "players": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/LiveRunPlayer" }
+                    }
+                }
+            },
+            "LiveRunPlayer": {
+                "type": "object",
+                "properties": {
+                    "player_number": { "type": "integer" },
+                    "composite_run_id": { "type": "string" },
+                    "current_run_id": { "type": "string", "nullable": true },
+                    "current_step": { "type": "integer", "nullable": true },
+                    "game_state": { "type": "object", "nullable": true },
+                    "screenshot": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                            "data": { "type": "string", "description": "base64-encoded image bytes" },
+                            "mimeType": { "type": "string" },
+                            "encoding": { "type": "string", "enum": ["base64"] }
+                        }
+                    },
+                    "last_agent_step": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                            "agent": { "type": "string" },
+                            "step": { "type": "integer" },
+                            "save_data": { "type": "object" },
+                            "start_time": { "type": "string", "format": "date-time" }
+                        }
+                    }
+                }
+            },
+            "ExportRunsRequest": {
+                "type": "object",
+                "required": ["run_ids"],
+                "properties": {
+                    "run_ids": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "minItems": 1,
+                        "maxItems": 50,
+                        "description": "1-50 run identifiers (multiplayer run IDs, composite run IDs, or job IDs)"
+                    },
+                    "include_game_states": { "type": "boolean", "default": false },
+                    "include_screenshots": { "type": "boolean", "default": false },
+                    "include_hints": { "type": "boolean", "default": false },
+                    "include_agent_token_counts": { "type": "boolean", "default": false, "description": "Restricted to super-admin users" }
+                }
+            },
+            "ReviewedBugSummary": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "project_id": { "type": "string" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "reproduction_steps": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+                    "category": { "type": "string" },
+                    "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+                    "tags": { "type": "array", "items": { "type": "string" } },
+                    "details": { "type": "object", "nullable": true },
+                    "status": { "type": "string", "enum": ["active", "archived"] },
+                    "suppress_reporting": { "type": "boolean" },
+                    "occurrence_count": { "type": "integer" },
+                    "created_at": { "type": "string", "format": "date-time" },
+                    "created_by": { "type": "string", "nullable": true }
+                }
+            },
+            "BugOccurrenceSummary": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "multiplayer_run_id": { "type": "string" },
+                    "player_index": { "type": "integer" },
+                    "test_step": { "type": "integer" },
+                    "turn": { "type": "integer" },
+                    "detected_at": { "type": "string", "format": "date-time" },
+                    "reviewed_at": { "type": "string", "format": "date-time", "nullable": true },
+                    "reviewed_by": { "type": "string", "nullable": true },
+                    "review_comment": { "type": "string", "nullable": true },
+                    "title": { "type": "string" },
+                    "test_name": { "type": "string", "nullable": true },
+                    "test_version": { "type": "integer", "nullable": true },
+                    "test_plan_name": { "type": "string", "nullable": true },
+                    "severity": { "type": "string" },
+                    "category": { "type": "string" }
+                }
+            },
+            "ReviewedBugDetails": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/ReviewedBugSummary" },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "occurrences": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/BugOccurrenceSummary" }
+                            }
+                        }
+                    }
+                ]
+            },
+            "ListReviewedBugsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/ReviewedBugSummary" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                }
+            },
+            "TestSummary": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "name": { "type": "string" },
+                    "type": { "type": "string", "enum": ["verification", "discovery", "task"] },
+                    "folder_id": { "type": "string", "format": "uuid", "nullable": true },
+                    "folder_path": { "type": "string", "description": "Resolved folder path. \"/\" if at root." }
+                }
+            },
+            "ListTestsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/TestSummary" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                }
+            },
+            "TestCase": {
+                "type": "object",
+                "description": "Full test case body. Shape varies by test_type (verification, discovery, task) — see the docs page for the exact shape.",
+                "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "project_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "version": { "type": "integer" },
+                    "tags": { "type": "array", "items": { "type": "string" } },
+                    "incident_auto_approve": { "type": "boolean" },
+                    "test_type": { "type": "string", "enum": ["verification", "discovery", "task"] },
+                    "quarantined": { "type": "boolean" },
+                    "testrail": { "type": "object", "nullable": true },
+                    "source": { "type": "string", "enum": ["repository", "bot"] },
+                    "players_by_key": { "type": "object", "additionalProperties": true },
+                    "player_order": { "type": "array", "items": { "type": "string" } }
+                }
+            },
+            "CreateTestRequest": {
+                "type": "object",
+                "required": ["test"],
+                "properties": {
+                    "test": { "$ref": "#/components/schemas/TestCase" },
+                    "folder_path": { "type": "string", "nullable": true, "description": "Folder path placement. \"/\" or null = root. Mutually exclusive with folder_id." },
+                    "folder_id": { "type": "string", "format": "uuid", "description": "Folder UUID placement. Mutually exclusive with folder_path." }
+                }
+            },
+            "UpdateTestRequest": {
+                "type": "object",
+                "required": ["expected_version", "patch"],
+                "properties": {
+                    "expected_version": { "type": "integer", "minimum": 0, "description": "Version returned by the most recent Get Test." },
+                    "patch": { "type": "object", "description": "Partial test body. Object fields are deep-merged; arrays are replaced wholesale." },
+                    "shared_collection_steps_mode": { "type": "string", "enum": ["error", "drop"], "default": "error" },
+                    "folder_path": { "type": "string", "nullable": true },
+                    "folder_id": { "type": "string", "format": "uuid" }
+                }
+            },
+            "DeleteTestRequest": {
+                "type": "object",
+                "properties": {
+                    "delete_associated_jobs": { "type": "boolean", "default": false },
+                    "force_delete": { "type": "boolean", "default": false }
+                }
+            },
+            "TestFolder": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "name": { "type": "string" },
+                    "path": { "type": "string" },
+                    "parent_path": { "type": "string", "nullable": true },
+                    "parent_folder_id": { "type": "string", "format": "uuid", "nullable": true },
+                    "description": { "type": "string", "nullable": true },
+                    "tags": { "type": "array", "items": { "type": "string" } },
+                    "created_at": { "type": "string", "format": "date-time" },
+                    "modified_at": { "type": "string", "format": "date-time" },
+                    "created_by_name": { "type": "string", "nullable": true },
+                    "modified_by_name": { "type": "string", "nullable": true }
+                }
+            },
+            "ListTestFoldersResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/TestFolder" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                }
+            },
+            "SharedStep": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "project_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "version": { "type": "integer" },
+                    "is_shared": { "type": "boolean" },
+                    "created_at": { "type": "string", "format": "date-time", "nullable": true },
+                    "created_by": { "type": "string", "nullable": true },
+                    "steps_by_key": { "type": "object", "additionalProperties": true },
+                    "step_order": { "type": "array", "items": { "type": "string" } }
+                }
+            },
+            "SharedStepSummary": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "project_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "steps_count": { "type": "integer" },
+                    "created_at": { "type": "string", "format": "date-time", "nullable": true },
+                    "created_by": { "type": "string", "nullable": true }
+                }
+            },
+            "ListSharedStepsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/SharedStepSummary" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                },
+                "required": ["data", "pagination"]
+            },
+            "CreateSharedStepRequest": {
+                "type": "object",
+                "required": ["shared_step"],
+                "properties": {
+                    "shared_step": {
+                        "type": "object",
+                        "required": ["name", "steps_by_key", "step_order"],
+                        "properties": {
+                            "id": { "type": "string", "description": "Optional - generated if omitted" },
+                            "name": { "type": "string" },
+                            "steps_by_key": { "type": "object", "additionalProperties": true },
+                            "step_order": { "type": "array", "items": { "type": "string" } }
+                        }
+                    }
+                }
+            },
+            "UpdateSharedStepRequest": {
+                "type": "object",
+                "required": ["expected_version", "patch"],
+                "properties": {
+                    "expected_version": { "type": "integer", "minimum": 0 },
+                    "patch": { "type": "object", "description": "Partial collection body. Cannot change id or is_shared." }
+                }
+            },
+            "CreateTestPlanRequest": {
+                "type": "object",
+                "required": ["test_plan"],
+                "properties": {
+                    "test_plan": {
+                        "type": "object",
+                        "required": ["name", "test_items"],
+                        "properties": {
+                            "id": { "type": "string", "format": "uuid", "description": "Optional - generated if omitted" },
+                            "name": { "type": "string" },
+                            "test_items": {
+                                "type": "array",
+                                "items": { "$ref": "#/components/schemas/TestPlanTestItem" }
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdateTestPlanRequest": {
+                "type": "object",
+                "required": ["patch"],
+                "properties": {
+                    "patch": { "type": "object", "description": "Partial test plan body. Object fields are deep-merged; arrays (including test_items) are replaced wholesale." }
+                }
+            },
+            "StartTestPlanRunRequest": {
+                "type": "object",
+                "required": ["deployment_config_id"],
+                "properties": {
+                    "deployment_config_id": { "type": "string", "format": "uuid" },
+                    "agent_config_id": { "type": "string", "format": "uuid" },
+                    "additional_tags": { "type": "array", "items": { "type": "string" } },
+                    "render_templates": { "type": "boolean", "default": false },
+                    "template_data": { "type": "object" },
+                    "options": { "$ref": "#/components/schemas/RunOptions" }
+                }
+            },
+            "AgentConfig": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "description": { "type": "string", "nullable": true },
+                    "pinned": { "type": "boolean" }
+                }
+            },
+            "ListAgentConfigsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/AgentConfig" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                }
+            },
+            "DeploymentConfig": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "description": { "type": "string", "nullable": true },
+                    "kind": { "type": "string", "description": "Platform kind (e.g. windows, macos, linux, android, ios, xbox, playstation)" },
+                    "pinned": { "type": "boolean" },
+                    "providerType": { "type": "string", "nullable": true }
+                }
+            },
+            "ListDeploymentConfigsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/DeploymentConfig" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                }
+            },
+            "CredentialKind": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "description": { "type": "string", "nullable": true },
+                    "exclusive": { "type": "boolean" }
+                }
+            },
+            "ListCredentialKindsResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/CredentialKind" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
                 }
             }
         },

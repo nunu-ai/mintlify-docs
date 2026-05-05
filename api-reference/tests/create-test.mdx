@@ -1,0 +1,119 @@
+---
+title: 'Create Test'
+openapi: 'POST /tests'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Create a new test case in your project. The shape of `test` depends on
+`test_type`; this endpoint accepts the same `verification` / `discovery` /
+`task` variants returned by [Get Test](/api-reference/tests/get-test).
+
+<Note>
+  By default, requests that include shared collection steps inline are
+  rejected with `400`. Pass `shared_collection_steps_mode=drop` to silently
+  drop the inline steps (they will be resolved from the shared step
+  collection at run time).
+</Note>
+
+## Query Parameters
+
+<ParamField query="include_shared_collection_steps" type="boolean" default="true">
+  Whether shared collection steps are expanded inline in the response.
+</ParamField>
+
+<ParamField query="shared_collection_steps_mode" type="string" default="error">
+  How to handle shared collection items that contain inline steps:
+  `error` (reject) or `drop` (silently strip the inline steps).
+</ParamField>
+
+## Request Body
+
+<ParamField body="test" type="TestCase" required>
+  Test definition. `id` may be omitted to have one generated. `version` is
+  ignored on create. See [Get Test](/api-reference/tests/get-test) for the
+  detailed shape.
+</ParamField>
+
+<ParamField body="folder_path" type="string">
+  Folder path to place the test in (e.g. `"regression/smoke"`). `null` or
+  `"/"` places it at the project root. Mutually exclusive with `folder_id`.
+</ParamField>
+
+<ParamField body="folder_id" type="string">
+  Pre-resolved folder UUID. Mutually exclusive with `folder_path`.
+</ParamField>
+
+## Response
+
+Returns the newly created test with status `201`. The response shape is
+identical to [Get Test](/api-reference/tests/get-test).
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/tests" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "test": {
+      "name": "Sanity smoke",
+      "test_type": "verification",
+      "tags": ["smoke"],
+      "incident_auto_approve": false,
+      "quarantined": false,
+      "testrail": null,
+      "players_by_key": {
+        "1": {
+          "name": "P1",
+          "agent_config_id": null,
+          "game_funcs_config_id": null,
+          "items_by_key": {
+            "1": {
+              "type": "step",
+              "goal": "Reach the main menu",
+              "finish_condition": "main menu is visible",
+              "min_seconds": 0,
+              "max_seconds": 60,
+              "screenshots": 1,
+              "pause_game": false,
+              "performance_monitoring": false,
+              "hint_manual": []
+            }
+          },
+          "item_order": ["1"]
+        }
+      },
+      "player_order": ["1"]
+    },
+    "folder_path": "regression/smoke"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": "a5060a07-d386-4269-98ce-b33fb894201e",
+  "project_id": "test",
+  "name": "Sanity smoke",
+  "version": 0,
+  "tags": ["smoke"],
+  "incident_auto_approve": false,
+  "test_type": "verification",
+  "quarantined": false,
+  "testrail": null,
+  "source": "repository",
+  "players_by_key": { "...": "..." },
+  "player_order": ["1"]
+}
+```
+
+```json 400 Bad Request
+{
+  "error": "invalid request: test.name: Required"
+}
+```
+</ResponseExample>

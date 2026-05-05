@@ -42,6 +42,13 @@ Integrate nunu.ai's AI-powered game testing into your development workflow.
   >
     Upload and manage game builds in nunu.ai's cloud storage
   </Card>
+  <Card
+    title="Outbound Webhooks"
+    icon="webhook"
+    href="/api-reference/webhooks/outbound-webhooks"
+  >
+    Receive completed test execution payloads in your own systems
+  </Card>
 </CardGroup>
 
 ## Quick Reference
@@ -64,6 +71,12 @@ Integrate nunu.ai's AI-powered game testing into your development workflow.
 | [`/builds/upload/parts`](/api-reference/builds/get-upload-parts) | GET | Get presigned URLs for upload parts |
 | [`/builds/upload/complete`](/api-reference/builds/complete-upload) | POST | Complete the upload |
 | [`/builds/upload`](/api-reference/builds/cancel-upload) | DELETE | Cancel an in-progress upload |
+
+### Webhooks
+
+| Topic | Description |
+| --- | --- |
+| [Outbound webhook payloads](/api-reference/webhooks/outbound-webhooks) | Receive completed test execution results, including multiplayer run state |
 
 ## Authentication
 

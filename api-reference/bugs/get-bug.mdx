@@ -1,0 +1,126 @@
+---
+title: 'Get Reviewed Bug'
+openapi: 'GET /bugs/{bugId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Retrieve a single reviewed bug along with every occurrence detected across runs.
+
+<Note>
+  Returns `403` if the project does not have the `bug_review` feature enabled.
+</Note>
+
+## Path Parameters
+
+<ParamField path="bugId" type="string" required>
+  The bug identifier (returned in the [List Reviewed Bugs](/api-reference/bugs/list-bugs) response)
+</ParamField>
+
+## Response
+
+The response includes every field on the [BugSummary](/api-reference/bugs/list-bugs)
+object, plus a list of `occurrences` describing each individual detection.
+
+<ResponseField name="occurrences" type="BugOccurrenceSummary[]" required>
+  Per-run occurrences of this bug
+
+  <Expandable title="BugOccurrenceSummary properties">
+    <ResponseField name="id" type="string" required>
+      Unique occurrence identifier
+    </ResponseField>
+    <ResponseField name="multiplayer_run_id" type="string" required>
+      Run in which this occurrence was detected
+    </ResponseField>
+    <ResponseField name="player_index" type="integer" required>
+      Player number that encountered the bug (0-indexed)
+    </ResponseField>
+    <ResponseField name="test_step" type="integer" required>
+      Test step number where the bug was detected
+    </ResponseField>
+    <ResponseField name="turn" type="integer" required>
+      Agent turn number when the bug was detected
+    </ResponseField>
+    <ResponseField name="detected_at" type="string" required>
+      ISO 8601 timestamp when the bug was detected
+    </ResponseField>
+    <ResponseField name="reviewed_at" type="string">
+      ISO 8601 timestamp when this occurrence was reviewed (if reviewed)
+    </ResponseField>
+    <ResponseField name="reviewed_by" type="string">
+      Who reviewed this occurrence
+    </ResponseField>
+    <ResponseField name="review_comment" type="string">
+      Optional review comment
+    </ResponseField>
+    <ResponseField name="title" type="string" required>
+      Title at the time of detection
+    </ResponseField>
+    <ResponseField name="test_name" type="string">
+      Name of the test the run was executing
+    </ResponseField>
+    <ResponseField name="test_version" type="integer">
+      Version of the test the run was executing
+    </ResponseField>
+    <ResponseField name="test_plan_name" type="string">
+      Test plan name (if the run was part of a test plan execution)
+    </ResponseField>
+    <ResponseField name="severity" type="string" required>
+      Severity at the time of detection
+    </ResponseField>
+    <ResponseField name="category" type="string" required>
+      Category at the time of detection
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/bugs/bug_8a1b2c3d" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "bug_8a1b2c3d",
+  "project_id": "test",
+  "title": "Inventory icon flickers when opening menu",
+  "description": "When the inventory menu is opened quickly after a level transition, the inventory icon briefly flickers in and out.",
+  "reproduction_steps": "1. Complete a level. 2. Press the inventory button immediately after the transition.",
+  "severity": "medium",
+  "category": "ui",
+  "confidence": "high",
+  "tags": ["ui", "menu"],
+  "details": null,
+  "status": "active",
+  "suppress_reporting": false,
+  "occurrence_count": 2,
+  "created_at": "2026-04-01T10:00:00.000000+00:00",
+  "created_by": "reviewer@example.com",
+  "occurrences": [
+    {
+      "id": "occ_1",
+      "multiplayer_run_id": "lkkg6t5612m",
+      "player_index": 0,
+      "test_step": 3,
+      "turn": 12,
+      "detected_at": "2026-04-01T09:55:01.000000+00:00",
+      "reviewed_at": "2026-04-01T10:00:00.000000+00:00",
+      "reviewed_by": "reviewer@example.com",
+      "review_comment": "confirmed",
+      "title": "Inventory icon flickers when opening menu",
+      "test_name": "Inventory smoke",
+      "test_version": 4,
+      "test_plan_name": "Nightly Smoke",
+      "severity": "medium",
+      "category": "ui"
+    }
+  ]
+}
+```
+</ResponseExample>

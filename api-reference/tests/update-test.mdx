@@ -1,0 +1,117 @@
+---
+title: 'Update Test'
+openapi: 'PATCH /tests/{testId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Apply a partial update to a test case. Updates are protected by an optimistic
+version check — supply the `version` you fetched from
+[Get Test](/api-reference/tests/get-test) as `expected_version`. If the test
+has been modified since, the update fails with a `409 Conflict` and the latest
+version is returned so the caller can rebase.
+
+The `patch` field is deep-merged into the current test body. To replace a list
+(e.g. `tags` or `player_order`), include the full new list — arrays are
+replaced, not merged.
+
+## Path Parameters
+
+<ParamField path="testId" type="string" required>
+  The test ID (UUID)
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="include_shared_collection_steps" type="boolean" default="true">
+  Whether shared collection steps are expanded inline in the response.
+</ParamField>
+
+## Request Body
+
+<ParamField body="expected_version" type="integer" required>
+  The version returned by the most recent [Get Test](/api-reference/tests/get-test).
+  Must be a non-negative integer.
+</ParamField>
+
+<ParamField body="patch" type="object" required>
+  Partial test body. Object fields are deep-merged; arrays are replaced wholesale.
+  Cannot change the test `id`.
+</ParamField>
+
+<ParamField body="shared_collection_steps_mode" type="string" default="error">
+  How to handle shared collection items that contain inline steps in the patch:
+  `error` (reject) or `drop` (silently strip the inline steps).
+</ParamField>
+
+<ParamField body="folder_path" type="string">
+  New folder placement. `null` or `"/"` moves the test to the project root.
+  Mutually exclusive with `folder_id`. Omit both fields to leave folder unchanged.
+</ParamField>
+
+<ParamField body="folder_id" type="string">
+  Pre-resolved folder UUID. Mutually exclusive with `folder_path`.
+</ParamField>
+
+## Response
+
+Returns the updated test (same shape as [Get Test](/api-reference/tests/get-test))
+on success.
+
+On version conflict, returns `409` with:
+
+```json
+{
+  "error": "version conflict",
+  "expected_version": 3,
+  "latest_version": 5
+}
+```
+
+<RequestExample>
+```bash cURL (rename test)
+curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expected_version": 4,
+    "patch": { "name": "Sanity smoke v2", "tags": ["smoke", "regression"] }
+  }'
+```
+
+```bash cURL (move folder)
+curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expected_version": 4,
+    "patch": {},
+    "folder_path": "regression/full"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "a5060a07-d386-4269-98ce-b33fb894201e",
+  "project_id": "test",
+  "name": "Sanity smoke v2",
+  "version": 5,
+  "tags": ["smoke", "regression"],
+  "test_type": "verification",
+  "...": "..."
+}
+```
+
+```json 409 Conflict
+{
+  "error": "version conflict",
+  "expected_version": 4,
+  "latest_version": 5
+}
+```
+</ResponseExample>

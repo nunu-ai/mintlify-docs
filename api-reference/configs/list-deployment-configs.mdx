@@ -1,0 +1,92 @@
+---
+title: 'List Deployment Configs'
+openapi: 'GET /deployment-configs'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:view-configs`
+</Info>
+
+Retrieve a paginated list of deployment configurations for your project. Use
+this endpoint to discover valid `deployment_config_id` values for
+[Start a Run](/api-reference/runs/start-run) and
+[Start Test Plan Run](/api-reference/test-plans/start-test-plan-run).
+
+## Query Parameters
+
+<ParamField query="page" type="integer" default="0">
+  Page number (0-indexed)
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="25">
+  Results per page (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="DeploymentConfig[]" required>
+  Array of deployment config objects
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Pagination metadata (`page`, `page_size`, `total_count`, `total_pages`)
+</ResponseField>
+
+### DeploymentConfig Object
+
+<ResponseField name="id" type="string" required>
+  Deployment config ID (use as `deployment_config_id` when starting runs)
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Deployment config name
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Optional description
+</ResponseField>
+
+<ResponseField name="kind" type="string" required>
+  Platform kind (e.g. `windows`, `macos`, `linux`, `android`, `ios`,
+  `xbox`, `playstation`)
+</ResponseField>
+
+<ResponseField name="pinned" type="boolean" required>
+  Whether the config is pinned
+</ResponseField>
+
+<ResponseField name="providerType" type="string">
+  Underlying build provider (e.g. `build-storage`, `direct-url`), or `null` if
+  unknown
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/deployment-configs?page=0&page_size=25" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "id": "456e7890-e89b-12d3-a456-426614174000",
+      "name": "Android prod",
+      "description": "Build storage based android deployment",
+      "kind": "android",
+      "pinned": true,
+      "providerType": "build-storage"
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 25,
+    "total_count": 1,
+    "total_pages": 1
+  }
+}
+```
+</ResponseExample>

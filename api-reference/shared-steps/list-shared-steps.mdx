@@ -1,0 +1,93 @@
+---
+title: 'List Shared Steps'
+openapi: 'GET /shared-steps'
+noindex: true
+---
+
+<Info>
+  **Authentication**: Any authenticated API key
+</Info>
+
+Retrieve a paginated list of shared step collections for your project. Shared
+steps are reusable groups of test steps that can be referenced from any
+verification test.
+
+The response is intentionally lean (no step bodies) — fetch
+[Get Shared Step](/api-reference/shared-steps/get-shared-step) for the full
+contents of a specific collection.
+
+## Query Parameters
+
+<ParamField query="page" type="integer" default="0">
+  Page number (0-indexed)
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="25">
+  Results per page (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="SharedStepSummary[]" required>
+  Array of shared step summary objects
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Pagination metadata (`page`, `page_size`, `total_count`, `total_pages`)
+</ResponseField>
+
+### SharedStepSummary Object
+
+<ResponseField name="id" type="string" required>
+  Shared step collection ID
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project the collection belongs to
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Shared step collection name
+</ResponseField>
+
+<ResponseField name="steps_count" type="integer" required>
+  Number of steps in the collection
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp when the collection was created
+</ResponseField>
+
+<ResponseField name="created_by" type="string">
+  Who created the collection
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/shared-steps?page=0&page_size=25" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "id": "ssc_login",
+      "project_id": "test",
+      "name": "Login Flow",
+      "steps_count": 3,
+      "created_at": "2026-03-01T10:00:00.000000+00:00",
+      "created_by": "user@example.com"
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 25,
+    "total_count": 1,
+    "total_pages": 1
+  }
+}
+```
+</ResponseExample>

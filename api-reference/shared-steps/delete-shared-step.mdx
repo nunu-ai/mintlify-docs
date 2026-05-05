@@ -1,0 +1,46 @@
+---
+title: 'Delete Shared Step'
+openapi: 'DELETE /shared-steps/{sharedStepId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Permanently delete a shared step collection from your project. The deletion is
+rejected with `409` if any tests still reference the collection — update or
+delete those tests first.
+
+## Path Parameters
+
+<ParamField path="sharedStepId" type="string" required>
+  The shared step collection ID
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string" required>
+  ID of the deleted shared step (echoes the path param)
+</ResponseField>
+
+<ResponseField name="deleted" type="boolean" required>
+  Always `true` on success
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://nunu.ai/api/v1/shared-steps/ssc_login" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{ "id": "ssc_login", "deleted": true }
+```
+
+```json 409 Conflict
+{ "error": "cannot delete shared step that is referenced by tests" }
+```
+</ResponseExample>

@@ -1,0 +1,80 @@
+---
+title: 'List Agent Configs'
+openapi: 'GET /agent-configs'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:view-configs`
+</Info>
+
+Retrieve a paginated list of agent configurations for your project. Use this
+endpoint to discover valid `agent_config_id` values for
+[Start a Run](/api-reference/runs/start-run) and
+[Start Test Plan Run](/api-reference/test-plans/start-test-plan-run).
+
+## Query Parameters
+
+<ParamField query="page" type="integer" default="0">
+  Page number (0-indexed)
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="25">
+  Results per page (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="AgentConfig[]" required>
+  Array of agent config objects
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Pagination metadata (`page`, `page_size`, `total_count`, `total_pages`)
+</ResponseField>
+
+### AgentConfig Object
+
+<ResponseField name="id" type="string" required>
+  Agent config ID (use this as `agent_config_id` when starting runs)
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Agent config name
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Optional description
+</ResponseField>
+
+<ResponseField name="pinned" type="boolean" required>
+  Whether the config is pinned (pinned items are returned first)
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/agent-configs?page=0&page_size=25" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "id": "ac_default",
+      "name": "default agent",
+      "description": "Project default agent",
+      "pinned": true
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 25,
+    "total_count": 1,
+    "total_pages": 1
+  }
+}
+```
+</ResponseExample>
