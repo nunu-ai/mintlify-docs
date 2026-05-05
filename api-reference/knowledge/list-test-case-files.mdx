@@ -1,0 +1,126 @@
+---
+title: 'List Test-Case-Scope Knowledge'
+openapi: 'GET /file-storage/{projectId}/test_case/{testCaseId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: any API key scoped to the requested project
+</Info>
+
+<Note>
+  Knowledge endpoints are served by the **bouncer** service at
+  `https://bouncer.nunu.ai`, not the main `nunu.ai/api/v1` host. Use the same
+  `X-Api-Key` header for authentication.
+</Note>
+
+Returns the files stored under `test_case/{testCaseId}/` for the given
+project. These are reference files attached to a specific test case—nunu
+delivers them to runs that execute that test.
+
+To get project-, agent-, and test-case-scope files in a single call, use
+[List Knowledge Files](/api-reference/knowledge/list-files) instead.
+
+## Path Parameters
+
+<ParamField path="projectId" type="string" required>
+  The nunu.ai project ID. Must match the project the API key is scoped to.
+</ParamField>
+
+<ParamField path="testCaseId" type="string" required>
+  The test case ID whose files you want to list.
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="include_metadata" type="boolean" default="false">
+  When `true`, attach parsed metadata (`description`, `summary`, `keywords`)
+  for each file from its `.{name}.meta.json` sidecar.
+</ParamField>
+
+## Response
+
+<ResponseField name="projectId" type="string" required>
+  Echo of the path parameter.
+</ResponseField>
+
+<ResponseField name="scope" type="string" required>
+  Always `"test_case"` for this endpoint.
+</ResponseField>
+
+<ResponseField name="testCaseId" type="string" required>
+  Echo of the path parameter.
+</ResponseField>
+
+<ResponseField name="count" type="integer" required>
+  Number of files returned.
+</ResponseField>
+
+<ResponseField name="files" type="File[]" required>
+  Files in the test case scope. See
+  [List Knowledge Files](/api-reference/knowledge/list-files#file-object) for
+  the full file shape.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET \
+  "https://bouncer.nunu.ai/file-storage/my-project/test_case/t1t2t3?include_metadata=true" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const projectId = "my-project";
+const testCaseId = "t1t2t3";
+
+const response = await fetch(
+  `https://bouncer.nunu.ai/file-storage/${projectId}/test_case/${testCaseId}?include_metadata=true`,
+  {
+    headers: {
+      "X-Api-Key": process.env.NUNU_API_TOKEN,
+    },
+  }
+);
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+project_id = "my-project"
+test_case_id = "t1t2t3"
+
+response = requests.get(
+    f"https://bouncer.nunu.ai/file-storage/{project_id}/test_case/{test_case_id}",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
+    params={"include_metadata": True},
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "projectId": "my-project",
+  "scope": "test_case",
+  "testCaseId": "t1t2t3",
+  "count": 1,
+  "files": [
+    {
+      "filename": "expected-flow.md",
+      "path": "expected-flow.md",
+      "size": 2048,
+      "uploaded": "2026-04-12T10:40:00.000Z",
+      "etag": "2c3d4e5f60718a3b4c5d6e7f80909a1b",
+      "metadata": {
+        "description": "Expected user flow for this test",
+        "summary": "Steps and acceptance criteria",
+        "keywords": ["flow", "acceptance"]
+      }
+    }
+  ]
+}
+```
+</ResponseExample>

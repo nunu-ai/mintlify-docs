@@ -23,6 +23,12 @@ https://nunu.ai/api/v1
   <Card title="Builds" icon="box" href="/api-reference/builds/initiate-upload">
     Upload and manage builds in nunu.ai's cloud storage
   </Card>
+  <Card title="Artifacts" icon="folder-open" href="/api-reference/artifacts/list-artifacts">
+    List and download recordings, logs, and deliverables produced by a run
+  </Card>
+  <Card title="Knowledge" icon="book" href="/api-reference/knowledge/list-files">
+    Read knowledge files attached to your project, agents, and test cases
+  </Card>
   <Card title="Outbound Webhooks" icon="webhook" href="/api-reference/webhooks/outbound-webhooks">
     Receive completed test execution payloads in your own systems
   </Card>
@@ -46,6 +52,26 @@ https://nunu.ai/api/v1
 | [`/builds/upload/parts`](/api-reference/builds/get-upload-parts) | GET | Get presigned URLs for multipart upload |
 | [`/builds/upload/complete`](/api-reference/builds/complete-upload) | POST | Complete an upload |
 | [`/builds/upload`](/api-reference/builds/cancel-upload) | DELETE | Cancel an in-progress upload |
+
+### Artifacts Endpoints
+
+Served by the **bouncer** service at `https://bouncer.nunu.ai` (not `nunu.ai/api/v1`). Authenticated with the same `X-Api-Key` header.
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/runs/{runId}/artifacts`](/api-reference/artifacts/list-artifacts) | GET | List all artifacts produced by a run |
+| [`/runs/{runId}/artifacts/{filename}`](/api-reference/artifacts/get-artifact) | GET | Download a single artifact file |
+
+### Knowledge Endpoints
+
+Served by the **bouncer** service at `https://bouncer.nunu.ai` (not `nunu.ai/api/v1`). Authenticated with the same `X-Api-Key` header.
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| [`/file-storage/{projectId}`](/api-reference/knowledge/list-files) | GET | List project files, optionally combined with agent/test-case scopes |
+| [`/file-storage/{projectId}/project`](/api-reference/knowledge/list-project-files) | GET | List project-scope knowledge files |
+| [`/file-storage/{projectId}/agent/{agentId}`](/api-reference/knowledge/list-agent-files) | GET | List agent-scope knowledge files |
+| [`/file-storage/{projectId}/test_case/{testCaseId}`](/api-reference/knowledge/list-test-case-files) | GET | List test-case-scope knowledge files |
 
 ### Webhooks
 

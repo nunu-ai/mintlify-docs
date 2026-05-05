@@ -64,6 +64,22 @@
                         ]
                     },
                     {
+                        "group": "Artifacts",
+                        "pages": [
+                            "api-reference/artifacts/list-artifacts",
+                            "api-reference/artifacts/get-artifact"
+                        ]
+                    },
+                    {
+                        "group": "Knowledge",
+                        "pages": [
+                            "api-reference/knowledge/list-files",
+                            "api-reference/knowledge/list-project-files",
+                            "api-reference/knowledge/list-agent-files",
+                            "api-reference/knowledge/list-test-case-files"
+                        ]
+                    },
+                    {
                         "group": "Tests",
                         "pages": [
                             "api-reference/tests/list-tests",

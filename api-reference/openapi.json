@@ -1689,6 +1689,299 @@
                     "403": { "description": "Forbidden - missing project:view-configs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
                 }
             }
+        },
+        "/runs/{runId}/artifacts": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "listRunArtifacts",
+                "summary": "List Run Artifacts",
+                "description": "List all artifact files (recordings, logs, deliverables) produced by a single run. Each entry includes a download URL pointing back to the Get Artifact File endpoint.",
+                "tags": ["Artifacts"],
+                "parameters": [
+                    {
+                        "name": "runId",
+                        "in": "path",
+                        "required": true,
+                        "description": "Composite run ID, in the format {multiplayerRunId}-{playerNumber} (e.g. lkkg6t5612m-1).",
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ListRunArtifactsResponse" }
+                            }
+                        }
+                    },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the run's project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Run not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/runs/{runId}/artifacts/{filename}": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "getRunArtifact",
+                "summary": "Get Artifact File",
+                "description": "Stream a single artifact file produced by a run. The response body is the raw file bytes (not JSON). Range requests, conditional requests via ETag, and presigned redirects for large media files (e.g. .mp4 recordings) are supported.",
+                "tags": ["Artifacts"],
+                "parameters": [
+                    {
+                        "name": "runId",
+                        "in": "path",
+                        "required": true,
+                        "description": "Composite run ID, in the format {multiplayerRunId}-{playerNumber}.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "filename",
+                        "in": "path",
+                        "required": true,
+                        "description": "Artifact filename, exactly as returned by List Run Artifacts. May include subdirectories (e.g. deliverables/report.json).",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "Range",
+                        "in": "header",
+                        "required": false,
+                        "description": "Standard HTTP range header. Returns 206 for satisfiable ranges and 416 otherwise.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "If-None-Match",
+                        "in": "header",
+                        "required": false,
+                        "description": "Send the ETag from a previous response to receive 304 Not Modified when the file has not changed.",
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full file body. Content-Type is set based on the artifact's stored type.",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": { "type": "string", "format": "binary" }
+                            }
+                        }
+                    },
+                    "206": { "description": "Partial content (response to a Range request)" },
+                    "302": { "description": "Redirect to a presigned URL (typically for large media files)" },
+                    "304": { "description": "Not modified (when If-None-Match matches the current ETag)" },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the run's project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "Artifact does not exist or is hidden from the requesting key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "416": { "description": "Requested range cannot be satisfied" }
+                }
+            }
+        },
+        "/file-storage/{projectId}": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "listKnowledgeFiles",
+                "summary": "List Knowledge Files",
+                "description": "List knowledge files for a project. Always returns project-scope files; conditionally includes agent- and/or test-case-scope files when their IDs are passed as query parameters.",
+                "tags": ["Knowledge"],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The nunu.ai project ID. Must match the project the API key is scoped to.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "agent_id",
+                        "in": "query",
+                        "required": false,
+                        "description": "Include files from agent/{agent_id}/ in the response.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "test_case_id",
+                        "in": "query",
+                        "required": false,
+                        "description": "Include files from test_case/{test_case_id}/ in the response.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "include_metadata",
+                        "in": "query",
+                        "required": false,
+                        "description": "When true, attach parsed metadata (description, summary, keywords) for each file from its .{name}.meta.json sidecar.",
+                        "schema": { "type": "boolean", "default": false }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ListKnowledgeFilesResponse" }
+                            }
+                        }
+                    },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the requested project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/file-storage/{projectId}/project": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "listProjectKnowledgeFiles",
+                "summary": "List Project-Scope Knowledge",
+                "description": "List the knowledge files stored under the project's project/ prefix only. These files are visible to every run in the project.",
+                "tags": ["Knowledge"],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The nunu.ai project ID. Must match the project the API key is scoped to.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "include_metadata",
+                        "in": "query",
+                        "required": false,
+                        "description": "When true, attach parsed metadata (description, summary, keywords) for each file from its .{name}.meta.json sidecar.",
+                        "schema": { "type": "boolean", "default": false }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ListProjectKnowledgeFilesResponse" }
+                            }
+                        }
+                    },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the requested project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/file-storage/{projectId}/agent/{agentId}": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "listAgentKnowledgeFiles",
+                "summary": "List Agent-Scope Knowledge",
+                "description": "List the knowledge files attached to a specific agent configuration in the given project.",
+                "tags": ["Knowledge"],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The nunu.ai project ID. Must match the project the API key is scoped to.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "agentId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The agent ID whose files you want to list.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "include_metadata",
+                        "in": "query",
+                        "required": false,
+                        "description": "When true, attach parsed metadata (description, summary, keywords) for each file from its .{name}.meta.json sidecar.",
+                        "schema": { "type": "boolean", "default": false }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ListAgentKnowledgeFilesResponse" }
+                            }
+                        }
+                    },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the requested project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
+        },
+        "/file-storage/{projectId}/test_case/{testCaseId}": {
+            "servers": [
+                {
+                    "url": "https://bouncer.nunu.ai",
+                    "description": "Bouncer service (artifact and knowledge delivery)"
+                }
+            ],
+            "get": {
+                "operationId": "listTestCaseKnowledgeFiles",
+                "summary": "List Test-Case-Scope Knowledge",
+                "description": "List the knowledge files attached to a specific test case in the given project.",
+                "tags": ["Knowledge"],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The nunu.ai project ID. Must match the project the API key is scoped to.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "testCaseId",
+                        "in": "path",
+                        "required": true,
+                        "description": "The test case ID whose files you want to list.",
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "name": "include_metadata",
+                        "in": "query",
+                        "required": false,
+                        "description": "When true, attach parsed metadata (description, summary, keywords) for each file from its .{name}.meta.json sidecar.",
+                        "schema": { "type": "boolean", "default": false }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ListTestCaseKnowledgeFilesResponse" }
+                            }
+                        }
+                    },
+                    "401": { "description": "Unauthorized - missing or invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "Forbidden - API key does not match the requested project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+                }
+            }
         }
     },
     "components": {
@@ -1704,6 +1997,193 @@
                     },
                     "details": {
                         "type": "object"
+                    }
+                }
+            },
+            "RunArtifact": {
+                "type": "object",
+                "required": ["filename", "url", "size", "uploaded", "etag"],
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "Artifact filename, including any subdirectories the agent created (e.g. deliverables/report.json)."
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Absolute URL to download the artifact. Authenticate the same way you authenticated this list call."
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "File size in bytes."
+                    },
+                    "uploaded": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "ISO 8601 timestamp when the artifact was written to storage."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Object ETag, useful for caching and conditional requests."
+                    }
+                }
+            },
+            "ListRunArtifactsResponse": {
+                "type": "object",
+                "required": ["artifacts"],
+                "properties": {
+                    "runId": {
+                        "type": "string",
+                        "description": "Echo of the path parameter. Omitted when the run has no artifacts."
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Number of artifacts returned. Omitted when the run has no artifacts."
+                    },
+                    "artifacts": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/RunArtifact" }
+                    }
+                }
+            },
+            "KnowledgeFileMetadata": {
+                "type": "object",
+                "description": "Parsed metadata from the .{filename}.meta.json sidecar.",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Free-form description of the file."
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Short summary used by agents to decide whether to read the file."
+                    },
+                    "keywords": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Searchable keywords associated with the file."
+                    }
+                }
+            },
+            "KnowledgeFile": {
+                "type": "object",
+                "required": ["filename", "path", "size", "uploaded", "etag"],
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "Basename of the file (no directory prefix)."
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Path of the file relative to the scope root (may include subdirectories)."
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "File size in bytes."
+                    },
+                    "uploaded": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "ISO 8601 timestamp when the file was last written."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Object ETag."
+                    },
+                    "metadata": {
+                        "$ref": "#/components/schemas/KnowledgeFileMetadata",
+                        "description": "Only present when include_metadata=true and a sidecar metadata file exists."
+                    }
+                }
+            },
+            "KnowledgeFileSection": {
+                "type": "object",
+                "required": ["scope", "count", "files"],
+                "properties": {
+                    "scope": {
+                        "type": "string",
+                        "enum": ["project", "agent", "test_case"],
+                        "description": "Scope of this section."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "The agent or test case ID. Omitted for the project section."
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Number of files in this section."
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/KnowledgeFile" }
+                    }
+                }
+            },
+            "ListKnowledgeFilesResponse": {
+                "type": "object",
+                "required": ["projectId", "count", "sections"],
+                "properties": {
+                    "projectId": {
+                        "type": "string",
+                        "description": "Echo of the path parameter."
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Total number of files across all included sections."
+                    },
+                    "sections": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/KnowledgeFileSection" },
+                        "description": "One section per scope returned. The project section is always present; other sections only appear when their query param is set."
+                    }
+                }
+            },
+            "ListProjectKnowledgeFilesResponse": {
+                "type": "object",
+                "required": ["projectId", "scope", "count", "files"],
+                "properties": {
+                    "projectId": { "type": "string" },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["project"]
+                    },
+                    "count": { "type": "integer" },
+                    "files": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/KnowledgeFile" }
+                    }
+                }
+            },
+            "ListAgentKnowledgeFilesResponse": {
+                "type": "object",
+                "required": ["projectId", "scope", "agentId", "count", "files"],
+                "properties": {
+                    "projectId": { "type": "string" },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["agent"]
+                    },
+                    "agentId": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "files": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/KnowledgeFile" }
+                    }
+                }
+            },
+            "ListTestCaseKnowledgeFilesResponse": {
+                "type": "object",
+                "required": ["projectId", "scope", "testCaseId", "count", "files"],
+                "properties": {
+                    "projectId": { "type": "string" },
+                    "scope": {
+                        "type": "string",
+                        "enum": ["test_case"]
+                    },
+                    "testCaseId": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "files": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/KnowledgeFile" }
                     }
                 }
             },
