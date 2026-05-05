@@ -45,8 +45,7 @@
                             "api-reference/runs/get-run",
                             "api-reference/runs/get-live-run",
                             "api-reference/runs/list-bugs",
-                            "api-reference/runs/stop-runs",
-                            "api-reference/runs/export-runs"
+                            "api-reference/runs/stop-runs"
                         ]
                     },
                     {
@@ -174,7 +173,12 @@
         }
     },
     "contextual": {
-        "options": ["copy", "chatgpt", "claude", "perplexity"]
+        "options": [
+            "copy",
+            "chatgpt",
+            "claude",
+            "perplexity"
+        ]
     },
     "footer": {
         "socials": {
