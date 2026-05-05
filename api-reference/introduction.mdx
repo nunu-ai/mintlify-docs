@@ -29,9 +29,6 @@ https://nunu.ai/api/v1
   <Card title="Knowledge" icon="book" href="/api-reference/knowledge/list-files">
     Read knowledge files attached to your project, agents, and test cases
   </Card>
-  <Card title="Outbound Webhooks" icon="webhook" href="/api-reference/webhooks/outbound-webhooks">
-    Receive completed test execution payloads in your own systems
-  </Card>
 </CardGroup>
 
 ### Runs Endpoints
@@ -72,12 +69,6 @@ Served by the **bouncer** service at `https://bouncer.nunu.ai` (not `nunu.ai/api
 | [`/file-storage/{projectId}/project`](/api-reference/knowledge/list-project-files) | GET | List project-scope knowledge files |
 | [`/file-storage/{projectId}/agent/{agentId}`](/api-reference/knowledge/list-agent-files) | GET | List agent-scope knowledge files |
 | [`/file-storage/{projectId}/test_case/{testCaseId}`](/api-reference/knowledge/list-test-case-files) | GET | List test-case-scope knowledge files |
-
-### Webhooks
-
-| Topic | Description |
-| --- | --- |
-| [Outbound webhook payloads](/api-reference/webhooks/outbound-webhooks) | Receive completed test execution results, including multiplayer run state |
 
 ## Authentication
 
