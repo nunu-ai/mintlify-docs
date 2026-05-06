@@ -1,0 +1,81 @@
+---
+title: 'Create Shared Step'
+openapi: 'POST /shared-steps'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Create a new shared step collection in your project. Once created, the
+collection can be referenced from any verification test by adding a
+`{ "type": "collection", "collection_id": "..." }` item.
+
+## Request Body
+
+<ParamField body="shared_step" type="object" required>
+  Shared step definition
+
+  <Expandable title="shared_step properties">
+    <ParamField body="shared_step.id" type="string">
+      Optional ID. If omitted, a UUID is generated.
+    </ParamField>
+    <ParamField body="shared_step.name" type="string" required>
+      Collection name
+    </ParamField>
+    <ParamField body="shared_step.steps_by_key" type="object" required>
+      Map of step key → step body. Same shape as in test cases.
+    </ParamField>
+    <ParamField body="shared_step.step_order" type="string[]" required>
+      Ordered list of step keys
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the newly created shared step with status `201`. Same shape as
+[Get Shared Step](/api-reference/shared-steps/get-shared-step).
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/shared-steps" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shared_step": {
+      "name": "Login Flow",
+      "steps_by_key": {
+        "1": {
+          "goal": "Open login screen",
+          "finish_condition": "login fields are visible",
+          "min_seconds": 0,
+          "max_seconds": 30,
+          "screenshots": 1,
+          "pause_game": false,
+          "performance_monitoring": false,
+          "hint_manual": []
+        }
+      },
+      "step_order": ["1"]
+    }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": "ssc_abc123",
+  "project_id": "test",
+  "name": "Login Flow",
+  "version": 0,
+  "is_shared": true,
+  "created_at": null,
+  "created_by": null,
+  "steps_by_key": { "1": { "...": "..." } },
+  "step_order": ["1"]
+}
+```
+</ResponseExample>

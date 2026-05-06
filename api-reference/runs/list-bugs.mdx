@@ -18,12 +18,15 @@ Retrieve all bugs detected during a specific run.
 
 ## Response
 
-<ResponseField name="multiplayer_run_id" type="string" required>
-  The run ID this bug list belongs to
+<ResponseField name="data" type="BugOccurrence[]" required>
+  Array of bug occurrences found during the run
 </ResponseField>
 
-<ResponseField name="bug_occurrences" type="BugOccurrence[]" required>
-  Array of bug occurrences found during the run
+<ResponseField name="pagination" type="object" required>
+  Pagination metadata (`page`, `page_size`, `total_count`, `total_pages`).
+  Bug occurrences per run are naturally bounded, so the response always
+  returns the full list in a single page — the envelope is kept to match the
+  shape of other list routes.
 </ResponseField>
 
 ### Bug Occurrence Object
@@ -131,8 +134,7 @@ data = response.json()
 <ResponseExample>
 ```json 200
 {
-  "multiplayer_run_id": "lkkg6t5612m",
-  "bug_occurrences": [
+  "data": [
     {
       "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       "bug_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -151,7 +153,13 @@ data = response.json()
         "element_id": "btn_start_game"
       }
     }
-  ]
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 1,
+    "total_count": 1,
+    "total_pages": 1
+  }
 }
 ```
 </ResponseExample>
@@ -193,7 +201,7 @@ def get_recent_bugs(limit=10):
         )
         bugs_data = bugs_response.json()
         
-        for bug in bugs_data["bug_occurrences"]:
+        for bug in bugs_data["data"]:
             all_bugs.append({
                 "run_id": run_id,
                 "test_name": run["test"]["name"],
@@ -227,9 +235,9 @@ async function getRecentBugs(limit = 10) {
       `${BASE_URL}/runs/${run.multiplayer_run_id}/bugs`,
       { headers }
     );
-    const { bug_occurrences } = await bugsResponse.json();
+    const { data: bugOccurrences } = await bugsResponse.json();
     
-    for (const bug of bug_occurrences) {
+    for (const bug of bugOccurrences) {
       allBugs.push({
         run_id: run.multiplayer_run_id,
         test_name: run.test.name,

@@ -1,0 +1,99 @@
+---
+title: 'Start Test Plan Run'
+openapi: 'POST /test-plans/{testPlanId}/runs'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:operate-runs`
+</Info>
+
+Start a run for a specific test plan. This is the test-plan-scoped equivalent
+of [Start a Run](/api-reference/runs/start-run) — instead of supplying
+`test_plan_id` in the body, the plan is identified by the URL path.
+
+The response contains one `job_id` per test in the plan; poll each one with
+[Get Job Details](/api-reference/jobs/get-job) to wait for completion.
+
+## Path Parameters
+
+<ParamField path="testPlanId" type="string" required>
+  The test plan ID (UUID)
+</ParamField>
+
+## Request Body
+
+<ParamField body="deployment_config_id" type="string" required>
+  UUID of the deployment configuration to use for every test in the plan.
+</ParamField>
+
+<ParamField body="agent_config_id" type="string">
+  UUID of an agent configuration applied to every test in the plan.
+</ParamField>
+
+<ParamField body="additional_tags" type="string[]">
+  Tags appended to every resulting run.
+</ParamField>
+
+<ParamField body="render_templates" type="boolean" default="false">
+  Enable Handlebars-style templating in test step bodies.
+</ParamField>
+
+<ParamField body="template_data" type="object">
+  Key-value pairs for template variables. Used only when `render_templates` is `true`.
+</ParamField>
+
+<ParamField body="options" type="object">
+  Test execution overrides — same shape as `options` on
+  [Start a Run](/api-reference/runs/start-run) (`min_time_seconds`,
+  `max_time_seconds`, `performance_monitoring`, `mobile_auto_grant_permissions`,
+  `mobile_geolocation`, `mobile_gpslocation`).
+</ParamField>
+
+## Response
+
+Returns `201 Created` on success. The body contains the started-run data
+directly (no `{ ok, status, message, data }` envelope) — typically including
+`job_ids[]` (one per test in the plan) and `test_plan_execution_id`, so the
+caller can correlate results via
+[List Test Plan Executions](/api-reference/test-plans/list-test-plan-executions).
+
+<ResponseField name="job_ids" type="string[]" required>
+  Job IDs created for each test in the plan
+</ResponseField>
+
+<ResponseField name="test_plan_execution_id" type="string">
+  ID of the test plan execution
+</ResponseField>
+
+On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status.
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "additional_tags": ["nightly"]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "job_ids": [
+    "cc6e3994-a714-4b6b-9879-0b3e53c0a3af",
+    "dd1e4a55-b825-4c8b-baaf-1d4e63d1b4be"
+  ],
+  "test_plan_execution_id": "abc12345-6789-def0-1234-56789abcdef0"
+}
+```
+
+```json 404 Not Found
+{
+  "error": "test plan not found"
+}
+```
+</ResponseExample>

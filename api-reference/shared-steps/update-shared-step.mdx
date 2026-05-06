@@ -1,0 +1,83 @@
+---
+title: 'Update Shared Step'
+openapi: 'PATCH /shared-steps/{sharedStepId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Apply a partial update to a shared step collection. Like
+[Update Test](/api-reference/tests/update-test), this endpoint enforces an
+optimistic version check via `expected_version`, returning `409` if the
+collection has been modified since the version you fetched.
+
+The `patch` field is deep-merged into the current collection. Arrays
+(including `step_order`) are replaced wholesale.
+
+## Path Parameters
+
+<ParamField path="sharedStepId" type="string" required>
+  The shared step collection ID
+</ParamField>
+
+## Request Body
+
+<ParamField body="expected_version" type="integer" required>
+  The version returned by the most recent
+  [Get Shared Step](/api-reference/shared-steps/get-shared-step). Must be a
+  non-negative integer.
+</ParamField>
+
+<ParamField body="patch" type="object" required>
+  Partial collection body. Cannot change the collection `id` or `is_shared`.
+</ParamField>
+
+## Response
+
+Returns the updated shared step (same shape as
+[Get Shared Step](/api-reference/shared-steps/get-shared-step)) on success.
+
+On version conflict, returns `409` with:
+
+```json
+{
+  "error": "version conflict",
+  "expected_version": 1,
+  "latest_version": 2
+}
+```
+
+<RequestExample>
+```bash cURL
+curl -X PATCH "https://nunu.ai/api/v1/shared-steps/ssc_login" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expected_version": 2,
+    "patch": { "name": "Login Flow v2" }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "ssc_login",
+  "project_id": "test",
+  "name": "Login Flow v2",
+  "version": 3,
+  "is_shared": true,
+  "...": "..."
+}
+```
+
+```json 409 Conflict
+{
+  "error": "version conflict",
+  "expected_version": 2,
+  "latest_version": 3
+}
+```
+</ResponseExample>

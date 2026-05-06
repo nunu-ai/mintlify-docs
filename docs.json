@@ -43,6 +43,7 @@
                             "api-reference/runs/list-runs",
                             "api-reference/runs/start-run",
                             "api-reference/runs/get-run",
+                            "api-reference/runs/get-live-run",
                             "api-reference/runs/list-bugs",
                             "api-reference/runs/stop-runs"
                         ]
@@ -55,11 +56,72 @@
                         ]
                     },
                     {
+                        "group": "Bugs",
+                        "pages": [
+                            "api-reference/bugs/list-bugs",
+                            "api-reference/bugs/get-bug"
+                        ]
+                    },
+                    {
+                        "group": "Artifacts",
+                        "pages": [
+                            "api-reference/artifacts/list-artifacts",
+                            "api-reference/artifacts/get-artifact"
+                        ]
+                    },
+                    {
+                        "group": "Knowledge",
+                        "pages": [
+                            "api-reference/knowledge/list-files",
+                            "api-reference/knowledge/list-project-files",
+                            "api-reference/knowledge/list-agent-files",
+                            "api-reference/knowledge/list-test-case-files"
+                        ]
+                    },
+                    {
+                        "group": "Tests",
+                        "pages": [
+                            "api-reference/tests/list-tests",
+                            "api-reference/tests/get-test",
+                            "api-reference/tests/create-test",
+                            "api-reference/tests/update-test",
+                            "api-reference/tests/delete-test"
+                        ]
+                    },
+                    {
+                        "group": "Test Folders",
+                        "pages": [
+                            "api-reference/test-folders/list-test-folders"
+                        ]
+                    },
+                    {
+                        "group": "Shared Steps",
+                        "pages": [
+                            "api-reference/shared-steps/list-shared-steps",
+                            "api-reference/shared-steps/get-shared-step",
+                            "api-reference/shared-steps/create-shared-step",
+                            "api-reference/shared-steps/update-shared-step",
+                            "api-reference/shared-steps/delete-shared-step"
+                        ]
+                    },
+                    {
                         "group": "Test Plans",
                         "pages": [
                             "api-reference/test-plans/list-test-plans",
                             "api-reference/test-plans/get-test-plan",
+                            "api-reference/test-plans/create-test-plan",
+                            "api-reference/test-plans/update-test-plan",
+                            "api-reference/test-plans/delete-test-plan",
+                            "api-reference/test-plans/start-test-plan-run",
                             "api-reference/test-plans/list-test-plan-executions"
+                        ]
+                    },
+                    {
+                        "group": "Configs",
+                        "pages": [
+                            "api-reference/configs/list-agent-configs",
+                            "api-reference/configs/list-deployment-configs",
+                            "api-reference/configs/list-credential-kinds"
                         ]
                     },
                     {
@@ -105,7 +167,12 @@
         }
     },
     "contextual": {
-        "options": ["copy", "chatgpt", "claude", "perplexity"]
+        "options": [
+            "copy",
+            "chatgpt",
+            "claude",
+            "perplexity"
+        ]
     },
     "footer": {
         "socials": {

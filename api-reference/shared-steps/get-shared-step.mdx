@@ -1,0 +1,108 @@
+---
+title: 'Get Shared Step'
+openapi: 'GET /shared-steps/{sharedStepId}'
+noindex: true
+---
+
+<Info>
+  **Authentication**: Any authenticated API key
+</Info>
+
+Retrieve a single shared step collection, including the full body of every
+step.
+
+## Path Parameters
+
+<ParamField path="sharedStepId" type="string" required>
+  The shared step collection ID
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="version" type="integer">
+  Fetch a specific version of the collection instead of the latest. Must be a
+  positive integer.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string" required>
+  Shared step collection ID
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project the collection belongs to
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Collection name
+</ResponseField>
+
+<ResponseField name="version" type="integer" required>
+  Current version. Pass this back as `expected_version` when calling
+  [Update Shared Step](/api-reference/shared-steps/update-shared-step).
+</ResponseField>
+
+<ResponseField name="is_shared" type="boolean" required>
+  Always `true` for collections returned by this endpoint
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp when the collection was created
+</ResponseField>
+
+<ResponseField name="created_by" type="string">
+  Who created the collection
+</ResponseField>
+
+<ResponseField name="steps_by_key" type="object" required>
+  Map of step key (`"1"`, `"2"`, …) → step body. Each step has the same shape
+  used inside test cases (`goal`, `finish_condition`, `min_seconds`,
+  `max_seconds`, `screenshots`, `pause_game`, `performance_monitoring`,
+  `hint_manual`).
+</ResponseField>
+
+<ResponseField name="step_order" type="string[]" required>
+  Ordered list of step keys
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/shared-steps/ssc_login" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "ssc_login",
+  "project_id": "test",
+  "name": "Login Flow",
+  "version": 2,
+  "is_shared": true,
+  "created_at": "2026-03-01T10:00:00.000000+00:00",
+  "created_by": "user@example.com",
+  "steps_by_key": {
+    "1": {
+      "test_step_id": "step_1",
+      "goal": "Open login screen",
+      "finish_condition": "login fields are visible",
+      "min_seconds": 0,
+      "max_seconds": 30,
+      "screenshots": 1,
+      "pause_game": false,
+      "performance_monitoring": false,
+      "hint_manual": []
+    }
+  },
+  "step_order": ["1"]
+}
+```
+
+```json 404 Not Found
+{
+  "error": "shared step not found"
+}
+```
+</ResponseExample>

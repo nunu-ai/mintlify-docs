@@ -1,0 +1,128 @@
+---
+title: 'List Run Artifacts'
+openapi: 'GET /runs/{runId}/artifacts'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: any API key scoped to the project that owns the run
+</Info>
+
+<Note>
+  Artifact endpoints are served by the **bouncer** service at
+  `https://bouncer.nunu.ai`, not the main `nunu.ai/api/v1` host. Use the same
+  `X-Api-Key` header for authentication.
+</Note>
+
+Return the list of artifact files produced by a run, including recordings,
+device logs, and any custom files written by the agent during the run. Each
+entry includes a download URL that points back to the
+[Get Artifact File](/api-reference/artifacts/get-artifact) endpoint.
+
+## Path Parameters
+
+<ParamField path="runId" type="string" required>
+  Composite run ID, in the format `{multiplayerRunId}-{playerNumber}` (for
+  example `lkkg6t5612m-1`). This is the ID returned in the `players[].id` field
+  of [Get Run](/api-reference/runs/get-run).
+</ParamField>
+
+## Response
+
+<ResponseField name="runId" type="string" required>
+  Echo of the path parameter.
+</ResponseField>
+
+<ResponseField name="count" type="integer" required>
+  Number of artifacts returned.
+</ResponseField>
+
+<ResponseField name="artifacts" type="Artifact[]" required>
+  List of artifact entries.
+
+  <Expandable title="Artifact properties">
+    <ResponseField name="artifacts[].filename" type="string">
+      Artifact filename, including any subdirectories the agent created (for
+      example `deliverables/report.json`).
+    </ResponseField>
+    <ResponseField name="artifacts[].url" type="string">
+      Absolute URL to download the artifact. Authenticate the same way you
+      authenticated this list call.
+    </ResponseField>
+    <ResponseField name="artifacts[].size" type="integer">
+      File size in bytes.
+    </ResponseField>
+    <ResponseField name="artifacts[].uploaded" type="string">
+      ISO 8601 timestamp when the artifact was written to storage.
+    </ResponseField>
+    <ResponseField name="artifacts[].etag" type="string">
+      Object ETag, useful for caching and conditional requests.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://bouncer.nunu.ai/runs/lkkg6t5612m-1/artifacts" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```typescript JavaScript
+const runId = "lkkg6t5612m-1";
+
+const response = await fetch(
+  `https://bouncer.nunu.ai/runs/${runId}/artifacts`,
+  {
+    headers: {
+      "X-Api-Key": process.env.NUNU_API_TOKEN,
+    },
+  }
+);
+const data = await response.json();
+```
+
+```python Python
+import requests
+import os
+
+run_id = "lkkg6t5612m-1"
+
+response = requests.get(
+    f"https://bouncer.nunu.ai/runs/{run_id}/artifacts",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "runId": "lkkg6t5612m-1",
+  "count": 3,
+  "artifacts": [
+    {
+      "filename": "recording.mp4",
+      "url": "https://bouncer.nunu.ai/runs/lkkg6t5612m-1/artifacts/recording.mp4",
+      "size": 15728640,
+      "uploaded": "2026-03-03T15:55:00.000Z",
+      "etag": "9a3b4c5d6e7f8090a1b2c3d4e5f60718"
+    },
+    {
+      "filename": "device_log.log",
+      "url": "https://bouncer.nunu.ai/runs/lkkg6t5612m-1/artifacts/device_log.log",
+      "size": 45678,
+      "uploaded": "2026-03-03T15:55:00.000Z",
+      "etag": "0a1b2c3d4e5f60718a3b4c5d6e7f8090"
+    },
+    {
+      "filename": "deliverables/custom-report.json",
+      "url": "https://bouncer.nunu.ai/runs/lkkg6t5612m-1/artifacts/deliverables/custom-report.json",
+      "size": 2048,
+      "uploaded": "2026-03-03T15:55:00.000Z",
+      "etag": "1b2c3d4e5f60718a3b4c5d6e7f80909a"
+    }
+  ]
+}
+```
+</ResponseExample>

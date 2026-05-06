@@ -1,0 +1,144 @@
+---
+title: 'Get Test'
+openapi: 'GET /tests/{testId}'
+noindex: true
+---
+
+<Info>
+  **Authentication**: Any authenticated API key
+</Info>
+
+Retrieve the full body of a single test case, including its players, steps,
+and any referenced shared step collections.
+
+## Path Parameters
+
+<ParamField path="testId" type="string" required>
+  The test ID (UUID)
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="version" type="integer">
+  Fetch a specific version of the test instead of the latest. Must be a
+  positive integer.
+</ParamField>
+
+<ParamField query="include_shared_collection_steps" type="boolean" default="true">
+  Whether shared step collections should be expanded inline. When `false`,
+  shared collection items are returned without their `steps_by_key` /
+  `step_order` (the caller can resolve them via [Get Shared Step](/api-reference/shared-steps/get-shared-step)).
+</ParamField>
+
+## Response
+
+The body is a `TestCase` object whose shape depends on `test_type`. All variants share the
+following base fields, and each variant adds its own `players_by_key` shape.
+
+<ResponseField name="id" type="string" required>
+  Test ID
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project the test belongs to
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Test name
+</ResponseField>
+
+<ResponseField name="version" type="integer" required>
+  Current version. Pass this back in the `expected_version` field when calling
+  [Update Test](/api-reference/tests/update-test).
+</ResponseField>
+
+<ResponseField name="test_type" type="string" required>
+  One of: `verification`, `discovery`, `task`
+</ResponseField>
+
+<ResponseField name="tags" type="string[]" required>
+  Test tags
+</ResponseField>
+
+<ResponseField name="quarantined" type="boolean" required>
+  Whether the test is quarantined
+</ResponseField>
+
+<ResponseField name="incident_auto_approve" type="boolean" required>
+  Whether incidents on this test are auto-approved
+</ResponseField>
+
+<ResponseField name="source" type="string" required>
+  How the test was authored: `repository` or `bot`
+</ResponseField>
+
+<ResponseField name="players_by_key" type="object" required>
+  Map of player key → player definition. The shape inside each player depends
+  on `test_type`. For `verification` tests, players carry an `items_by_key` /
+  `item_order` describing each step or shared collection reference.
+</ResponseField>
+
+<ResponseField name="player_order" type="string[]" required>
+  Ordered list of player keys
+</ResponseField>
+
+<ResponseField name="testrail" type="object">
+  TestRail integration metadata, or `null`
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```bash cURL (specific version)
+curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e?version=3" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "a5060a07-d386-4269-98ce-b33fb894201e",
+  "project_id": "test",
+  "name": "Sanity smoke",
+  "version": 4,
+  "tags": ["smoke"],
+  "incident_auto_approve": false,
+  "test_type": "verification",
+  "quarantined": false,
+  "testrail": null,
+  "source": "repository",
+  "players_by_key": {
+    "1": {
+      "name": "P1",
+      "agent_config_id": null,
+      "game_funcs_config_id": null,
+      "items_by_key": {
+        "1": {
+          "type": "step",
+          "goal": "Reach the main menu",
+          "finish_condition": "main menu is visible",
+          "min_seconds": 0,
+          "max_seconds": 60,
+          "screenshots": 1,
+          "pause_game": false,
+          "performance_monitoring": false,
+          "hint_manual": []
+        }
+      },
+      "item_order": ["1"]
+    }
+  },
+  "player_order": ["1"]
+}
+```
+
+```json 404 Not Found
+{
+  "error": "test not found"
+}
+```
+</ResponseExample>

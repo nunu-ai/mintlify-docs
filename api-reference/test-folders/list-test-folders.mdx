@@ -1,0 +1,119 @@
+---
+title: 'List Test Folders'
+openapi: 'GET /test-folders'
+noindex: true
+---
+
+<Info>
+  **Authentication**: Any authenticated API key
+</Info>
+
+Retrieve a paginated list of test folders for your project. Each item includes
+the resolved `path` and `parent_path` strings, so callers don't need to deal
+with folder UUIDs directly. Pagination is over the alphabetized full list.
+
+These folder paths are the same strings accepted by `folder_path` in
+[List Tests](/api-reference/tests/list-tests),
+[Create Test](/api-reference/tests/create-test), and
+[Update Test](/api-reference/tests/update-test).
+
+## Query Parameters
+
+<ParamField query="page" type="integer" default="0">
+  Page number (0-indexed)
+</ParamField>
+
+<ParamField query="page_size" type="integer" default="25">
+  Results per page (1-100)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="TestFolder[]" required>
+  Array of test folder objects
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Pagination metadata (`page`, `page_size`, `total_count`, `total_pages`)
+</ResponseField>
+
+### TestFolder Object
+
+<ResponseField name="id" type="string" required>
+  Folder UUID
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Folder name (just the leaf segment, not the full path)
+</ResponseField>
+
+<ResponseField name="path" type="string" required>
+  Resolved folder path (e.g. `"regression/smoke"`)
+</ResponseField>
+
+<ResponseField name="parent_path" type="string">
+  Resolved parent path, or `null` for top-level folders
+</ResponseField>
+
+<ResponseField name="parent_folder_id" type="string">
+  Parent folder UUID, or `null` for top-level folders
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Optional folder description
+</ResponseField>
+
+<ResponseField name="tags" type="string[]" required>
+  Tags assigned to the folder
+</ResponseField>
+
+<ResponseField name="created_at" type="string" required>
+  ISO 8601 timestamp when the folder was created
+</ResponseField>
+
+<ResponseField name="modified_at" type="string" required>
+  ISO 8601 timestamp when the folder was last modified
+</ResponseField>
+
+<ResponseField name="created_by_name" type="string">
+  Display name of the folder creator
+</ResponseField>
+
+<ResponseField name="modified_by_name" type="string">
+  Display name of the most recent editor
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/test-folders?page=0&page_size=25" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "id": "f01a3b1c-9d2e-4f05-8c7a-1a2b3c4d5e6f",
+      "name": "smoke",
+      "path": "regression/smoke",
+      "parent_path": "regression",
+      "parent_folder_id": "e10b2c3d-4e5f-6789-abcd-ef0123456789",
+      "description": "Critical-path smoke tests",
+      "tags": ["nightly"],
+      "created_at": "2026-03-01T10:00:00.000000+00:00",
+      "modified_at": "2026-03-15T14:30:00.000000+00:00",
+      "created_by_name": "Test Owner",
+      "modified_by_name": "Test Owner"
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "page_size": 25,
+    "total_count": 1,
+    "total_pages": 1
+  }
+}
+```
+</ResponseExample>

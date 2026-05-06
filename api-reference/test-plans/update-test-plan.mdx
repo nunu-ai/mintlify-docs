@@ -1,0 +1,66 @@
+---
+title: 'Update Test Plan'
+openapi: 'PATCH /test-plans/{testPlanId}'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Apply a partial update to a test plan. The `patch` is deep-merged into the
+current test plan. Arrays — including `test_items` — are replaced wholesale.
+
+## Path Parameters
+
+<ParamField path="testPlanId" type="string" required>
+  The test plan ID (UUID)
+</ParamField>
+
+## Request Body
+
+<ParamField body="patch" type="object" required>
+  Partial test plan body. Supply only the fields you want to change. Cannot
+  change the test plan `id`.
+</ParamField>
+
+## Response
+
+Returns the updated test plan (same shape as
+[Get Test Plan](/api-reference/test-plans/get-test-plan)).
+
+<RequestExample>
+```bash cURL (rename)
+curl -X PATCH "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patch": { "name": "Nightly Smoke v2" }
+  }'
+```
+
+```bash cURL (replace test items)
+curl -X PATCH "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patch": {
+      "test_items": [
+        { "multiplayer_test_id": "a5060a07-d386-4269-98ce-b33fb894201e", "retries": 2 }
+      ]
+    }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "id": "b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
+  "project_id": "test",
+  "name": "Nightly Smoke v2",
+  "test_items": [ { "...": "..." } ],
+  "...": "..."
+}
+```
+</ResponseExample>

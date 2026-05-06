@@ -1,0 +1,127 @@
+---
+title: 'Get Live Run Snapshot'
+openapi: 'GET /runs/{runId}/live'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:read-runs`
+</Info>
+
+Return a live snapshot of an active run: latest game state and (optionally) a
+screenshot per player, pulled from the newest beholder step. Useful for
+displaying real-time progress in a custom dashboard or for quick programmatic
+checks while a run is executing.
+
+For completed-run details, use [Get Run](/api-reference/runs/get-run).
+
+## Path Parameters
+
+<ParamField path="runId" type="string" required>
+  The multiplayer run ID (12 lowercase alphanumeric characters)
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="include_screenshot" type="boolean" default="true">
+  Whether to include a base64-encoded screenshot per player. Set to `false`
+  for a lighter-weight response.
+</ParamField>
+
+## Response
+
+<ResponseField name="multiplayer_run_id" type="string" required>
+  Run ID (echoes the path param)
+</ResponseField>
+
+<ResponseField name="state" type="string" required>
+  Run state: `initializing`, `running`, or `completed`
+</ResponseField>
+
+<ResponseField name="test" type="object" required>
+  The test that the run is executing
+
+  <Expandable title="test properties">
+    <ResponseField name="test.id" type="string">
+      Test ID
+    </ResponseField>
+    <ResponseField name="test.name" type="string">
+      Test name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="players" type="LivePlayer[]" required>
+  Snapshot per player
+
+  <Expandable title="LivePlayer properties">
+    <ResponseField name="player_number" type="integer">
+      Player number (0-indexed)
+    </ResponseField>
+    <ResponseField name="composite_run_id" type="string">
+      Composite run ID for this player
+    </ResponseField>
+    <ResponseField name="current_run_id" type="string">
+      Currently executing inner run ID, or `null`
+    </ResponseField>
+    <ResponseField name="current_step" type="integer">
+      Latest beholder step number, or `null`
+    </ResponseField>
+    <ResponseField name="game_state" type="object">
+      Latest captured game state, or `null`
+    </ResponseField>
+    <ResponseField name="screenshot" type="object">
+      Latest screenshot — `{ data, mimeType, encoding: "base64" }` — or `null`
+      if not available or `include_screenshot=false`
+    </ResponseField>
+    <ResponseField name="last_agent_step" type="object">
+      Latest agent reasoning entry — `{ agent, step, save_data, start_time }` —
+      or `null`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m/live?include_screenshot=true" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+
+```bash cURL (lightweight)
+curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m/live?include_screenshot=false" \
+  -H "X-Api-Key: YOUR_API_TOKEN"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "multiplayer_run_id": "lkkg6t5612m",
+  "state": "RUNNING",
+  "test": {
+    "id": "a5060a07-d386-4269-98ce-b33fb894201e",
+    "name": "Sanity smoke"
+  },
+  "players": [
+    {
+      "player_number": 0,
+      "composite_run_id": "lkkg6t5612m-1",
+      "current_run_id": "run_abc123",
+      "current_step": 4,
+      "game_state": { "scene": "main_menu" },
+      "screenshot": {
+        "data": "iVBORw0KGgoAAAANSUhEUgAA...",
+        "mimeType": "image/png",
+        "encoding": "base64"
+      },
+      "last_agent_step": {
+        "agent": "user-beholder",
+        "step": 12,
+        "save_data": { "reasoning": "navigated to main menu" },
+        "start_time": "2026-04-01T09:55:01.000000+00:00"
+      }
+    }
+  ]
+}
+```
+</ResponseExample>
