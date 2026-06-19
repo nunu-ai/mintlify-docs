@@ -86,6 +86,15 @@ following base fields, and each variant adds its own `players_by_key` shape.
   TestRail integration metadata, or `null`
 </ResponseField>
 
+<ResponseField name="min_seconds" type="integer">
+  Test-level minimum runtime in seconds. Returned for `discovery` and `task`
+  tests. `verification` tests have no minimum.
+</ResponseField>
+
+<ResponseField name="max_seconds" type="integer">
+  Test-level maximum runtime in seconds. Returned for all test types.
+</ResponseField>
+
 <RequestExample>
 ```bash cURL
 curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
@@ -111,6 +120,7 @@ curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e?v
   "quarantined": false,
   "testrail": null,
   "source": "repository",
+  "max_seconds": 19800,
   "players_by_key": {
     "1": {
       "name": "P1",
@@ -121,8 +131,6 @@ curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e?v
           "type": "step",
           "goal": "Reach the main menu",
           "finish_condition": "main menu is visible",
-          "min_seconds": 0,
-          "max_seconds": 60,
           "screenshots": 1,
           "pause_game": false,
           "performance_monitoring": false,

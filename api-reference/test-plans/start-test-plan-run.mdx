@@ -44,10 +44,11 @@ The response contains one `job_id` per test in the plan; poll each one with
 </ParamField>
 
 <ParamField body="options" type="object">
-  Test execution overrides — same shape as `options` on
-  [Start a Run](/api-reference/runs/start-run) (`min_time_seconds`,
-  `max_time_seconds`, `performance_monitoring`, `mobile_auto_grant_permissions`,
-  `mobile_geolocation`, `mobile_gpslocation`).
+  Per-run override knobs — same shape as `options` on
+  [Start a Run](/api-reference/runs/start-run) (`performance_monitoring`,
+  `mobile_auto_grant_permissions`, `mobile_geolocation`, `mobile_gpslocation`).
+  Time-budget overrides are intentionally **not** accepted here; the budget
+  lives on the test version itself (`min_seconds` / `max_seconds`).
 </ParamField>
 
 ## Response

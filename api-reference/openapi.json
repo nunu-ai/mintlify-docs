@@ -4401,15 +4401,8 @@
             },
             "RunOptions": {
                 "type": "object",
+                "description": "Per-run override knobs. The time budget is intentionally not overridable here — it lives on the test version itself (see `min_seconds` / `max_seconds` on the test body), so callers should edit the test (or create a new version) when they want to change the budget.",
                 "properties": {
-                    "min_time_seconds": {
-                        "type": "integer",
-                        "description": "Minimum test duration"
-                    },
-                    "max_time_seconds": {
-                        "type": "integer",
-                        "description": "Maximum test duration (timeout)"
-                    },
                     "performance_monitoring": {
                         "type": "boolean",
                         "description": "Enable performance data collection"
@@ -5424,6 +5417,18 @@
                             "repository",
                             "bot"
                         ]
+                    },
+                    "min_seconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19800,
+                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only — sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be ≤ `max_seconds` (validated against the effective budget after defaults are applied)."
+                    },
+                    "max_seconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19800,
+                        "description": "Test-level maximum runtime in seconds. Hard ceiling for any single run is 19800 (5.5h). Defaults when omitted: verification=19800 (5.5h), discovery=10800 (3h), task=19800 (5.5h)."
                     },
                     "players_by_key": {
                         "type": "object",

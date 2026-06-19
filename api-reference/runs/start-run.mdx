@@ -68,15 +68,13 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="options" type="object">
-  Test execution options
+  Per-run override knobs.
+
+  <Note>
+    The test time budget is **not** overridable here. It lives on the test version itself (`min_seconds` / `max_seconds` on the test body) — edit the test, or create a new version, when you want to change the budget. See [Create a Test](/api-reference/tests/create-test) for the per-framework defaults and rules.
+  </Note>
 
   <Expandable title="options properties">
-    <ParamField body="options.min_time_seconds" type="integer">
-      Minimum test duration in seconds
-    </ParamField>
-    <ParamField body="options.max_time_seconds" type="integer">
-      Maximum test duration (timeout) in seconds
-    </ParamField>
     <ParamField body="options.performance_monitoring" type="boolean">
       Enable performance data collection
     </ParamField>

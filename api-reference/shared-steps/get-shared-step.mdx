@@ -57,9 +57,8 @@ step.
 
 <ResponseField name="steps_by_key" type="object" required>
   Map of step key (`"1"`, `"2"`, …) → step body. Each step has the same shape
-  used inside test cases (`goal`, `finish_condition`, `min_seconds`,
-  `max_seconds`, `screenshots`, `pause_game`, `performance_monitoring`,
-  `hint_manual`).
+  used inside test cases (`goal`, `finish_condition`, `screenshots`,
+  `pause_game`, `performance_monitoring`, `hint_manual`).
 </ResponseField>
 
 <ResponseField name="step_order" type="string[]" required>
@@ -88,8 +87,6 @@ curl -X GET "https://nunu.ai/api/v1/shared-steps/ssc_login" \
       "test_step_id": "step_1",
       "goal": "Open login screen",
       "finish_condition": "login fields are visible",
-      "min_seconds": 0,
-      "max_seconds": 30,
       "screenshots": 1,
       "pause_game": false,
       "performance_monitoring": false,

@@ -47,6 +47,27 @@ Create a new test case in your project. The shape of `test` depends on
   Pre-resolved folder UUID. Mutually exclusive with `folder_path`.
 </ParamField>
 
+## Test-level time budget
+
+The runtime budget is configured **on the test itself**, not on individual
+steps or players. There is no per-run override surface — to change the
+budget, edit the test (or create a new version).
+
+| Test type      | Allowed fields              | Default       | Notes                                                                 |
+| -------------- | --------------------------- | ------------- | --------------------------------------------------------------------- |
+| `verification` | `max_seconds`               | `19800` (5.5h) | `min_seconds` is rejected — verification has no minimum runtime.      |
+| `discovery`    | `min_seconds`, `max_seconds` | `3600`–`10800` (1h–3h) | Both bounds optional; defaults apply when omitted.                    |
+| `task`         | `min_seconds`, `max_seconds` | `0`–`19800` (0–5.5h) | Both bounds optional; defaults apply when omitted.                    |
+
+For `discovery` and `task` the server validates `min_seconds <= max_seconds`
+against the *effective* budget — i.e. caller-supplied values **after**
+defaults are applied. Supplying just one bound that conflicts with the
+default for the other (e.g. `min_seconds: 14400` on a discovery create with
+no `max_seconds`) is rejected with `400`; either supply the other bound
+explicitly, or pick a value that fits inside the default range.
+
+The hard upper bound for any single run is `5.5h` (`19800` seconds).
+
 ## Response
 
 Returns the newly created test with status `201`. The response shape is
@@ -65,6 +86,7 @@ curl -X POST "https://nunu.ai/api/v1/tests" \
       "incident_auto_approve": false,
       "quarantined": false,
       "testrail": null,
+      "max_seconds": 1800,
       "players_by_key": {
         "1": {
           "name": "P1",
@@ -75,8 +97,6 @@ curl -X POST "https://nunu.ai/api/v1/tests" \
               "type": "step",
               "goal": "Reach the main menu",
               "finish_condition": "main menu is visible",
-              "min_seconds": 0,
-              "max_seconds": 60,
               "screenshots": 1,
               "pause_game": false,
               "performance_monitoring": false,
