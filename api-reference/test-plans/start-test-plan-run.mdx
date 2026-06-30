@@ -31,6 +31,12 @@ The response contains one `job_id` per test in the plan; poll each one with
   UUID of an agent configuration applied to every test in the plan.
 </ParamField>
 
+<ParamField body="build_id" type="string">
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use
+  for every test in the plan. Only works with deployment configs that use Build
+  Storage as their build source; otherwise the request returns a `400` error.
+</ParamField>
+
 <ParamField body="additional_tags" type="string[]">
   Tags appended to every resulting run.
 </ParamField>

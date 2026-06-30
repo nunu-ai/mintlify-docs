@@ -5766,6 +5766,11 @@
                         "type": "string",
                         "format": "uuid"
                     },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of a build from Build Storage to use for every test in the plan. Only works with build-storage deployment configs."
+                    },
                     "additional_tags": {
                         "type": "array",
                         "items": {
