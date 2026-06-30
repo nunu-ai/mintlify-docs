@@ -38,6 +38,18 @@ Create a new test case in your project. The shape of `test` depends on
   detailed shape.
 </ParamField>
 
+<Note>
+  **Expected results for verification steps.** Use `expected_results` to give a
+  step one or more independent checks. It accepts:
+  - a single string — one result,
+  - a list of strings — one result per element,
+  - a list of `{ "expected": "..." }` objects (forward-compatible form).
+
+  One element is exactly one result; newlines inside a string are **not**
+  split. The legacy `finish_condition` (single string) is still accepted as an
+  alias for a single result and is ignored when `expected_results` is present.
+</Note>
+
 <ParamField body="folder_path" type="string">
   Folder path to place the test in (e.g. `"regression/smoke"`). `null` or
   `"/"` places it at the project root. Mutually exclusive with `folder_id`.
@@ -96,7 +108,10 @@ curl -X POST "https://nunu.ai/api/v1/tests" \
             "1": {
               "type": "step",
               "goal": "Reach the main menu",
-              "finish_condition": "main menu is visible",
+              "expected_results": [
+                { "expected": "the main menu is visible" },
+                { "expected": "no loading spinner remains on screen" }
+              ],
               "screenshots": 1,
               "pause_game": false,
               "performance_monitoring": false,

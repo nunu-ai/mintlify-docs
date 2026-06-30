@@ -25,7 +25,11 @@ collection can be referenced from any verification test by adding a
       Collection name
     </ParamField>
     <ParamField body="shared_step.steps_by_key" type="object" required>
-      Map of step key → step body. Same shape as in test cases.
+      Map of step key → step body. Same shape as in test cases. Use
+      `expected_results` for the step's checks (a string, a list of strings, or
+      a list of `{ "expected": "..." }` objects); the legacy single-string
+      `finish_condition` is still accepted and ignored when `expected_results`
+      is present.
     </ParamField>
     <ParamField body="shared_step.step_order" type="string[]" required>
       Ordered list of step keys
@@ -49,7 +53,9 @@ curl -X POST "https://nunu.ai/api/v1/shared-steps" \
       "steps_by_key": {
         "1": {
           "goal": "Open login screen",
-          "finish_condition": "login fields are visible",
+          "expected_results": [
+            { "expected": "login fields are visible" }
+          ],
           "screenshots": 1,
           "pause_game": false,
           "performance_monitoring": false,

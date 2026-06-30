@@ -57,8 +57,11 @@ step.
 
 <ResponseField name="steps_by_key" type="object" required>
   Map of step key (`"1"`, `"2"`, …) → step body. Each step has the same shape
-  used inside test cases (`goal`, `finish_condition`, `screenshots`,
-  `pause_game`, `performance_monitoring`, `hint_manual`).
+  used inside test cases (`goal`, `expected_results`, `finish_condition`,
+  `screenshots`, `pause_game`, `performance_monitoring`, `hint_manual`). See
+  [Get Test → Verification step shape](/api-reference/tests/get-test#verification-step-shape)
+  for the field details — `expected_results` is the structured list of checks
+  and `finish_condition` is its legacy single-string rendering.
 </ResponseField>
 
 <ResponseField name="step_order" type="string[]" required>
@@ -86,6 +89,9 @@ curl -X GET "https://nunu.ai/api/v1/shared-steps/ssc_login" \
     "1": {
       "test_step_id": "step_1",
       "goal": "Open login screen",
+      "expected_results": [
+        { "expected": "login fields are visible" }
+      ],
       "finish_condition": "login fields are visible",
       "screenshots": 1,
       "pause_game": false,

@@ -95,6 +95,45 @@ following base fields, and each variant adds its own `players_by_key` shape.
   Test-level maximum runtime in seconds. Returned for all test types.
 </ResponseField>
 
+## Verification step shape
+
+Each `step` item inside a verification player's `items_by_key` has the
+following fields:
+
+<ResponseField name="goal" type="string" required>
+  The instructions for the step — what the agent should do.
+</ResponseField>
+
+<ResponseField name="expected_results" type="object[]" required>
+  The list of independent checks the agent verifies for this step. Each entry
+  is an object with an `expected` string (one observable outcome). A step can
+  carry several atomic checks — one entry per check.
+</ResponseField>
+
+<ResponseField name="finish_condition" type="string" required>
+  Legacy single-string rendering of the expected results, kept for backwards
+  compatibility. On read it is always populated: a single result is returned
+  verbatim, multiple results are joined as a numbered list
+  (`"1. …\n2. …"`). Prefer `expected_results`; treat `finish_condition` as
+  derived/read-only.
+</ResponseField>
+
+<ResponseField name="screenshots" type="integer" required>
+  How many screenshots the agent captures per turn for this step.
+</ResponseField>
+
+<ResponseField name="pause_game" type="boolean" required>
+  Whether the game is paused while the agent reasons about this step.
+</ResponseField>
+
+<ResponseField name="performance_monitoring" type="boolean" required>
+  Whether performance monitoring is enabled for this step.
+</ResponseField>
+
+<ResponseField name="hint_manual" type="string[]" required>
+  Optional hints that guide the agent through tricky situations.
+</ResponseField>
+
 <RequestExample>
 ```bash cURL
 curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
@@ -130,7 +169,11 @@ curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e?v
         "1": {
           "type": "step",
           "goal": "Reach the main menu",
-          "finish_condition": "main menu is visible",
+          "expected_results": [
+            { "expected": "the main menu is visible" },
+            { "expected": "no loading spinner remains on screen" }
+          ],
+          "finish_condition": "1. the main menu is visible\n2. no loading spinner remains on screen",
           "screenshots": 1,
           "pause_game": false,
           "performance_monitoring": false,
