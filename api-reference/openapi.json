@@ -4398,7 +4398,7 @@
                     },
                     "player_deployment_configs": {
                         "type": "object",
-                        "description": "Per-player deployment configs for cross-platform multiplayer tests, keyed by player number (\"1\", \"2\", and so on). Only applies with `multiplayer_test_id`. The map does not need to cover every player: any player without an entry falls back to the default `deployment_config_id`. Omitting `deployment_config_id` is only allowed when every player has an entry; a partial map without a default returns a 400 error.",
+                        "description": "Per-player deployment configs for cross-platform multiplayer tests, keyed by player number (\"1\", \"2\", and so on). Only applies with `multiplayer_test_id`. The map does not need to cover every player: any player without an entry falls back to the default `deployment_config_id`. Omitting `deployment_config_id` is only allowed when every player has an entry; a partial map without a default returns a 400 error. Private device configs are allowed, but every player on a private device needs its own device; if the configs cannot give each player a distinct device, the request returns a 400 error.",
                         "additionalProperties": {
                             "type": "object",
                             "required": [
@@ -5859,7 +5859,7 @@
                     },
                     "slot_deployment_configs": {
                         "type": "object",
-                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", and so on; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry.",
+                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", and so on; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry. Private device configs are allowed, but every player on a private device needs its own device; if the configs of a test cannot give each of its players a distinct device, the request returns a 400 error.",
                         "additionalProperties": {
                             "type": "object",
                             "required": [
