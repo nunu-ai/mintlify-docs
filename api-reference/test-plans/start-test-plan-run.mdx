@@ -9,7 +9,7 @@ noindex: true
 </Info>
 
 Start a run for a specific test plan. This is the test-plan-scoped equivalent
-of [Start a Run](/api-reference/runs/start-run) — instead of supplying
+of [Start a Run](/api-reference/runs/start-run): instead of supplying
 `test_plan_id` in the body, the plan is identified by the URL path. It is also
 the only endpoint that accepts `slot_deployment_configs` for cross-platform
 plans.
@@ -27,7 +27,7 @@ The response contains one `job_id` per test in the plan; poll each one with
 
 <ParamField body="deployment_config_id" type="string">
   UUID of the deployment configuration for the plan's **default slot** (slot 1),
-  used by every player not assigned to an extra slot — for plans without extra
+  used by every player not assigned to an extra slot; for plans without extra
   slots this is simply the config used by every test. Required unless the
   plan's slot assignments cover every player of every test and
   `slot_deployment_configs` is supplied.
@@ -46,12 +46,15 @@ The response contains one `job_id` per test in the plan; poll each one with
 
 <ParamField body="slot_deployment_configs" type="object">
   Per-slot deployment configs for cross-platform test plans, keyed by slot
-  index (`"2"`, `"3"`, ...). Fetch the plan with
+  index (`"2"`, `"3"`, and so on). Fetch the plan with
   [Get Test Plan](/api-reference/test-plans/get-test-plan) to see its `slots`.
   Every slot used by the plan's player assignments needs an entry; keys
   referencing slots the plan does not define return a `400` error. The key
   `"1"` addresses the default slot as an alternative to the top-level
   `deployment_config_id`/`build_id` (supplying both returns a `400` error).
+  Private device configs are allowed, but every player on a private device
+  needs its own device; if the configs of a test cannot give each of its
+  players a distinct device, the request returns a `400` error.
 
   <Expandable title="entry properties">
     <ParamField body="slot_deployment_configs.{index}.deployment_config_id" type="string" required>
@@ -76,7 +79,7 @@ The response contains one `job_id` per test in the plan; poll each one with
 </ParamField>
 
 <ParamField body="options" type="object">
-  Per-run override knobs — same shape as `options` on
+  Per-run override knobs, with the same shape as `options` on
   [Start a Run](/api-reference/runs/start-run) (`performance_monitoring`,
   `mobile_auto_grant_permissions`, `mobile_geolocation`, `mobile_gpslocation`).
   Time-budget overrides are intentionally **not** accepted here; the budget
@@ -86,7 +89,7 @@ The response contains one `job_id` per test in the plan; poll each one with
 ## Response
 
 Returns `201 Created` on success. The body contains the started-run data
-directly (no `{ ok, status, message, data }` envelope) — typically including
+directly (no `{ ok, status, message, data }` envelope), typically including
 `job_ids[]` (one per test in the plan) and `test_plan_execution_id`, so the
 caller can correlate results via
 [List Test Plan Executions](/api-reference/test-plans/list-test-plan-executions).
