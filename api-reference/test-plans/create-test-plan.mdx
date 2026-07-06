@@ -12,6 +12,13 @@ Create a new test plan for your project. A test plan is an ordered list of
 test items that can be executed together with
 [Start Test Plan Run](/api-reference/test-plans/start-test-plan-run).
 
+<Note>
+  Cross-platform deployment slots (`slots`, `default_slot_name`) are read-only
+  via the API and cannot be supplied here or via
+  [Update Test Plan](/api-reference/test-plans/update-test-plan); manage them
+  in the test plan editor. Unknown fields are rejected with a `400` error.
+</Note>
+
 ## Request Body
 
 <ParamField body="test_plan" type="object" required>

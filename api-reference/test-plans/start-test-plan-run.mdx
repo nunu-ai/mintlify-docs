@@ -10,7 +10,9 @@ noindex: true
 
 Start a run for a specific test plan. This is the test-plan-scoped equivalent
 of [Start a Run](/api-reference/runs/start-run) — instead of supplying
-`test_plan_id` in the body, the plan is identified by the URL path.
+`test_plan_id` in the body, the plan is identified by the URL path. It is also
+the only endpoint that accepts `slot_deployment_configs` for cross-platform
+plans.
 
 The response contains one `job_id` per test in the plan; poll each one with
 [Get Job Details](/api-reference/jobs/get-job) to wait for completion.
@@ -23,8 +25,12 @@ The response contains one `job_id` per test in the plan; poll each one with
 
 ## Request Body
 
-<ParamField body="deployment_config_id" type="string" required>
-  UUID of the deployment configuration to use for every test in the plan.
+<ParamField body="deployment_config_id" type="string">
+  UUID of the deployment configuration for the plan's **default slot** (slot 1),
+  used by every player not assigned to an extra slot — for plans without extra
+  slots this is simply the config used by every test. Required unless the
+  plan's slot assignments cover every player of every test and
+  `slot_deployment_configs` is supplied.
 </ParamField>
 
 <ParamField body="agent_config_id" type="string">
@@ -32,9 +38,29 @@ The response contains one `job_id` per test in the plan; poll each one with
 </ParamField>
 
 <ParamField body="build_id" type="string">
-  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use
-  for every test in the plan. Only works with deployment configs that use Build
-  Storage as their build source; otherwise the request returns a `400` error.
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) for
+  the default slot. Only works with deployment configs that use Build Storage
+  as their build source, and requires `deployment_config_id`; otherwise the
+  request returns a `400` error.
+</ParamField>
+
+<ParamField body="slot_deployment_configs" type="object">
+  Per-slot deployment configs for cross-platform test plans, keyed by slot
+  index (`"2"`, `"3"`, ...). Fetch the plan with
+  [Get Test Plan](/api-reference/test-plans/get-test-plan) to see its `slots`.
+  Every slot used by the plan's player assignments needs an entry; keys
+  referencing slots the plan does not define return a `400` error. The key
+  `"1"` addresses the default slot as an alternative to the top-level
+  `deployment_config_id`/`build_id` (supplying both returns a `400` error).
+
+  <Expandable title="entry properties">
+    <ParamField body="slot_deployment_configs.{index}.deployment_config_id" type="string" required>
+      Deployment config to use for this slot.
+    </ParamField>
+    <ParamField body="slot_deployment_configs.{index}.build_id" type="string">
+      Optional Build Storage build for this slot (build-storage configs only).
+    </ParamField>
+  </Expandable>
 </ParamField>
 
 <ParamField body="additional_tags" type="string[]">
@@ -73,6 +99,11 @@ caller can correlate results via
   ID of the test plan execution
 </ResponseField>
 
+<ResponseField name="slot_build_ids" type="object">
+  For cross-platform plans: the build pinned for each extra slot, keyed by slot
+  index. Only present when slot configs resolved to builds.
+</ResponseField>
+
 On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status.
 
 <RequestExample>
@@ -83,6 +114,18 @@ curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a
   -d '{
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
     "additional_tags": ["nightly"]
+  }'
+```
+
+```bash cURL (cross-platform slots)
+curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "slot_deployment_configs": {
+      "2": { "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7" }
+    }
   }'
 ```
 </RequestExample>

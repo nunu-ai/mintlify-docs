@@ -71,6 +71,27 @@ data = response.json()
   Who last modified the test plan
 </ResponseField>
 
+<ResponseField name="slots" type="Slot[]" required>
+  Extra deployment slots of a cross-platform test plan (empty for regular
+  plans). Slots are read-only via the API and managed in the test plan editor;
+  their indices key `slot_deployment_configs` on
+  [Start Test Plan Run](/api-reference/test-plans/start-test-plan-run).
+
+  <Expandable title="slot properties">
+    <ResponseField name="slots[].index" type="integer">
+      Slot index (2 or higher; slot 1 is the implicit default slot and is not
+      listed here)
+    </ResponseField>
+    <ResponseField name="slots[].name" type="string">
+      Optional display name — a label only; slots are addressed by index
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="default_slot_name" type="string">
+  Optional display name of the implicit default slot (slot 1)
+</ResponseField>
+
 <ResponseField name="test_items" type="TestItem[]" required>
   Ordered list of tests in this plan
 
@@ -94,6 +115,13 @@ data = response.json()
   "created_by": "user@example.com",
   "modified_at": "2026-03-15T14:30:00.000000+00:00",
   "modified_by": "user@example.com",
+  "slots": [
+    {
+      "index": 2,
+      "name": "xbox"
+    }
+  ],
+  "default_slot_name": "pc",
   "test_items": [
     {
       "multiplayer_test_id": "a5060a07-d386-4269-98ce-b33fb894201e",

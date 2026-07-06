@@ -4007,12 +4007,38 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TestPlanSlot"
+                        },
+                        "description": "Extra deployment slots of a cross-platform test plan (read-only via the API; managed in the test plan editor). Their indices key `slot_deployment_configs` when starting the plan; slot 1 is the implicit default slot."
+                    },
+                    "default_slot_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional display name of the implicit default slot (slot 1). Read-only via the API."
+                    },
                     "test_items": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/TestPlanTestItem"
                         },
                         "description": "Ordered list of tests in this plan"
+                    }
+                }
+            },
+            "TestPlanSlot": {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "Slot index (2 or higher; slot 1 is the implicit default slot and is not listed)"
+                    },
+                    "name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional display name. Names are labels only — slots are addressed by index"
                     }
                 }
             },
@@ -4330,6 +4356,24 @@
             },
             "StartRunRequest": {
                 "type": "object",
+                "anyOf": [
+                    {
+                        "required": [
+                            "deployment_config_id"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "multiplayer_test_id",
+                            "player_deployment_configs"
+                        ]
+                    }
+                ],
+                "dependentRequired": {
+                    "build_id": [
+                        "deployment_config_id"
+                    ]
+                },
                 "properties": {
                     "multiplayer_test_id": {
                         "type": "string",
@@ -4337,7 +4381,7 @@
                     },
                     "test_plan_id": {
                         "type": "string",
-                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id OR instructions)"
+                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id OR instructions). This endpoint starts test plans with a single deployment config; to supply per-slot configs for a cross-platform plan, use POST /test-plans/{testPlanId}/runs instead."
                     },
                     "instructions": {
                         "type": "string",
@@ -4345,12 +4389,34 @@
                     },
                     "deployment_config_id": {
                         "type": "string",
-                        "description": "UUID of the deployment configuration"
+                        "description": "UUID of the deployment configuration, used by every player that has no `player_deployment_configs` entry. Required, except for multiplayer tests where `player_deployment_configs` covers every player."
                     },
                     "build_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs."
+                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs, and requires `deployment_config_id`."
+                    },
+                    "player_deployment_configs": {
+                        "type": "object",
+                        "description": "Per-player deployment configs for cross-platform multiplayer tests, keyed by player number (\"1\", \"2\", ...). Only applies with `multiplayer_test_id`. The map does not need to cover every player: any player without an entry falls back to the default `deployment_config_id`. Omitting `deployment_config_id` is only allowed when every player has an entry; a partial map without a default returns a 400 error.",
+                        "additionalProperties": {
+                            "type": "object",
+                            "required": [
+                                "deployment_config_id"
+                            ],
+                            "properties": {
+                                "deployment_config_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Deployment config to use for this player"
+                                },
+                                "build_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Optional Build Storage build for this player (build-storage configs only)"
+                                }
+                            }
+                        }
                     },
                     "name": {
                         "type": "string",
@@ -4394,10 +4460,7 @@
                     "options": {
                         "$ref": "#/components/schemas/RunOptions"
                     }
-                },
-                "required": [
-                    "deployment_config_id"
-                ]
+                }
             },
             "RunOptions": {
                 "type": "object",
@@ -4447,6 +4510,14 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Test plan execution ID. Returned for test plan runs."
+                    },
+                    "slot_build_ids": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "For cross-platform test plan runs: the build pinned for each extra slot, keyed by slot index. Only present when slot configs resolved to builds."
                     },
                     "message": {
                         "type": "string",
@@ -5754,13 +5825,28 @@
             },
             "StartTestPlanRunRequest": {
                 "type": "object",
-                "required": [
-                    "deployment_config_id"
+                "anyOf": [
+                    {
+                        "required": [
+                            "deployment_config_id"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "slot_deployment_configs"
+                        ]
+                    }
                 ],
+                "dependentRequired": {
+                    "build_id": [
+                        "deployment_config_id"
+                    ]
+                },
                 "properties": {
                     "deployment_config_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "description": "UUID of the deployment config for the plan's default slot (slot 1), used by every player not assigned to an extra slot. Required unless the plan's slot assignments cover every player and `slot_deployment_configs` is supplied."
                     },
                     "agent_config_id": {
                         "type": "string",
@@ -5769,7 +5855,29 @@
                     "build_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of a build from Build Storage to use for every test in the plan. Only works with build-storage deployment configs."
+                        "description": "UUID of a build from Build Storage for the default slot. Only works with build-storage deployment configs, and requires `deployment_config_id`."
+                    },
+                    "slot_deployment_configs": {
+                        "type": "object",
+                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", ...; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry.",
+                        "additionalProperties": {
+                            "type": "object",
+                            "required": [
+                                "deployment_config_id"
+                            ],
+                            "properties": {
+                                "deployment_config_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Deployment config to use for this slot"
+                                },
+                                "build_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Optional Build Storage build for this slot (build-storage configs only)"
+                                }
+                            }
+                        }
                     },
                     "additional_tags": {
                         "type": "array",
