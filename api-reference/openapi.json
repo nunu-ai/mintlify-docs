@@ -16,7 +16,7 @@
         }
     ],
     "paths": {
-        "/runs": {
+        "/project/{projectId}/runs": {
             "get": {
                 "operationId": "listRuns",
                 "summary": "List Runs",
@@ -203,9 +203,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}": {
+        "/project/{projectId}/runs/{runId}": {
             "get": {
                 "operationId": "getRunDetails",
                 "summary": "Get Run Details",
@@ -257,9 +268,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}/bugs": {
+        "/project/{projectId}/runs/{runId}/bugs": {
             "get": {
                 "operationId": "listRunBugs",
                 "summary": "List Run Bugs",
@@ -310,9 +332,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/stop": {
+        "/project/{projectId}/runs/stop": {
             "post": {
                 "operationId": "stopRuns",
                 "summary": "Stop Runs",
@@ -362,9 +395,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/jobs": {
+        "/project/{projectId}/jobs": {
             "get": {
                 "operationId": "listJobs",
                 "summary": "List Jobs",
@@ -477,9 +521,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/jobs/{jobId}": {
+        "/project/{projectId}/jobs/{jobId}": {
             "get": {
                 "operationId": "getJobDetails",
                 "summary": "Get Job Details",
@@ -541,9 +596,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans": {
+        "/project/{projectId}/test-plans": {
             "get": {
                 "operationId": "listTestPlans",
                 "summary": "List Test Plans",
@@ -701,9 +767,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans/{testPlanId}": {
+        "/project/{projectId}/test-plans/{testPlanId}": {
             "get": {
                 "operationId": "getTestPlan",
                 "summary": "Get Test Plan",
@@ -899,9 +976,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plan-executions": {
+        "/project/{projectId}/test-plan-executions": {
             "get": {
                 "operationId": "listTestPlanExecutions",
                 "summary": "List Test Plan Executions",
@@ -1021,9 +1109,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds": {
+        "/project/{projectId}/builds": {
             "get": {
                 "operationId": "listBuilds",
                 "summary": "List Builds",
@@ -1145,9 +1244,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/{buildId}": {
+        "/project/{projectId}/builds/{buildId}": {
             "get": {
                 "operationId": "getBuild",
                 "summary": "Get Build Details",
@@ -1281,9 +1391,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload": {
+        "/project/{projectId}/builds/upload": {
             "post": {
                 "operationId": "initiateUpload",
                 "summary": "Initiate Upload",
@@ -1413,9 +1534,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload/parts": {
+        "/project/{projectId}/builds/upload/parts": {
             "get": {
                 "operationId": "getUploadParts",
                 "summary": "Get Upload URLs for Parts",
@@ -1475,9 +1607,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload/complete": {
+        "/project/{projectId}/builds/upload/complete": {
             "post": {
                 "operationId": "completeUpload",
                 "summary": "Complete Upload",
@@ -1527,9 +1670,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}/live": {
+        "/project/{projectId}/runs/{runId}/live": {
             "get": {
                 "operationId": "getLiveRunSnapshot",
                 "summary": "Get Live Run Snapshot",
@@ -1590,9 +1744,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/bugs": {
+        "/project/{projectId}/bugs": {
             "get": {
                 "operationId": "listReviewedBugs",
                 "summary": "List Reviewed Bugs",
@@ -1718,9 +1883,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/bugs/{bugId}": {
+        "/project/{projectId}/bugs/{bugId}": {
             "get": {
                 "operationId": "getReviewedBug",
                 "summary": "Get Reviewed Bug",
@@ -1781,9 +1957,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/tests": {
+        "/project/{projectId}/tests": {
             "get": {
                 "operationId": "listTests",
                 "summary": "List Tests",
@@ -1946,9 +2133,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/tests/{testId}": {
+        "/project/{projectId}/tests/{testId}": {
             "get": {
                 "operationId": "getTest",
                 "summary": "Get Test",
@@ -2201,9 +2399,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-folders": {
+        "/project/{projectId}/test-folders": {
             "get": {
                 "operationId": "listTestFolders",
                 "summary": "List Test Folders",
@@ -2255,9 +2464,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/shared-steps": {
+        "/project/{projectId}/shared-steps": {
             "get": {
                 "operationId": "listSharedSteps",
                 "summary": "List Shared Steps",
@@ -2370,9 +2590,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/shared-steps/{sharedStepId}": {
+        "/project/{projectId}/shared-steps/{sharedStepId}": {
             "get": {
                 "operationId": "getSharedStep",
                 "summary": "Get Shared Step",
@@ -2594,9 +2825,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans/{testPlanId}/runs": {
+        "/project/{projectId}/test-plans/{testPlanId}/runs": {
             "post": {
                 "operationId": "startTestPlanRun",
                 "summary": "Start Test Plan Run",
@@ -2678,9 +2920,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/agent-configs": {
+        "/project/{projectId}/agent-configs": {
             "get": {
                 "operationId": "listAgentConfigs",
                 "summary": "List Agent Configs",
@@ -2742,9 +2995,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/deployment-configs": {
+        "/project/{projectId}/deployment-configs": {
             "get": {
                 "operationId": "listDeploymentConfigs",
                 "summary": "List Deployment Configs",
@@ -2806,9 +3070,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/credential-kinds": {
+        "/project/{projectId}/credential-kinds": {
             "get": {
                 "operationId": "listCredentialKinds",
                 "summary": "List Credential Kinds",
@@ -2870,7 +3145,18 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
         "/runs/{runId}/artifacts": {
             "servers": [
@@ -4691,7 +4977,7 @@
                 "properties": {
                     "project_id": {
                         "type": "string",
-                        "description": "Project ID for the build"
+                        "description": "Optional. The project is taken from the URL. If provided, it must match the projectId in the route."
                     },
                     "name": {
                         "type": "string",
@@ -4725,7 +5011,7 @@
                     },
                     "multipart": {
                         "type": "boolean",
-                        "description": "Use multipart upload? (Auto for files ≥3GB)"
+                        "description": "Use multipart upload? (Auto for files \u22653GB)"
                     },
                     "auto_delete": {
                         "type": "boolean",
@@ -4756,7 +5042,6 @@
                     }
                 },
                 "required": [
-                    "project_id",
                     "name",
                     "file_name",
                     "file_size",
@@ -5493,7 +5778,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 19800,
-                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only; sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be ≤ `max_seconds` (validated against the effective budget after defaults are applied)."
+                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only; sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be \u2264 `max_seconds` (validated against the effective budget after defaults are applied)."
                     },
                     "max_seconds": {
                         "type": "integer",

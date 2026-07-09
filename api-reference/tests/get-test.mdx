@@ -1,6 +1,6 @@
 ---
 title: 'Get Test'
-openapi: 'GET /tests/{testId}'
+openapi: 'GET /project/{projectId}/tests/{testId}'
 noindex: true
 ---
 
@@ -136,12 +136,12 @@ following fields:
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```bash cURL (specific version)
-curl -X GET "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e?version=3" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e?version=3" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

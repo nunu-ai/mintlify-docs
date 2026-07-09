@@ -1,6 +1,6 @@
 ---
 title: 'List Test Folders'
-openapi: 'GET /test-folders'
+openapi: 'GET /project/{projectId}/test-folders'
 noindex: true
 ---
 
@@ -85,7 +85,7 @@ These folder paths are the same strings accepted by `folder_path` in
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/test-folders?page=0&page_size=25" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/test-folders?page=0&page_size=25" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

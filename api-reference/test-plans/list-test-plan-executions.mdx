@@ -1,6 +1,6 @@
 ---
 title: 'List Test Plan Executions'
-openapi: 'GET /test-plan-executions'
+openapi: 'GET /project/{projectId}/test-plan-executions'
 noindex: true
 ---
 
@@ -135,13 +135,13 @@ Retrieve a paginated list of test plan executions for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/test-plan-executions?status=completed&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/test-plan-executions?status=completed&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const response = await fetch(
-  "https://nunu.ai/api/v1/test-plan-executions?status=completed&page=0&page_size=10",
+  "https://nunu.ai/api/v1/project/your-project-id/test-plan-executions?status=completed&page=0&page_size=10",
   {
     headers: {
       "X-Api-Key": process.env.NUNU_API_TOKEN,
@@ -156,7 +156,7 @@ import requests
 import os
 
 response = requests.get(
-    "https://nunu.ai/api/v1/test-plan-executions",
+    "https://nunu.ai/api/v1/project/your-project-id/test-plan-executions",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
     params={"status": "completed", "page": 0, "page_size": 10}
 )

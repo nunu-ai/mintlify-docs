@@ -1,6 +1,6 @@
 ---
 title: 'Get Test Plan'
-openapi: 'GET /test-plans/{testPlanId}'
+openapi: 'GET /project/{projectId}/test-plans/{testPlanId}'
 noindex: true
 ---
 
@@ -12,14 +12,14 @@ Retrieve a specific test plan by ID, including its test items.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const testPlanId = "b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c";
 
-const response = await fetch(`https://nunu.ai/api/v1/test-plans/${testPlanId}`, {
+const response = await fetch(`https://nunu.ai/api/v1/project/your-project-id/test-plans/${testPlanId}`, {
   headers: {
     "X-Api-Key": process.env.NUNU_API_TOKEN,
   },
@@ -34,7 +34,7 @@ import os
 test_plan_id = "b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c"
 
 response = requests.get(
-    f"https://nunu.ai/api/v1/test-plans/{test_plan_id}",
+    f"https://nunu.ai/api/v1/project/your-project-id/test-plans/{test_plan_id}",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]}
 )
 data = response.json()

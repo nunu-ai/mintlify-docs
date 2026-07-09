@@ -1,6 +1,6 @@
 ---
 title: 'List Jobs'
-openapi: 'GET /jobs'
+openapi: 'GET /project/{projectId}/jobs'
 noindex: true
 ---
 
@@ -139,7 +139,7 @@ Retrieve a paginated list of jobs for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/jobs?status=running&tags=nightly,regression&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/jobs?status=running&tags=nightly,regression&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

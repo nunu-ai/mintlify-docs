@@ -1,6 +1,6 @@
 ---
 title: 'Delete Build'
-openapi: 'DELETE /builds/{buildId}'
+openapi: 'DELETE /project/{projectId}/builds/{buildId}'
 noindex: true
 ---
 
@@ -24,7 +24,7 @@ Permanently delete a build from storage. This action cannot be undone.
 
 <RequestExample>
 ```bash cURL
-curl -X DELETE "https://nunu.ai/api/v1/builds/123e4567-e89b-12d3-a456-426614174000" \
+curl -X DELETE "https://nunu.ai/api/v1/project/your-project-id/builds/123e4567-e89b-12d3-a456-426614174000" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

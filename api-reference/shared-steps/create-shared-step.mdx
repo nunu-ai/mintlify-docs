@@ -1,6 +1,6 @@
 ---
 title: 'Create Shared Step'
-openapi: 'POST /shared-steps'
+openapi: 'POST /project/{projectId}/shared-steps'
 noindex: true
 ---
 
@@ -44,7 +44,7 @@ Returns the newly created shared step with status `201`. Same shape as
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/shared-steps" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/shared-steps" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

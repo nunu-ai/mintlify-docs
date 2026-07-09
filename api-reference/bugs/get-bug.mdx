@@ -1,6 +1,6 @@
 ---
 title: 'Get Reviewed Bug'
-openapi: 'GET /bugs/{bugId}'
+openapi: 'GET /project/{projectId}/bugs/{bugId}'
 noindex: true
 ---
 
@@ -79,7 +79,7 @@ object, plus a list of `occurrences` describing each individual detection.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/bugs/bug_8a1b2c3d" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/bugs/bug_8a1b2c3d" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

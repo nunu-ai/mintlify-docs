@@ -1,6 +1,6 @@
 ---
 title: 'Delete Test'
-openapi: 'DELETE /tests/{testId}'
+openapi: 'DELETE /project/{projectId}/tests/{testId}'
 noindex: true
 ---
 
@@ -43,7 +43,7 @@ required to delete a test that has been run before).
 
 <RequestExample>
 ```bash cURL
-curl -X DELETE "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X DELETE "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{ "delete_associated_jobs": true }'

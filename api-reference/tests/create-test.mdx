@@ -1,6 +1,6 @@
 ---
 title: 'Create Test'
-openapi: 'POST /tests'
+openapi: 'POST /project/{projectId}/tests'
 noindex: true
 ---
 
@@ -87,7 +87,7 @@ identical to [Get Test](/api-reference/tests/get-test).
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/tests" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/tests" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

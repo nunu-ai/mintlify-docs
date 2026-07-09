@@ -1,0 +1,12 @@
+{
+  "name": "mintlify-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "mint dev"
+  },
+  "devDependencies": {
+    "mint": "4.2.678"
+  },
+  "packageManager": "yarn@4.12.0"
+}

@@ -1,6 +1,6 @@
 ---
 title: 'Create Test Plan'
-openapi: 'POST /test-plans'
+openapi: 'POST /project/{projectId}/test-plans'
 noindex: true
 ---
 
@@ -53,7 +53,7 @@ Returns the newly created test plan with status `201`. The shape matches
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/test-plans" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

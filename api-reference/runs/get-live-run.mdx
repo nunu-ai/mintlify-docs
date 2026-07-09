@@ -1,6 +1,6 @@
 ---
 title: 'Get Live Run Snapshot'
-openapi: 'GET /runs/{runId}/live'
+openapi: 'GET /project/{projectId}/runs/{runId}/live'
 noindex: true
 ---
 
@@ -83,12 +83,12 @@ For completed-run details, use [Get Run](/api-reference/runs/get-run).
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m/live?include_screenshot=true" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/runs/lkkg6t5612m/live?include_screenshot=true" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```bash cURL (lightweight)
-curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m/live?include_screenshot=false" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/runs/lkkg6t5612m/live?include_screenshot=false" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

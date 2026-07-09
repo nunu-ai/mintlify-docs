@@ -1,2 +1,2 @@
 dev:
-    npx mint dev
+    yarn dev

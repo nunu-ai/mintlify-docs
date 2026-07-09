@@ -1,6 +1,6 @@
 ---
 title: 'List Deployment Configs'
-openapi: 'GET /deployment-configs'
+openapi: 'GET /project/{projectId}/deployment-configs'
 noindex: true
 ---
 
@@ -63,7 +63,7 @@ this endpoint to discover valid `deployment_config_id` values for
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/deployment-configs?page=0&page_size=25" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/deployment-configs?page=0&page_size=25" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

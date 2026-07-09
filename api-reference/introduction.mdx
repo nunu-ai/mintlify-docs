@@ -8,11 +8,19 @@ The nunu.ai Public API allows you to programmatically interact with your project
 
 ## Base URL
 
-All API requests should be made to:
+Requests to the main API are scoped to a project. The base URL includes the ID of the project you are working with:
 
 ```
-https://nunu.ai/api/v1
+https://nunu.ai/api/v1/project/{projectId}
 ```
+
+You can copy the project ID from the project settings page or from the project URL in the dashboard.
+
+The [artifacts](/api-reference/artifacts/list-artifacts) and [knowledge](/api-reference/knowledge/list-files) endpoints are the exception: they are served by the bouncer service at `https://bouncer.nunu.ai` and do not use this base URL. See their sections below for details.
+
+<Note>
+  Requests without the `/project/{projectId}` prefix (for example `https://nunu.ai/api/v1/runs`) keep working for existing integrations that use project API keys. The project is inferred from the key. New integrations should use the project scoped form shown here. Organization API keys only work with the project scoped form.
+</Note>
 
 ## Available Endpoints
 
@@ -78,7 +86,7 @@ All API requests require authentication via an API key. Include your API key in 
 X-Api-Key: YOUR_API_TOKEN
 ```
 
-Get your API keys from **Project Admin → API Keys** in the nunu.ai dashboard. Each key requires specific permissions based on the endpoints you want to access.
+Get your API keys from **Project Admin → API Keys** in the nunu.ai dashboard. Organization admins can also create organization API keys under **Org Admin → API Keys**; these keys work across all projects of the organization. Each key requires specific permissions based on the endpoints you want to access.
 
 <Card title="Learn more about authentication" icon="key" href="/api-reference/authentication">
   API key management, permissions, and security best practices

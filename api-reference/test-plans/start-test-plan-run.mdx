@@ -1,6 +1,6 @@
 ---
 title: 'Start Test Plan Run'
-openapi: 'POST /test-plans/{testPlanId}/runs'
+openapi: 'POST /project/{projectId}/test-plans/{testPlanId}/runs'
 noindex: true
 ---
 
@@ -111,7 +111,7 @@ On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status.
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -121,7 +121,7 @@ curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a
 ```
 
 ```bash cURL (cross-platform slots)
-curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

@@ -1,6 +1,6 @@
 ---
 title: 'Get Run Details'
-openapi: 'GET /runs/{runId}'
+openapi: 'GET /project/{projectId}/runs/{runId}'
 noindex: true
 ---
 
@@ -13,14 +13,14 @@ Retrieve detailed information about a specific run, including step-by-step resul
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/runs/lkkg6t5612m" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/runs/lkkg6t5612m" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const runId = "lkkg6t5612m";
 
-const response = await fetch(`https://nunu.ai/api/v1/runs/${runId}`, {
+const response = await fetch(`https://nunu.ai/api/v1/project/your-project-id/runs/${runId}`, {
   headers: {
     "X-Api-Key": process.env.NUNU_API_TOKEN,
   },
@@ -35,7 +35,7 @@ import os
 run_id = "lkkg6t5612m"
 
 response = requests.get(
-    f"https://nunu.ai/api/v1/runs/{run_id}",
+    f"https://nunu.ai/api/v1/project/your-project-id/runs/{run_id}",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]}
 )
 data = response.json()

@@ -1,6 +1,6 @@
 ---
 title: 'Get Build Details'
-openapi: 'GET /builds/{buildId}'
+openapi: 'GET /project/{projectId}/builds/{buildId}'
 noindex: true
 ---
 
@@ -55,7 +55,7 @@ The response includes all fields from the [List Builds](/api-reference/builds/li
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/builds/123e4567-e89b-12d3-a456-426614174000" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/builds/123e4567-e89b-12d3-a456-426614174000" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

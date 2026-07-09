@@ -1,6 +1,6 @@
 ---
 title: 'Update Test Plan'
-openapi: 'PATCH /test-plans/{testPlanId}'
+openapi: 'PATCH /project/{projectId}/test-plans/{testPlanId}'
 noindex: true
 ---
 
@@ -31,7 +31,7 @@ Returns the updated test plan (same shape as
 
 <RequestExample>
 ```bash cURL (rename)
-curl -X PATCH "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -40,7 +40,7 @@ curl -X PATCH "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4
 ```
 
 ```bash cURL (replace test items)
-curl -X PATCH "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

@@ -1,6 +1,6 @@
 ---
 title: 'Update Test'
-openapi: 'PATCH /tests/{testId}'
+openapi: 'PATCH /project/{projectId}/tests/{testId}'
 noindex: true
 ---
 
@@ -86,7 +86,7 @@ On version conflict, returns `409` with:
 
 <RequestExample>
 ```bash cURL (rename test)
-curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -96,7 +96,7 @@ curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e
 ```
 
 ```bash cURL (move folder)
-curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -107,7 +107,7 @@ curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e
 ```
 
 ```bash cURL (raise budget on a discovery test)
-curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

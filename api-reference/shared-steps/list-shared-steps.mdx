@@ -1,6 +1,6 @@
 ---
 title: 'List Shared Steps'
-openapi: 'GET /shared-steps'
+openapi: 'GET /project/{projectId}/shared-steps'
 noindex: true
 ---
 
@@ -64,7 +64,7 @@ contents of a specific collection.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/shared-steps?page=0&page_size=25" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/shared-steps?page=0&page_size=25" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>
