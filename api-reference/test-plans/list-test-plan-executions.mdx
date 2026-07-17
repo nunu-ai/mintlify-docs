@@ -115,7 +115,10 @@ Retrieve a paginated list of test plan executions for your project.
       Number of passed tests
     </ResponseField>
     <ResponseField name="test_status.failed" type="integer">
-      Number of failed tests
+      Number of failed tests (results `FAILED`, `ERROR`, `TIMEOUT`, `BLOCKED` or `MAX_STEPS`)
+    </ResponseField>
+    <ResponseField name="test_status.skipped" type="integer">
+      Number of skipped tests
     </ResponseField>
     <ResponseField name="test_status.stopped" type="integer">
       Number of stopped tests
@@ -182,6 +185,7 @@ data = response.json()
       "test_status": {
         "passed": 4,
         "failed": 1,
+        "skipped": 0,
         "stopped": 0,
         "queued": 0,
         "running": 0

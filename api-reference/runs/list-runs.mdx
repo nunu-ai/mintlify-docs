@@ -92,7 +92,18 @@ Retrieve a paginated list of runs for your project.
 </ResponseField>
 
 <ResponseField name="result" type="string">
-  Result: `success`, `failure`, `error`, or `null` if not completed
+  Result of the run, or `null` if not completed:
+
+  | Value | Meaning |
+  | --- | --- |
+  | `SUCCESS` | The run completed; for verification tests, every check passed |
+  | `FAILED` | Verdict: at least one verification check failed |
+  | `SKIPPED` | Verdict: the test could not be executed and was skipped |
+  | `BLOCKED` | Verdict: a precondition prevented the checks from being evaluated |
+  | `TIMEOUT` | The run hit its time limit before finishing |
+  | `ERROR` | The run failed for technical reasons (setup, infrastructure) |
+  | `STOPPED` | The run was stopped before finishing (e.g. by a user) |
+  | `MAX_STEPS` | Legacy: the agent ran out of steps (superseded by `TIMEOUT`) |
 </ResponseField>
 
 <ResponseField name="bug_info" type="object">
@@ -232,6 +243,9 @@ data = response.json()
           "composite_test_id": "58207dda-e2ca-44bd-a4e2-82b81b3ea8fa",
           "step_count": 1,
           "completed_step_count": 1,
+          "step_result_summary": {
+            "SUCCESS": 1
+          },
           "platform": {
             "kind": "android-native",
             "config": {

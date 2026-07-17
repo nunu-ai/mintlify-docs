@@ -39,7 +39,7 @@ test items that can be executed together with
           Test UUID to include in the plan
         </ParamField>
         <ParamField body="retries" type="integer" default="0">
-          Per-item retry count (0 or higher)
+          Per-item retry count (0 or higher). Retries apply to execution failures (`ERROR`, `TIMEOUT`, `STOPPED`); genuine test verdicts (`FAILED`, `BLOCKED`, `SKIPPED`) are final and are not retried.
         </ParamField>
       </Expandable>
     </ParamField>

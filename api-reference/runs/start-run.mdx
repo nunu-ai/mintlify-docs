@@ -78,7 +78,7 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="retries" type="integer" default="0">
-  Number of times to retry the test if it fails. Only applies when using `multiplayer_test_id`. Must be between 0 and 10.
+  Number of times to retry the run after an execution failure (`ERROR`, `TIMEOUT`, `STOPPED`). Genuine test verdicts (`FAILED`, `BLOCKED`, `SKIPPED`) are final and are not retried. Only applies when using `multiplayer_test_id`. Must be between 0 and 10.
 </ParamField>
 
 <ParamField body="instances" type="integer" default="1">

@@ -3958,12 +3958,17 @@
                     "result": {
                         "type": "string",
                         "enum": [
-                            "success",
-                            "failure",
-                            "error"
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
                         ],
                         "nullable": true,
-                        "description": "Result of the run (null if not completed)"
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "bug_info": {
                         "type": "object",
@@ -4056,7 +4061,19 @@
                         "type": "string"
                     },
                     "result": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "player_number": {
                         "type": "integer"
@@ -4071,7 +4088,8 @@
                         "type": "integer"
                     },
                     "completed_step_count": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of steps whose result is SUCCESS. Kept for backward compatibility; prefer step_result_summary."
                     },
                     "platform": {
                         "type": "object",
@@ -4083,6 +4101,13 @@
                                 "type": "string"
                             }
                         }
+                    },
+                    "step_result_summary": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "description": "Step counts per result label, e.g. {\"SUCCESS\": 5, \"FAILED\": 2, \"SKIPPED\": 1}."
                     }
                 }
             },
@@ -4126,7 +4151,18 @@
                     },
                     "result": {
                         "type": "string",
-                        "nullable": true
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "started_at": {
                         "type": "string",
@@ -4251,7 +4287,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "default": 0,
-                        "description": "Number of retries for this test item"
+                        "description": "Number of retries for this test item after an execution failure; genuine test verdicts are not retried."
                     }
                 },
                 "required": [
@@ -4401,7 +4437,12 @@
                         "type": "integer"
                     },
                     "failed": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Runs that ended FAILED, ERROR, TIMEOUT, BLOCKED or MAX_STEPS."
+                    },
+                    "skipped": {
+                        "type": "integer",
+                        "description": "Runs that ended SKIPPED."
                     },
                     "stopped": {
                         "type": "integer"
@@ -4725,7 +4766,7 @@
                         "default": 0,
                         "minimum": 0,
                         "maximum": 10,
-                        "description": "Number of times to retry the test if it fails. Only applies when using multiplayer_test_id."
+                        "description": "Number of times to retry the run after an execution failure (ERROR, TIMEOUT, STOPPED). Genuine test verdicts (FAILED, BLOCKED, SKIPPED) are final and are not retried. Only applies when using multiplayer_test_id."
                     },
                     "instances": {
                         "type": "integer",
@@ -4823,7 +4864,16 @@
                                 "type": "boolean"
                             },
                             "template_data": {
-                                "type": "object"
+                                "type": "object",
+                                "nullable": true,
+                                "description": "Rendered template values, or null when templating is disabled."
+                            },
+                            "players": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PlayerDetails"
+                                },
+                                "description": "Players with full step details; overrides the summary players list."
                             }
                         }
                     }
@@ -6283,6 +6333,175 @@
                     },
                     "pagination": {
                         "$ref": "#/components/schemas/Pagination"
+                    }
+                }
+            },
+            "RunResult": {
+                "type": "string",
+                "enum": [
+                    "SUCCESS",
+                    "FAILED",
+                    "SKIPPED",
+                    "BLOCKED",
+                    "TIMEOUT",
+                    "ERROR",
+                    "STOPPED",
+                    "MAX_STEPS"
+                ],
+                "description": "Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
+            },
+            "VerificationItemResult": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Item identifier within the step (e.g. \"1a\")."
+                    },
+                    "expected": {
+                        "type": "string",
+                        "description": "The expected result the agent verified."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "passed",
+                            "failed",
+                            "skipped",
+                            "blocked",
+                            "stopped",
+                            "timeout",
+                            "error",
+                            "pending"
+                        ],
+                        "description": "Status of this item. The agent assigns passed/failed/skipped/blocked; stopped/timeout/error mean the run was cut off before the item could reach a verdict. pending only appears on runs recorded before cut-off statuses existed."
+                    },
+                    "comment": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional agent remark, e.g. why the item failed or an orthogonal observation."
+                    }
+                }
+            },
+            "RunStep": {
+                "type": "object",
+                "properties": {
+                    "step_number": {
+                        "type": "integer"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "duration_ms": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "run_state": {
+                        "type": "string",
+                        "enum": [
+                            "INITIALIZING",
+                            "RUNNING",
+                            "COMPLETED"
+                        ]
+                    },
+                    "run_result": {
+                        "type": "string",
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the step, or null while the step is still initializing or running. See RunResult for what each label means."
+                    },
+                    "report": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Short summary the agent wrote for this step."
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VerificationItemResult"
+                        },
+                        "nullable": true,
+                        "description": "Per-item verdicts for verification steps ([] = step had no expected results). null for task/discovery steps and for runs recorded before item-level results were persisted."
+                    },
+                    "test": {
+                        "type": "object",
+                        "properties": {
+                            "test_step_id": {
+                                "type": "string"
+                            },
+                            "goal": {
+                                "type": "string"
+                            },
+                            "finish_condition": {
+                                "type": "string"
+                            },
+                            "test_type": {
+                                "type": "string",
+                                "enum": [
+                                    "task",
+                                    "verification",
+                                    "discovery"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "PlayerDetails": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Player"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "artifacts": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunDetailsArtifact"
+                                }
+                            },
+                            "steps": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunStep"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "RunDetailsArtifact": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "Size in bytes."
+                    },
+                    "uploaded_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             }

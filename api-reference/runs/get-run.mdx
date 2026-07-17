@@ -49,12 +49,15 @@ data = response.json()
   "job_id": "f80f6230-3a4f-431a-9d55-d11b867fed4e",
   "project_id": "test",
   "state": "COMPLETED",
-  "result": "SUCCESS",
-  "bug_info": null,
+  "result": "FAILED",
+  "bug_info": {
+    "bug_label": "NO_BUG",
+    "bug_count": 0
+  },
   "test": {
     "id": "a5060a07-d386-4279-98ce-b33fb884201e",
-    "name": "create design doc",
-    "type": "task"
+    "name": "settings menu checks",
+    "type": "verification"
   },
   "build": null,
   "created_at": "2026-03-03T15:50:23.601012+00:00",
@@ -65,21 +68,24 @@ data = response.json()
     "type": "api",
     "value": { "key_id": "7f028653-0e85-4c37-87be-c59976796155" }
   },
-  "tags": ["gdd"],
-  "templating_enabled": true,
-  "template_data": {
-    "country": "Switzerland"
-  },
+  "tags": ["settings"],
+  "templating_enabled": false,
+  "template_data": null,
   "players": [
     {
       "id": "lkkg6t5612m-1",
       "state": "COMPLETED",
-      "result": "SUCCESS",
+      "result": "FAILED",
       "player_number": 1,
-      "test_name": "create design doc",
+      "test_name": "settings menu checks",
       "composite_test_id": "58207dda-e2ca-44bd-a4e2-82b81b3ea8fa",
-      "step_count": 1,
+      "step_count": 3,
       "completed_step_count": 1,
+      "step_result_summary": {
+        "SUCCESS": 1,
+        "FAILED": 1,
+        "SKIPPED": 1
+      },
       "platform": {
         "kind": "android-native",
         "config": {
@@ -107,16 +113,82 @@ data = response.json()
         {
           "step_number": 1,
           "start_time": "2026-03-03T15:50:23.601048+00:00",
-          "end_time": "2026-03-03T15:54:24.261038+00:00",
-          "duration_ms": 240659,
+          "end_time": "2026-03-03T15:52:01.113025+00:00",
+          "duration_ms": 97511,
           "run_state": "COMPLETED",
           "run_result": "SUCCESS",
-          "report": "Successfully created a GDD for...",
+          "report": "All audio settings behaved as expected.",
+          "items": [
+            {
+              "id": "1a",
+              "expected": "The music volume slider changes the music volume",
+              "status": "passed",
+              "comment": null
+            },
+            {
+              "id": "1b",
+              "expected": "The mute toggle silences all audio",
+              "status": "passed",
+              "comment": "Mute also greys out both sliders."
+            }
+          ],
           "test": {
             "test_step_id": "step-1",
-            "goal": "Create a design document for",
+            "goal": "Verify the audio settings",
             "finish_condition": "",
-            "test_type": "task"
+            "test_type": "verification"
+          }
+        },
+        {
+          "step_number": 2,
+          "start_time": "2026-03-03T15:52:01.113025+00:00",
+          "end_time": "2026-03-03T15:54:24.261038+00:00",
+          "duration_ms": 143148,
+          "run_state": "COMPLETED",
+          "run_result": "FAILED",
+          "report": "The language dropdown did not persist the selection.",
+          "items": [
+            {
+              "id": "2a",
+              "expected": "Selecting a language changes the UI language",
+              "status": "passed",
+              "comment": null
+            },
+            {
+              "id": "2b",
+              "expected": "The selected language persists after restarting",
+              "status": "failed",
+              "comment": "UI reverted to English after restart."
+            }
+          ],
+          "test": {
+            "test_step_id": "step-2",
+            "goal": "Verify the language settings",
+            "finish_condition": "",
+            "test_type": "verification"
+          }
+        },
+        {
+          "step_number": 3,
+          "start_time": null,
+          "end_time": null,
+          "duration_ms": null,
+          "run_state": "COMPLETED",
+          "run_result": "SKIPPED",
+          "report": "Skipped: cloud saves are not available in this build.",
+          "items": [
+            {
+              "id": "3a",
+              "expected": "Cloud save sync completes without errors",
+              "status": "skipped",
+              "comment": "Feature flag disabled in this build."
+            }
+          ],
+          "test": {
+            "test_step_id": "step-3",
+            "goal": "Verify cloud save sync",
+            "finish_condition": "",
+            "test_type": "verification"
           }
         }
       ]
