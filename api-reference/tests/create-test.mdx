@@ -80,6 +80,24 @@ explicitly, or pick a value that fits inside the default range.
 
 The hard upper bound for any single run is `5.5h` (`19800` seconds).
 
+## Test-level memory
+
+`memory` controls whether the agent may read and write memory files across runs
+of this test. It applies to every test type and requires the project's knowledge
+feature to be enabled.
+
+| Value        | Behavior                                                                 |
+| ------------ | ------------------------------------------------------------------------ |
+| omitted / `null` | **Auto** — inherit the project's default memory setting.             |
+| `disabled`   | Memory is off for this test.                                              |
+| `read_write` | The agent may read and write memory files across runs of this test.      |
+| `read_only`  | The agent may read but not write memory files.                           |
+
+On [update](/api-reference/tests/update-test), omit `memory` to leave it
+unchanged, send `null` to reset it to auto, or send an explicit value to
+override. When the project's knowledge feature is disabled, memory is always off
+regardless of this setting.
+
 ## Response
 
 Returns the newly created test with status `201`. The response shape is

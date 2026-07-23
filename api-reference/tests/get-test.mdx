@@ -95,6 +95,12 @@ following base fields, and each variant adds its own `players_by_key` shape.
   Test-level maximum runtime in seconds. Returned for all test types.
 </ResponseField>
 
+<ResponseField name="memory" type="string">
+  Test-level memory override: `disabled`, `read_only`, or `read_write`. `null`
+  means "auto" — the test inherits the project's default memory setting. Always
+  present on reads. See [Create Test](/api-reference/tests/create-test#test-level-memory).
+</ResponseField>
+
 ## Verification step shape
 
 Each `step` item inside a verification player's `items_by_key` has the
@@ -160,6 +166,7 @@ curl -X GET "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-
   "testrail": null,
   "source": "repository",
   "max_seconds": 19800,
+  "memory": null,
   "players_by_key": {
     "1": {
       "name": "P1",

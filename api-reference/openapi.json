@@ -5836,6 +5836,16 @@
                         "maximum": 19800,
                         "description": "Test-level maximum runtime in seconds. Hard ceiling for any single run is 19800 (5.5h). Defaults when omitted: verification=19800 (5.5h), discovery=10800 (3h), task=19800 (5.5h)."
                     },
+                    "memory": {
+                        "type": "string",
+                        "enum": [
+                            "disabled",
+                            "read_only",
+                            "read_write"
+                        ],
+                        "nullable": true,
+                        "description": "Test-level memory override. `null` or omitted means \"auto\" — inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
+                    },
                     "players_by_key": {
                         "type": "object",
                         "additionalProperties": true
