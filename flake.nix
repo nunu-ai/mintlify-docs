@@ -12,7 +12,7 @@
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [
-            nodejs_20
+            nodejs
             yarn-berry
             just
           ];
