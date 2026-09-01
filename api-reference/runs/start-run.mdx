@@ -85,6 +85,16 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
   Number of parallel instances to run. Only applies when using `multiplayer_test_id`. Must be between 1 and 10.
 </ParamField>
 
+<ParamField body="run_on_all_configured_devices" type="boolean" default="false">
+  Start one independent run on every device configured in
+  `deployment_config_id`. Supported for mobile deployment configurations
+  with multi-device runs enabled. Requires `deployment_config_id` and cannot
+  be combined with `player_deployment_configs`. For existing tests,
+  `instances` applies independently on each device, so the aggregate run
+  count is `instances` multiplied by the number of configured devices. Normal
+  concurrency and billing rules apply.
+</ParamField>
+
 <ParamField body="render_templates" type="boolean" default="false">
   Enable template rendering
 </ParamField>
@@ -118,8 +128,9 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 
 ## Response
 
-Returns `201 Created` on success. The body contains the started-run data
-directly (no `{ ok, status, message, data }` envelope).
+Single-device requests return `201 Created`. Multi-device requests return
+aggregate per-device results; see the fields below. The body contains the
+started-run data directly (no `{ ok, status, message, data }` envelope).
 
 <ResponseField name="job_ids" type="string[]" required>
   Array of job IDs created. For a single test, this contains one job. For a
@@ -138,6 +149,47 @@ directly (no `{ ok, status, message, data }` envelope).
 <ResponseField name="message" type="string">
   Optional status message returned for multiplayer test and test plan runs.
 </ResponseField>
+
+<ResponseField name="ok" type="boolean">
+  Whether at least one device run started. Returned for multi-device requests.
+</ResponseField>
+
+<ResponseField name="requested_count" type="integer">
+  Number of runs requested across configured devices. Returned for multi-device
+  existing-test and test-plan requests.
+</ResponseField>
+
+<ResponseField name="started_count" type="integer">
+  Number of runs started successfully. Returned for multi-device existing-test
+  and test-plan requests.
+</ResponseField>
+
+<ResponseField name="successful_count" type="integer">
+  Alias for `started_count` in multi-device existing-test and test-plan
+  responses.
+</ResponseField>
+
+<ResponseField name="failed_count" type="integer">
+  Number of requested runs that failed to start. Returned for multi-device
+  existing-test and test-plan requests.
+</ResponseField>
+
+<ResponseField name="results" type="object[]">
+  Per-device start results for existing-test and test-plan requests. Each item
+  includes `device_label`, `ok`, `status`, and failure `message`; successful
+  items may include the upstream response under `data`.
+</ResponseField>
+
+<ResponseField name="device_runs" type="object[]">
+  Per-device start results for ephemeral (`instructions`) requests. Each item
+  includes `device_label`, `ok`, and, when available, `status` and `message`.
+</ResponseField>
+
+<Note>
+  Multi-device requests return `201` when every device run starts and `207`
+  when only some start. A request that cannot start any saved-test or test-plan
+  run returns `500`.
+</Note>
 
 On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status
 (`400`, `401`, `403`, `404`, `500`).
@@ -176,6 +228,17 @@ curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
     "player_deployment_configs": {
       "2": { "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7" }
     }
+  }'
+```
+
+```bash cURL (All configured devices)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "run_on_all_configured_devices": true
   }'
 ```
 

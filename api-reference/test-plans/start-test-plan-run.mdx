@@ -86,10 +86,19 @@ The response contains one `job_id` per test in the plan; poll each one with
   lives on the test version itself (`min_seconds` / `max_seconds`).
 </ParamField>
 
+<ParamField body="run_on_all_configured_devices" type="boolean" default="false">
+  Start one independent test-plan run on every device configured in
+  `deployment_config_id`. Supported for mobile deployment configurations
+  with multi-device runs enabled. Requires `deployment_config_id` and cannot
+  be combined with `slot_deployment_configs`. Normal concurrency and billing
+  rules apply.
+</ParamField>
+
 ## Response
 
-Returns `201 Created` on success. The body contains the started-run data
-directly (no `{ ok, status, message, data }` envelope), typically including
+Single-device requests return `201 Created`. Multi-device requests return
+aggregate per-device results; see the fields below. The body contains the
+started-run data directly (no `{ ok, status, message, data }` envelope), typically including
 `job_ids[]` (one per test in the plan) and `test_plan_execution_id`, so the
 caller can correlate results via
 [List Test Plan Executions](/api-reference/test-plans/list-test-plan-executions).
@@ -106,6 +115,37 @@ caller can correlate results via
   For cross-platform plans: the build pinned for each extra slot, keyed by slot
   index. Only present when slot configs resolved to builds.
 </ResponseField>
+
+<ResponseField name="ok" type="boolean">
+  Whether at least one device run started. Returned for multi-device requests.
+</ResponseField>
+
+<ResponseField name="requested_count" type="integer">
+  Number of test-plan runs requested across configured devices.
+</ResponseField>
+
+<ResponseField name="started_count" type="integer">
+  Number of test-plan runs started successfully.
+</ResponseField>
+
+<ResponseField name="successful_count" type="integer">
+  Alias for `started_count` in multi-device responses.
+</ResponseField>
+
+<ResponseField name="failed_count" type="integer">
+  Number of test-plan runs that failed to start.
+</ResponseField>
+
+<ResponseField name="results" type="object[]">
+  Per-device start results. Each item includes `device_label`, `ok`, `status`,
+  and failure `message`; successful items may include the upstream response
+  under `data`.
+</ResponseField>
+
+<Note>
+  Multi-device requests return `201` when every device run starts, `207` when
+  only some start, and `500` when none start.
+</Note>
 
 On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status.
 
@@ -129,6 +169,16 @@ curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4
     "slot_deployment_configs": {
       "2": { "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7" }
     }
+  }'
+```
+
+```bash cURL (All configured devices)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "run_on_all_configured_devices": true
   }'
 ```
 </RequestExample>

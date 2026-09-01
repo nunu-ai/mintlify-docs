@@ -172,6 +172,33 @@
                             }
                         }
                     },
+                    "207": {
+                        "description": "Multi-device run partially started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "No device runs started or internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/StartRunResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Error"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "400": {
                         "description": "Bad Request - Invalid parameters",
                         "content": {
@@ -2879,6 +2906,33 @@
                             }
                         }
                     },
+                    "207": {
+                        "description": "Multi-device test-plan run partially started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "No device runs started or internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/StartRunResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Error"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "content": {
@@ -4775,6 +4829,11 @@
                         "maximum": 10,
                         "description": "Number of parallel instances to run. Only applies when using multiplayer_test_id."
                     },
+                    "run_on_all_configured_devices": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Start one independent run on every device configured in `deployment_config_id`. Supported for mobile deployment configurations with multi-device runs enabled. Requires `deployment_config_id`; for multiplayer tests, cannot be combined with `player_deployment_configs`. For multiplayer tests, `instances` applies independently on each device."
+                    },
                     "render_templates": {
                         "type": "boolean",
                         "default": false,
@@ -4813,8 +4872,12 @@
             },
             "StartRunResponse": {
                 "type": "object",
-                "description": "Response body for POST /runs and POST /test-plans/{testPlanId}/runs. Returned with HTTP 201 on success. The body contains the started-run data directly (no { ok, status, message, data } envelope).",
+                "description": "Response body for POST /runs and POST /test-plans/{testPlanId}/runs. Single-device responses are returned with HTTP 201. Multi-device responses include per-device results and aggregate counts; HTTP 201 means all devices started, HTTP 207 means partial success, and HTTP 500 means none started.",
                 "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "description": "Whether at least one device run started. Returned for multi-device requests."
+                    },
                     "job_ids": {
                         "type": "array",
                         "items": {
@@ -4849,6 +4912,65 @@
                     "message": {
                         "type": "string",
                         "description": "Optional status message returned for multiplayer test and test plan runs."
+                    },
+                    "requested_count": {
+                        "type": "integer",
+                        "description": "Number of runs requested across configured devices. For multiplayer tests, includes the `instances` multiplier."
+                    },
+                    "started_count": {
+                        "type": "integer",
+                        "description": "Number of runs started successfully. For multiplayer tests, includes the `instances` multiplier."
+                    },
+                    "successful_count": {
+                        "type": "integer",
+                        "description": "Alias for `started_count` in multi-device existing-test and test-plan responses."
+                    },
+                    "failed_count": {
+                        "type": "integer",
+                        "description": "Number of requested runs that failed to start."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeviceRunResult"
+                        },
+                        "description": "Per-device start results for existing-test and test-plan requests."
+                    },
+                    "device_runs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeviceRunResult"
+                        },
+                        "description": "Per-device start results for ephemeral (`instructions`) requests."
+                    }
+                }
+            },
+            "DeviceRunResult": {
+                "type": "object",
+                "properties": {
+                    "device_label": {
+                        "type": "string",
+                        "description": "Label of the configured device."
+                    },
+                    "ok": {
+                        "type": "boolean",
+                        "description": "Whether the run started on this device."
+                    },
+                    "status": {
+                        "type": "integer",
+                        "description": "HTTP-like status for this device start attempt."
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Failure or status message for this device attempt."
+                    },
+                    "error": {
+                        "type": "string",
+                        "description": "Error returned for this device attempt, when present."
+                    },
+                    "data": {
+                        "type": "object",
+                        "description": "Upstream start response for this device, when present."
                     }
                 }
             },
@@ -6239,6 +6361,11 @@
                     },
                     "options": {
                         "$ref": "#/components/schemas/RunOptions"
+                    },
+                    "run_on_all_configured_devices": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Start one independent test-plan run on every device configured in `deployment_config_id`. Supported for mobile deployment configurations with multi-device runs enabled. Requires `deployment_config_id` and cannot be combined with `slot_deployment_configs`."
                     }
                 }
             },
