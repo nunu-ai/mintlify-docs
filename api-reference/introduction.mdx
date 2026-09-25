@@ -48,6 +48,7 @@ The [artifacts](/api-reference/artifacts/list-artifacts) and [knowledge](/api-re
 | [`/runs/{runId}`](/api-reference/runs/get-run) | GET | Get detailed run information with artifacts |
 | [`/runs/{runId}/bugs`](/api-reference/runs/list-bugs) | GET | List bugs found in a run |
 | [`/runs/stop`](/api-reference/runs/stop-runs) | POST | Stop one or more running tests |
+| [`/runs/export/testrail`](/api-reference/runs/export-testrail) | POST | Export run or test-plan execution results to TestRail |
 
 ### Builds Endpoints
 
@@ -99,7 +100,7 @@ API keys are scoped to specific permissions. Use only the permissions you need:
 | Permission | Description | Required For |
 | --- | --- | --- |
 | `project:read-runs` | Read run data, artifacts, and bugs | Listing runs, getting run details |
-| `project:operate-runs` | Start and stop test runs | Starting tests, stopping runs |
+| `project:operate-runs` | Start and stop test runs; export results | Starting tests, stopping runs, exporting to TestRail |
 | `project:manage-build-storage` | Upload and manage builds | All build upload operations |
 
 ## Response Format

@@ -1,0 +1,121 @@
+---
+title: "Export to TestRail"
+description: "Export a run or test-plan execution using your project’s saved TestRail integration"
+openapi: "POST /project/{projectId}/runs/export/testrail"
+noindex: true
+---
+
+<Info>
+  **Permission required:** `project:operate-runs`. TestRail must be enabled and
+  configured for the project, with TestRail case mappings for the results you
+  want to export.
+</Info>
+
+Export one nunu multiplayer run, or the completed runs in a test-plan execution. The export uses your project's saved TestRail connection and suite configuration. Results spanning multiple suites create a TestRail plan; a single suite creates a TestRail run.
+
+## Request body
+
+Supply **exactly one** source. Unknown fields are rejected.
+
+<ParamField body="run_id" type="string">
+  nunu multiplayer run ID from [List Runs](/api-reference/runs/list-runs). Do
+  not use a job ID or per-player run ID.
+</ParamField>
+
+<ParamField body="test_plan_execution_id" type="string (uuid)">
+  Execution ID from [List Test Plan
+  Executions](/api-reference/test-plans/list-test-plan-executions), not the
+  test-plan definition ID. Only completed runs in the execution are exported.
+</ParamField>
+
+<ParamField body="custom_run_name" type="string">
+  Optional name for the TestRail entry. Must contain 1–250 characters after
+  trimming whitespace.
+</ParamField>
+
+<ParamField body="close_run_on_completion" type="boolean">
+  Set to `true` to close the created TestRail run or plan after results are
+  submitted.
+</ParamField>
+
+<ParamField body="force_new_run" type="boolean">
+  Set to `true` to create a new entry for an already-exported test-plan
+  execution. Omit to return its existing TestRail links. Single-run exports
+  always create a new entry.
+</ParamField>
+
+## Existing exports and retries
+
+If a test-plan execution already has a saved TestRail export, the response includes `already_exported: true` and the existing IDs and links. No results are submitted again; `runs_processed` is empty and `total_test_cases` is `0`. To export again, explicitly send `force_new_run: true`.
+
+Concurrent manual exports of the same execution return `409` while an export is in progress. An export performed before the execution finishes contains only the runs completed at that time.
+
+<Warning>
+  Single-run exports create a new TestRail entry on every call. Do not blindly
+  retry after a timeout: the remote entry may already exist. The same caution
+  applies when using `force_new_run: true`. Inspect TestRail before submitting
+  another export.
+</Warning>
+
+## Response
+
+The response is the export result directly, without a `data` or `result` wrapper. It includes `success`, `export_type`, `export_trigger`, `export_strategy`, `runs_processed`, and `total_test_cases`.
+
+Depending on the suite configuration, the result includes `testrail_run_id` and `testrail_run_url`, or `testrail_plan_id` and `testrail_plan_url`. Names and `export_duration_ms` may also be present. Inspect optional `skipped_cases` and `warnings` for omitted cases or other export issues. Warning fields use `snake_case`, including `run_id` and `test_version_id`.
+
+Missing sources and sources belonging to another project both return `404`. Invalid input returns `400`; missing permissions or a disabled TestRail integration returns `403`.
+
+## Using MCP
+
+The matching MCP tool is `export_testrail_run`. It accepts the same body fields and returns the same export result, with identical duplicate-export behavior. Both API and MCP exports use a manual trigger; callers cannot select the internal automatic completion trigger.
+
+For global MCP, also supply `project_id` when your credentials can access multiple projects. With access to only one project, it can be resolved automatically. Project-scoped MCP uses the project from its context. MCP accepts authorized user or API-key credentials; this HTTP endpoint accepts API keys. Both require `project:operate-runs`.
+
+Example global MCP tool arguments:
+
+```json
+{
+  "project_id": "your-project-id",
+  "test_plan_execution_id": "ffb62f53-7971-488b-a788-f57f2e967f62",
+  "custom_run_name": "CI regression"
+}
+```
+
+<Note>
+  The legacy `POST /api/v1/runs/export/testrail` endpoint accepts project API
+  keys only and infers the project from the key. Organization API keys must use
+  `/api/v1/project/{projectId}/runs/export/testrail`.
+</Note>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs/export/testrail" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"run_id":"nunu-multiplayer-run-id","custom_run_name":"CI regression"}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 Success
+{
+  "success": true,
+  "testrail_run_id": 123,
+  "testrail_run_name": "CI regression",
+  "testrail_run_url": "https://example.testrail.io/index.php?/runs/view/123",
+  "export_type": "single_run",
+  "export_trigger": "manual",
+  "export_strategy": "single_suite",
+  "runs_processed": ["nunu-multiplayer-run-id"],
+  "total_test_cases": 4,
+  "warnings": []
+}
+```
+
+```json 409 Export in progress
+{
+  "error": "an export for this test plan is already in progress"
+}
+```
+
+</ResponseExample>

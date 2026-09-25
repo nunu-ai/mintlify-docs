@@ -3701,6 +3701,109 @@
                     }
                 }
             }
+        },
+        "/project/{projectId}/runs/export/testrail": {
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ],
+            "post": {
+                "operationId": "exportTestrailRun",
+                "summary": "Export to TestRail",
+                "tags": [
+                    "Runs"
+                ],
+                "description": "Export a nunu multiplayer run or the completed runs in a test-plan execution using the saved TestRail integration. Requires project:operate-runs and TestRail enabled. Existing test-plan exports return existing links unless force_new_run is true. Single-run exports create a new entry on every call; do not blindly retry after a timeout.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExportTestrailRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Export completed, or existing test-plan export returned",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExportTestrailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid JSON or input; supply exactly one source",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient project permissions or TestRail is not enabled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Project or export source not found in the authorized project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "An export for this test-plan execution is already in progress",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Export or data access failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -5966,7 +6069,7 @@
                             "read_write"
                         ],
                         "nullable": true,
-                        "description": "Test-level memory override. `null` or omitted means \"auto\" — inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
+                        "description": "Test-level memory override. `null` or omitted means \"auto\" \u2014 inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
                     },
                     "players_by_key": {
                         "type": "object",
@@ -6639,6 +6742,173 @@
                     "uploaded_at": {
                         "type": "string",
                         "format": "date-time"
+                    }
+                }
+            },
+            "ExportTestrailRequest": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Supply exactly one of run_id or test_plan_execution_id. Uses the saved project TestRail integration and a manual export trigger.",
+                "properties": {
+                    "run_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "nunu multiplayer run ID from List Runs. Not a job ID or a per-player run ID."
+                    },
+                    "test_plan_execution_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Execution ID from List Test Plan Executions. Exports completed runs in this execution."
+                    },
+                    "force_new_run": {
+                        "type": "boolean",
+                        "description": "Set true to create a new TestRail entry for an already-exported test-plan execution. Single-run exports always create a new entry."
+                    },
+                    "close_run_on_completion": {
+                        "type": "boolean",
+                        "description": "Close the created TestRail run or plan after results are submitted."
+                    },
+                    "custom_run_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 250,
+                        "description": "Custom name for the TestRail entry. Leading and trailing whitespace is trimmed."
+                    }
+                },
+                "oneOf": [
+                    {
+                        "required": [
+                            "run_id"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "test_plan_execution_id"
+                        ]
+                    }
+                ]
+            },
+            "ExportTestrailWarning": {
+                "type": "object",
+                "required": [
+                    "type",
+                    "message"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Warning category."
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable warning."
+                    },
+                    "run_id": {
+                        "type": "string",
+                        "description": "Affected nunu multiplayer run ID, when applicable."
+                    },
+                    "test_version_id": {
+                        "type": "string",
+                        "description": "Affected test version ID, when applicable."
+                    },
+                    "details": {
+                        "type": "string",
+                        "description": "Additional warning details."
+                    }
+                }
+            },
+            "ExportTestrailResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "export_type",
+                    "export_trigger",
+                    "export_strategy",
+                    "runs_processed",
+                    "total_test_cases"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "already_exported": {
+                        "type": "boolean",
+                        "description": "True when an existing test-plan export is returned without creating a new remote entry."
+                    },
+                    "export_duration_ms": {
+                        "type": "number"
+                    },
+                    "export_type": {
+                        "type": "string",
+                        "enum": [
+                            "single_run",
+                            "test_plan",
+                            "multiple_runs"
+                        ],
+                        "description": "This endpoint accepts single_run or test_plan sources."
+                    },
+                    "export_trigger": {
+                        "type": "string",
+                        "enum": [
+                            "manual",
+                            "auto"
+                        ],
+                        "description": "Always manual for this endpoint."
+                    },
+                    "export_strategy": {
+                        "type": "string",
+                        "enum": [
+                            "single_suite",
+                            "multi_suite_plan"
+                        ]
+                    },
+                    "runs_processed": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "nunu multiplayer run IDs processed by this export. Empty when already_exported is true."
+                    },
+                    "skipped_cases": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "description": "TestRail case IDs skipped during export."
+                    },
+                    "total_test_cases": {
+                        "type": "number",
+                        "description": "Number of aggregated TestRail cases. Zero when returning an existing export."
+                    },
+                    "warnings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ExportTestrailWarning"
+                        }
+                    },
+                    "error": {
+                        "type": "string"
+                    },
+                    "error_code": {
+                        "type": "string"
+                    },
+                    "testrail_run_id": {
+                        "type": "number"
+                    },
+                    "testrail_run_name": {
+                        "type": "string"
+                    },
+                    "testrail_run_url": {
+                        "type": "string"
+                    },
+                    "testrail_plan_id": {
+                        "type": "number"
+                    },
+                    "testrail_plan_name": {
+                        "type": "string"
+                    },
+                    "testrail_plan_url": {
+                        "type": "string"
                     }
                 }
             }
