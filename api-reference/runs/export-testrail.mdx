@@ -69,13 +69,12 @@ Missing sources and sources belonging to another project both return `404`. Inva
 
 The matching MCP tool is `export_testrail_run`. It accepts the same body fields and returns the same export result, with identical duplicate-export behavior. Both API and MCP exports use a manual trigger; callers cannot select the internal automatic completion trigger.
 
-For global MCP, also supply `project_id` when your credentials can access multiple projects. With access to only one project, it can be resolved automatically. Project-scoped MCP uses the project from its context. MCP accepts authorized user or API-key credentials; this HTTP endpoint accepts API keys. Both require `project:operate-runs`.
+For global MCP, the `run_id` or `test_plan_execution_id` you supply identifies the owning project, so `project_id` is not required even when your credentials can access several projects. You may still pass it, in which case it is checked against the project that owns the run: a value that does not match returns a `project_scope_mismatch` error naming both projects. Project-scoped MCP uses the project from its context. MCP accepts authorized user or API-key credentials; this HTTP endpoint accepts API keys. Both require `project:operate-runs`.
 
 Example global MCP tool arguments:
 
 ```json
 {
-  "project_id": "your-project-id",
   "test_plan_execution_id": "ffb62f53-7971-488b-a788-f57f2e967f62",
   "custom_run_name": "CI regression"
 }
