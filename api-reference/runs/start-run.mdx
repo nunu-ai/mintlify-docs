@@ -45,7 +45,30 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="build_id" type="string">
-  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use for this run. Requires `deployment_config_id`. See [Using Build Storage Builds](#using-build-storage-builds) below.
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to
+  use for the main app. Requires `deployment_config_id`. Extra apps use
+  `extra_build_ids`. See [Using Build Storage Builds](#using-build-storage-builds)
+  below.
+</ParamField>
+
+<ParamField body="extra_build_ids" type="object">
+  Optional Build Storage build IDs for extra apps on the selected deployment
+  config, keyed by extra app number (`"1"`, `"2"`, or `"3"`). The number is
+  the app's position in that config's `summary.extra_apps`; it is independent
+  of the player number. Supported for existing tests, test plans, and ephemeral
+  runs (`instructions`). The main app can use `skip_install` while extra apps
+  are pinned.
+
+  Omit an entry to keep that app's saved build selection. Omitting the whole
+  field preserves all saved extra-app selections; `{}` is a no-op. A non-empty
+  top-level map requires top-level `deployment_config_id`.
+
+  <Warning>
+    Explicit extra build IDs work only when the corresponding extra app uses
+    Build Storage. Each build must belong to the project, be ready, and match
+    the extra app's platform. An explicit ID takes precedence over that app's
+    `required_tags` filter.
+  </Warning>
 </ParamField>
 
 <ParamField body="player_deployment_configs" type="object">
@@ -65,6 +88,14 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
     </ParamField>
     <ParamField body="player_deployment_configs.{player}.build_id" type="string">
       Optional Build Storage build for this player (build-storage configs only).
+    </ParamField>
+    <ParamField body="player_deployment_configs.{player}.extra_build_ids" type="object">
+      Optional extra-app Build Storage build IDs for this player's deployment
+      config. Keys are extra app numbers (`"1"`–`"3"`), independent of this
+      entry's player number. Omitted entries preserve saved selections; `{}` is
+      a no-op. Each explicit build must belong to the project, be ready, match
+      the extra app platform, and use a Build Storage source. Explicit IDs take
+      precedence over `required_tags`.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -202,6 +233,10 @@ curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
   -d '{
     "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "extra_build_ids": {
+      "1": "123e4567-e89b-12d3-a456-426614174001",
+      "2": "123e4567-e89b-12d3-a456-426614174002"
+    },
     "additional_tags": ["ci", "pr-123"]
   }'
 ```
@@ -226,7 +261,10 @@ curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
     "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
     "player_deployment_configs": {
-      "2": { "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7" }
+      "2": {
+        "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7",
+        "extra_build_ids": { "1": "123e4567-e89b-12d3-a456-426614174003" }
+      }
     }
   }'
 ```

@@ -10,6 +10,8 @@ noindex: true
 
 Retrieve detailed information about a specific run, including step-by-step results and artifacts.
 
+`build` summarizes the main app. `apps` lists recorded main and extra app selections, with `player_number` when deployments differ by player. Extra app numbers match the deployment config and `extra_build_ids` keys. Unavailable historical build metadata is `null`.
+
 
 <RequestExample>
 ```bash cURL
@@ -60,6 +62,23 @@ data = response.json()
     "type": "verification"
   },
   "build": null,
+  "apps": [
+    {
+      "role": "main",
+      "provider_kind": "skip-install",
+      "build_id": null,
+      "build_name": null,
+      "build_url": null
+    },
+    {
+      "role": "extra",
+      "extra_app_number": 1,
+      "provider_kind": "build-storage",
+      "build_id": "ff16e3c5-37df-48f8-bafa-23bc35e5f294",
+      "build_name": "companion-1.2.apk",
+      "build_url": null
+    }
+  ],
   "created_at": "2026-03-03T15:50:23.601012+00:00",
   "started_at": "2026-03-03T15:50:23.601048+00:00",
   "completed_at": "2026-03-03T15:54:24.261038+00:00",

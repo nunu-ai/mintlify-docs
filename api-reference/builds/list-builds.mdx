@@ -32,6 +32,30 @@ Retrieve a paginated list of builds for your project.
   Filter by tags (comma-separated). All specified tags must match. Example: `tags=release,candidate`
 </ParamField>
 
+<ParamField query="deployment_config_id" type="string">
+  Restrict results to builds compatible with this deployment config's main
+  app. The config must belong to the project. Compatible builds must match its
+  platform and file format, include its `required_tags`, and be ready
+  (`OK`). The selected app must use Build Storage. If its main app requires
+  nunu SDK, results must include the SDK. A missing or foreign deployment
+  config returns `404`.
+</ParamField>
+
+<ParamField query="extra_app_number" type="integer">
+  Select an extra app (`1`–`3`) from `summary.extra_apps` on the deployment
+  config. Requires `deployment_config_id`. Omit it to select the main app.
+  Extra apps are filtered by their own platform, file format, and
+  `required_tags`; the main app's SDK requirement does not apply to them. An
+  invalid extra app number or an app without a Build Storage source returns
+  `400`.
+</ParamField>
+
+<Note>
+  Config requirements are applied together with any caller-supplied filters:
+  filters can narrow the results but cannot broaden them. Without
+  `deployment_config_id`, this endpoint keeps its general build-list behavior.
+</Note>
+
 <ParamField query="page" type="integer" default="0">
   Page number (0-indexed)
 </ParamField>
@@ -67,8 +91,13 @@ Retrieve a paginated list of builds for your project.
 
 ### Build Object
 
-<ResponseField name="id" type="string" required>
-  Unique identifier for the build (UUID)
+<ResponseField name="build_id" type="string" required>
+  Unique identifier for the build (UUID). Use this value as `build_id` or as
+  a value in `extra_build_ids` when starting a run.
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project that owns the build
 </ResponseField>
 
 <ResponseField name="name" type="string" required>
@@ -80,14 +109,14 @@ Retrieve a paginated list of builds for your project.
 </ResponseField>
 
 <ResponseField name="status" type="string" required>
-  Build status: `uploading`, `ready`, `failed`
+  Build status, such as `OK` (ready) or `UNHEALTHY`
 </ResponseField>
 
-<ResponseField name="file_name" type="string" required>
+<ResponseField name="filename" type="string" required>
   Original file name
 </ResponseField>
 
-<ResponseField name="file_size" type="integer" required>
+<ResponseField name="size" type="integer" required>
   File size in bytes
 </ResponseField>
 
@@ -117,13 +146,13 @@ Retrieve a paginated list of builds for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/project/your-project-id/builds?status=ready&platform=android&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/builds?deployment_config_id=456e7890-e89b-12d3-a456-426614174000&extra_app_number=1&tags=release,candidate&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const response = await fetch(
-  "https://nunu.ai/api/v1/project/your-project-id/builds?status=ready&platform=android&page=0&page_size=10",
+  "https://nunu.ai/api/v1/project/your-project-id/builds?deployment_config_id=456e7890-e89b-12d3-a456-426614174000&extra_app_number=1&tags=release,candidate&page=0&page_size=10",
   {
     headers: {
       "X-Api-Key": process.env.NUNU_API_TOKEN,
@@ -140,7 +169,13 @@ import os
 response = requests.get(
     "https://nunu.ai/api/v1/project/your-project-id/builds",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
-    params={"status": "ready", "platform": "android", "page": 0, "page_size": 10}
+    params={
+        "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+        "extra_app_number": 1,
+        "tags": "release,candidate",
+        "page": 0,
+        "page_size": 10,
+    }
 )
 data = response.json()
 ```
@@ -151,12 +186,13 @@ data = response.json()
 {
   "data": [
     {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "build_id": "123e4567-e89b-12d3-a456-426614174000",
       "name": "Production Build v1.2.3",
       "platform": "android",
       "status": "OK",
-      "file_name": "app-release.apk",
-      "file_size": 52428800,
+      "project_id": "your-project-id",
+      "filename": "app-release.apk",
+      "size": 52428800,
       "pinned": true,
       "nunu_sdk": true,
       "tags": ["version:1.2.3", "env:production"],

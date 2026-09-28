@@ -220,7 +220,7 @@
                         }
                     },
                     "404": {
-                        "description": "Test or deployment config not found",
+                        "description": "Test, test plan, deployment config, or selected build not found in the project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1153,11 +1153,30 @@
             "get": {
                 "operationId": "listBuilds",
                 "summary": "List Builds",
-                "description": "Retrieve a paginated list of builds for your project.",
+                "description": "Retrieve a paginated list of builds for your project. Supply deployment_config_id to discover compatible builds for the saved main app, or add extra_app_number to target an extra app. Results satisfy the selected Build Storage source’s platform, file/ZIP format, required tags, and ready status (OK). SDK and WAIT_SDK restrict main-app discovery to SDK builds; extra apps have no automatic SDK restriction. Caller filters further narrow results and cannot override these requirements. Without a deployment config, general listing is unchanged.",
                 "tags": [
                     "Builds"
                 ],
                 "parameters": [
+                    {
+                        "name": "deployment_config_id",
+                        "in": "query",
+                        "description": "Deployment config UUID from this project. Selects its main app unless extra_app_number is supplied. The selected app must use Build Storage.",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "extra_app_number",
+                        "in": "query",
+                        "description": "One-based extra app number in the saved deployment config. Requires deployment_config_id; omission targets the main app.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 3
+                        }
+                    },
                     {
                         "name": "status",
                         "in": "query",
@@ -1241,7 +1260,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Invalid query parameters",
+                        "description": "Invalid query parameters, missing extra app, or selected app does not use Build Storage",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1262,6 +1281,16 @@
                     },
                     "403": {
                         "description": "Forbidden - API key lacks required permission",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Deployment config not found in the selected project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2964,7 +2993,7 @@
                         }
                     },
                     "404": {
-                        "description": "Test plan not found",
+                        "description": "Test, test plan, deployment config, or selected build not found in the project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4709,30 +4738,20 @@
             "Build": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Unique identifier for the build"
-                    },
                     "name": {
                         "type": "string",
                         "description": "Build name"
                     },
                     "platform": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "description": "Target platform"
                     },
                     "status": {
                         "type": "string",
                         "description": "Build status (e.g., OK, UNHEALTHY)"
-                    },
-                    "file_name": {
-                        "type": "string",
-                        "description": "Original file name"
-                    },
-                    "file_size": {
-                        "type": "integer",
-                        "description": "File size in bytes"
                     },
                     "pinned": {
                         "type": "boolean",
@@ -4764,6 +4783,23 @@
                         "type": "string",
                         "nullable": true,
                         "description": "Build description"
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Unique identifier for the build"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "description": "Original file name"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "File size in bytes"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project owning the build."
                     }
                 }
             },
@@ -4878,7 +4914,11 @@
                     "build_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs, and requires `deployment_config_id`."
+                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                    },
+                    "extra_build_ids": {
+                        "$ref": "#/components/schemas/ExtraBuildIds",
+                        "description": "Build pins for extra apps in the top-level deployment_config_id. A nonempty map requires that config ID; put per-player or per-slot pins inside their respective entries. Supported for all request variants."
                     },
                     "player_deployment_configs": {
                         "type": "object",
@@ -4898,6 +4938,9 @@
                                     "type": "string",
                                     "format": "uuid",
                                     "description": "Optional Build Storage build for this player (build-storage configs only)"
+                                },
+                                "extra_build_ids": {
+                                    "$ref": "#/components/schemas/ExtraBuildIds"
                                 }
                             }
                         }
@@ -4949,7 +4992,26 @@
                     "options": {
                         "$ref": "#/components/schemas/RunOptions"
                     }
-                }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "required": [
+                                "extra_build_ids"
+                            ],
+                            "properties": {
+                                "extra_build_ids": {
+                                    "minProperties": 1
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "deployment_config_id"
+                            ]
+                        }
+                    }
+                ]
             },
             "RunOptions": {
                 "type": "object",
@@ -4968,7 +5030,10 @@
                         "description": "IP geolocation proxy location"
                     },
                     "mobile_gpslocation": {
-                        "type": "string|object",
+                        "type": [
+                            "string",
+                            "object"
+                        ],
                         "description": "GPS location proxy location, either 'auto' or an object with 'lat' and 'long' string properties. Note: 'auto' requires `mobile_geolocation` to be set"
                     }
                 }
@@ -5084,6 +5149,7 @@
                     },
                     {
                         "type": "object",
+                        "required": ["apps"],
                         "properties": {
                             "templating_enabled": {
                                 "type": "boolean"
@@ -5092,6 +5158,13 @@
                                 "type": "object",
                                 "nullable": true,
                                 "description": "Rendered template values, or null when templating is disabled."
+                            },
+                            "apps": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunApp"
+                                },
+                                "description": "Recorded main and extra app selections. Player-scoped entries include player_number; unscoped entries describe the shared default. Historical build metadata may be null."
                             },
                             "players": {
                                 "type": "array",
@@ -5103,6 +5176,43 @@
                         }
                     }
                 ]
+            },
+            "RunApp": {
+                "type": "object",
+                "required": ["role", "provider_kind", "build_id", "build_name", "build_url"],
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": ["main", "extra"]
+                    },
+                    "extra_app_number": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 3,
+                        "description": "Extra app number matching the deployment config and extra_build_ids keys; omitted for the main app."
+                    },
+                    "player_number": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Player number when deployments differ by player."
+                    },
+                    "provider_kind": {
+                        "type": "string",
+                        "description": "App source, such as build-storage, http, or skip-install. Provider configuration and credentials are not returned."
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "build_name": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "build_url": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
             },
             "BugOccurrence": {
                 "type": "object",
@@ -5286,7 +5396,7 @@
                     },
                     "multipart": {
                         "type": "boolean",
-                        "description": "Use multipart upload? (Auto for files \u22653GB)"
+                        "description": "Use multipart upload? (Auto for files ≥3GB)"
                     },
                     "auto_delete": {
                         "type": "boolean",
@@ -6053,7 +6163,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 19800,
-                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only; sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be \u2264 `max_seconds` (validated against the effective budget after defaults are applied)."
+                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only; sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be ≤ `max_seconds` (validated against the effective budget after defaults are applied)."
                     },
                     "max_seconds": {
                         "type": "integer",
@@ -6069,7 +6179,7 @@
                             "read_write"
                         ],
                         "nullable": true,
-                        "description": "Test-level memory override. `null` or omitted means \"auto\" \u2014 inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
+                        "description": "Test-level memory override. `null` or omitted means \"auto\" — inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
                     },
                     "players_by_key": {
                         "type": "object",
@@ -6425,11 +6535,15 @@
                     "build_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of a build from Build Storage for the default slot. Only works with build-storage deployment configs, and requires `deployment_config_id`."
+                        "description": "UUID of a build from Build Storage for the default slot. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                    },
+                    "extra_build_ids": {
+                        "$ref": "#/components/schemas/ExtraBuildIds",
+                        "description": "Build pins for extra apps in the top-level deployment_config_id. A nonempty map requires that config ID; put per-player or per-slot pins inside their respective entries. Supported for all request variants."
                     },
                     "slot_deployment_configs": {
                         "type": "object",
-                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", and so on; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry. Private device configs are allowed, but every player on a private device needs its own device; if the configs of a test cannot give each of its players a distinct device, the request returns a 400 error.",
+                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", and so on; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry. Private device configs are allowed, but every player on a private device needs its own device; if the configs of a test cannot give each of its players a distinct device, the request returns a 400 error. Extra app numbers in each entry are local to that deployment config, not slot numbers.",
                         "additionalProperties": {
                             "type": "object",
                             "required": [
@@ -6445,6 +6559,9 @@
                                     "type": "string",
                                     "format": "uuid",
                                     "description": "Optional Build Storage build for this slot (build-storage configs only)"
+                                },
+                                "extra_build_ids": {
+                                    "$ref": "#/components/schemas/ExtraBuildIds"
                                 }
                             }
                         }
@@ -6470,7 +6587,26 @@
                         "default": false,
                         "description": "Start one independent test-plan run on every device configured in `deployment_config_id`. Supported for mobile deployment configurations with multi-device runs enabled. Requires `deployment_config_id` and cannot be combined with `slot_deployment_configs`."
                     }
-                }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "required": [
+                                "extra_build_ids"
+                            ],
+                            "properties": {
+                                "extra_build_ids": {
+                                    "minProperties": 1
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "deployment_config_id"
+                            ]
+                        }
+                    }
+                ]
             },
             "AgentConfig": {
                 "type": "object",
@@ -6524,9 +6660,22 @@
                     "pinned": {
                         "type": "boolean"
                     },
-                    "providerType": {
+                    "provider_type": {
                         "type": "string",
-                        "nullable": true
+                        "nullable": true,
+                        "description": "Main app provider type. Use summary.app and summary.extra_apps for app-selection requirements."
+                    },
+                    "allow_multi_device_runs": {
+                        "type": "boolean"
+                    },
+                    "device_labels": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "summary": {
+                        "$ref": "#/components/schemas/DeploymentConfigSummary"
                     }
                 }
             },
@@ -6970,6 +7119,174 @@
                     },
                     "testrail_plan_url": {
                         "type": "string"
+                    }
+                }
+            },
+            "ExtraBuildIds": {
+                "type": "object",
+                "description": "Build Storage UUIDs keyed by one-based extra app number (\"1\", \"2\", \"3\") in the selected deployment config. Omitted entries retain saved source settings, filters, and build pins; {} makes no changes and does not remove apps. Explicit build IDs take precedence over required tags. Each selected app must use Build Storage and each build must be ready, in the same project, and on the matching platform. Extra apps can be pinned even when the main app skips installation.",
+                "propertyNames": {
+                    "pattern": "^[1-3]$"
+                },
+                "additionalProperties": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "example": {
+                    "1": "33333333-3333-4333-8333-333333333333"
+                }
+            },
+            "DeploymentAppMetadata": {
+                "type": "object",
+                "required": [
+                    "source"
+                ],
+                "description": "Safe app-selection requirements. Provider credentials and source internals are never included.",
+                "properties": {
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "build_storage",
+                            "skip_install",
+                            "preinstalled",
+                            "read_only"
+                        ]
+                    },
+                    "file_format": {
+                        "type": "string",
+                        "enum": [
+                            "file",
+                            "zip"
+                        ],
+                        "description": "Build Storage file format when available."
+                    },
+                    "required_tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "All tags required for discovery and latest-build resolution. Explicit build pins take precedence."
+                    },
+                    "editable": {
+                        "type": "boolean",
+                        "const": false,
+                        "description": "Present as false for read-only source metadata."
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Short description for a read-only source; omits provider credentials."
+                    }
+                }
+            },
+            "DeploymentConfigSummary": {
+                "type": "object",
+                "required": [
+                    "target_label",
+                    "deployment_config_id",
+                    "version",
+                    "name",
+                    "description",
+                    "pinned",
+                    "platform",
+                    "environment",
+                    "sdk_mode",
+                    "app",
+                    "extra_apps"
+                ],
+                "properties": {
+                    "target_label": {
+                        "type": "string",
+                        "description": "Readable deployment target."
+                    },
+                    "deployment_config_id": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pinned": {
+                        "type": "boolean"
+                    },
+                    "platform": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "android",
+                            "ios",
+                            "windows",
+                            "browser",
+                            "external",
+                            null
+                        ]
+                    },
+                    "environment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "standard_android_device",
+                            "private_android_device",
+                            "local_android_device",
+                            "standard_ios_device",
+                            "private_ios_device",
+                            "windows_vm",
+                            "local_windows_computer",
+                            "browser",
+                            "external",
+                            null
+                        ]
+                    },
+                    "sdk_mode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "no_sdk",
+                            "sdk",
+                            "wait_sdk",
+                            null
+                        ]
+                    },
+                    "app": {
+                        "$ref": "#/components/schemas/DeploymentAppMetadata"
+                    },
+                    "extra_apps": {
+                        "type": "array",
+                        "maxItems": 3,
+                        "description": "Extra apps in install order; [] means none configured. Numbers match extra_build_ids keys and extra_app_number.",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/DeploymentAppMetadata"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "extra_app_number"
+                                    ],
+                                    "properties": {
+                                        "extra_app_number": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 3
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }

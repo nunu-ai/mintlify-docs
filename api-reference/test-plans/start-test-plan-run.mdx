@@ -44,6 +44,25 @@ The response contains one `job_id` per test in the plan; poll each one with
   request returns a `400` error.
 </ParamField>
 
+<ParamField body="extra_build_ids" type="object">
+  Optional Build Storage build IDs for extra apps in the top-level
+  `deployment_config_id`, keyed by extra app number (`"1"`, `"2"`, or `"3"`).
+  These numbers refer to apps within a deployment config; they are independent
+  of the plan's slot indexes.
+
+  Omit an entry to keep that app's saved build selection. Omitting the whole
+  field preserves all saved extra-app selections; `{}` is a no-op. A non-empty
+  top-level map requires top-level `deployment_config_id`. When slot `"1"` is
+  supplied instead, use `extra_build_ids` inside that slot entry.
+
+  <Warning>
+    Explicit extra build IDs work only when the corresponding extra app uses
+    Build Storage. Each build must belong to the project, be ready, and match
+    the extra app's platform. An explicit ID takes precedence over that app's
+    `required_tags` filter.
+  </Warning>
+</ParamField>
+
 <ParamField body="slot_deployment_configs" type="object">
   Per-slot deployment configs for cross-platform test plans, keyed by slot
   index (`"2"`, `"3"`, and so on). Fetch the plan with
@@ -62,6 +81,14 @@ The response contains one `job_id` per test in the plan; poll each one with
     </ParamField>
     <ParamField body="slot_deployment_configs.{index}.build_id" type="string">
       Optional Build Storage build for this slot (build-storage configs only).
+    </ParamField>
+    <ParamField body="slot_deployment_configs.{index}.extra_build_ids" type="object">
+      Optional extra-app Build Storage build IDs for this slot's deployment
+      config, keyed by extra app number (`"1"`–`"3"`). These numbers are
+      independent of the slot index. Omitted entries preserve saved selections;
+      `{}` is a no-op. Each explicit build must belong to the project, be ready,
+      match the extra app platform, and use a Build Storage source. Explicit
+      IDs take precedence over `required_tags`.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -166,8 +193,12 @@ curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4
   -H "Content-Type: application/json" \
   -d '{
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "extra_build_ids": { "1": "123e4567-e89b-12d3-a456-426614174001" },
     "slot_deployment_configs": {
-      "2": { "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7" }
+      "2": {
+        "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7",
+        "extra_build_ids": { "2": "123e4567-e89b-12d3-a456-426614174002" }
+      }
     }
   }'
 ```
