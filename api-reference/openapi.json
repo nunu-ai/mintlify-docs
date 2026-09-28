@@ -6765,17 +6765,17 @@
                                 "type": "string",
                                 "minLength": 1,
                                 "maxLength": 250,
-                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
                             },
                             "close_run_on_completion": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
                             },
                             "force_new_run": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
                             }
                         }
                     },
@@ -6802,17 +6802,17 @@
                                 "type": "string",
                                 "minLength": 1,
                                 "maxLength": 250,
-                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
                             },
                             "close_run_on_completion": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
                             },
                             "force_new_run": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
                             }
                         }
                     },
@@ -6833,17 +6833,17 @@
                                 "type": "string",
                                 "minLength": 1,
                                 "maxLength": 250,
-                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
                             },
                             "close_run_on_completion": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
                             },
                             "force_new_run": {
                                 "type": "boolean",
                                 "default": true,
-                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
                             }
                         }
                     }

@@ -36,19 +36,19 @@ Supply **exactly one** source: `multiplayer_run_id`, `multiplayer_run_ids`, or `
 </ParamField>
 
 <ParamField body="custom_run_name" type="string">
-  Name for the created TestRail run or plan, replacing the generated
+  Optional. Name for the created TestRail run or plan, replacing the generated
   `nunu.ai` name. Must contain 1 to 250 characters after trimming whitespace.
 </ParamField>
 
 <ParamField body="close_run_on_completion" type="boolean" default="true">
-  Close the created TestRail run or plan after results are submitted. Set to
-  `false` to leave it open.
+  Optional. Close the created TestRail run or plan after results are
+  submitted. Set to `false` to leave it open.
 </ParamField>
 
 <ParamField body="force_new_run" type="boolean" default="true">
-  Create a new TestRail entry even when the test-plan execution was already
-  exported. Set to `false` to return the existing TestRail links instead.
-  Run exports always create a new entry.
+  Optional. Create a new TestRail entry even when the test-plan execution was
+  already exported. Set to `false` to return the existing TestRail links
+  instead. Run exports always create a new entry.
 </ParamField>
 
 ## Existing exports and retries
