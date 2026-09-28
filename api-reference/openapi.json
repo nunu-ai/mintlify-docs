@@ -3720,7 +3720,7 @@
                 "tags": [
                     "Runs"
                 ],
-                "description": "Export a nunu multiplayer run or the completed runs in a test-plan execution using the saved TestRail integration. Requires project:operate-runs and TestRail enabled. Existing test-plan exports return existing links unless force_new_run is true. Single-run exports create a new entry on every call; do not blindly retry after a timeout.",
+                "description": "Export one nunu multiplayer run, several runs from the same project, or the completed runs in a test-plan execution using the saved TestRail integration. Requires project:operate-runs and TestRail enabled. Every call creates a new TestRail entry by default; send force_new_run: false to reuse an existing test-plan export. Do not blindly retry after a timeout.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3773,7 +3773,7 @@
                         }
                     },
                     "404": {
-                        "description": "Project or export source not found in the authorized project",
+                        "description": "Project or export source not found in the authorized project, including any run in multiplayer_run_ids",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -6746,45 +6746,106 @@
                 }
             },
             "ExportTestrailRequest": {
-                "type": "object",
-                "additionalProperties": false,
-                "description": "Supply exactly one of run_id or test_plan_execution_id. Uses the saved project TestRail integration and a manual export trigger.",
-                "properties": {
-                    "run_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "nunu multiplayer run ID from List Runs. Not a job ID or a per-player run ID."
-                    },
-                    "test_plan_execution_id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Execution ID from List Test Plan Executions. Exports completed runs in this execution."
-                    },
-                    "force_new_run": {
-                        "type": "boolean",
-                        "description": "Set true to create a new TestRail entry for an already-exported test-plan execution. Single-run exports always create a new entry."
-                    },
-                    "close_run_on_completion": {
-                        "type": "boolean",
-                        "description": "Close the created TestRail run or plan after results are submitted."
-                    },
-                    "custom_run_name": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 250,
-                        "description": "Custom name for the TestRail entry. Leading and trailing whitespace is trimmed."
-                    }
-                },
+                "description": "Supply exactly one source: multiplayer_run_id, multiplayer_run_ids, or test_plan_execution_id. Uses the saved project TestRail integration and a manual export trigger. Unknown fields are rejected.",
                 "oneOf": [
                     {
+                        "title": "Single run",
+                        "type": "object",
+                        "additionalProperties": false,
                         "required": [
-                            "run_id"
-                        ]
+                            "multiplayer_run_id"
+                        ],
+                        "properties": {
+                            "multiplayer_run_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "nunu multiplayer run ID from List Runs. Not a job ID or a per-player run ID."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
                     },
                     {
+                        "title": "Multiple runs",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "multiplayer_run_ids"
+                        ],
+                        "properties": {
+                            "multiplayer_run_ids": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "uniqueItems": true,
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "1 to 100 unique nunu multiplayer run IDs from List Runs, all in the same project. Exported together into one TestRail entry."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
+                    },
+                    {
+                        "title": "Test plan execution",
+                        "type": "object",
+                        "additionalProperties": false,
                         "required": [
                             "test_plan_execution_id"
-                        ]
+                        ],
+                        "properties": {
+                            "test_plan_execution_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Execution ID from List Test Plan Executions, not the test-plan definition ID. Exports the completed runs in this execution."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
                     }
                 ]
             },
