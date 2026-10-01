@@ -1,0 +1,119 @@
+---
+title: 'Create Test Folder'
+openapi: 'POST /test-folders'
+noindex: true
+---
+
+<Info>
+  **Permission Required**: `project:edit-tests`
+</Info>
+
+Create one folder in the test repository. Folders are addressed by path
+(`"regression/smoke"`) rather than UUID, so the parent is normally given as
+`parent_path`. Omit both parent fields to create the folder at the root.
+
+The resulting `path` is the string accepted by `folder_path` in
+[Create Test](/api-reference/tests/create-test),
+[Update Test](/api-reference/tests/update-test), and
+[List Tests](/api-reference/tests/list-tests) — so this endpoint is what lets a
+client build the folder it wants to file new tests under.
+
+## Request Body
+
+<ParamField body="test_folder" type="object" required>
+  Folder definition
+
+  <Expandable title="test_folder properties">
+    <ParamField body="test_folder.name" type="string" required>
+      Folder name. Cannot contain `/`, and cannot have leading or trailing
+      whitespace — both would make the folder unaddressable by path.
+    </ParamField>
+    <ParamField body="test_folder.parent_path" type="string">
+      Parent folder addressed by path. `null` or `"/"` means the root. Mutually
+      exclusive with `parent_folder_id`.
+    </ParamField>
+    <ParamField body="test_folder.parent_folder_id" type="string">
+      Pre-resolved parent folder UUID, as returned by
+      [List Test Folders](/api-reference/test-folders/list-test-folders).
+      Mutually exclusive with `parent_path`.
+    </ParamField>
+    <ParamField body="test_folder.description" type="string">
+      Optional description shown in the folder details dialog.
+    </ParamField>
+    <ParamField body="test_folder.tags" type="string[]">
+      Optional tags applied to the folder.
+    </ParamField>
+    <ParamField body="test_folder.create_intermediate_parents" type="boolean" default="false">
+      When `parent_path` names a folder that does not exist yet, create the
+      missing segments instead of returning `404`. Defaults to `false` so a typo
+      surfaces as an error rather than silently building a new hierarchy.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the newly created folder with status `201`.
+
+<ResponseField name="id" type="string" required>
+  Folder UUID
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Folder name (just the leaf segment)
+</ResponseField>
+
+<ResponseField name="path" type="string" required>
+  Resolved folder path (e.g. `"regression/smoke"`)
+</ResponseField>
+
+<ResponseField name="parent_folder_id" type="string">
+  Parent folder UUID, or `null` for top-level folders
+</ResponseField>
+
+<ResponseField name="parent_path" type="string" required>
+  Resolved parent path, or `"/"` for top-level folders
+</ResponseField>
+
+<ResponseField name="created_intermediate_paths" type="string[]" required>
+  Parents that had to be created on the way to the requested one. Empty unless
+  `create_intermediate_parents` was set.
+</ResponseField>
+
+## Errors
+
+| Status | When |
+| ------ | ---- |
+| `400`  | Invalid folder name, or both `parent_path` and `parent_folder_id` supplied |
+| `404`  | `parent_path` does not exist and `create_intermediate_parents` was not set |
+| `409`  | A folder with that name already exists in the same parent |
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/test-folders" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "test_folder": {
+      "name": "smoke",
+      "parent_path": "regression",
+      "description": "Critical-path smoke tests",
+      "tags": ["nightly"],
+      "create_intermediate_parents": true
+    }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "id": "f01a3b1c-9d2e-4f05-8c7a-1a2b3c4d5e6f",
+  "name": "smoke",
+  "path": "regression/smoke",
+  "parent_folder_id": "e10b2c3d-4e5f-6789-abcd-ef0123456789",
+  "parent_path": "regression",
+  "created_intermediate_paths": ["regression"]
+}
+```
+</ResponseExample>

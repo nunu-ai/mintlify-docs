@@ -2255,6 +2255,76 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "operationId": "createTestFolder",
+                "summary": "Create Test Folder",
+                "description": "Create one folder in the test repository. The parent is addressed by path (preferred) or id, and defaults to the root.",
+                "tags": [
+                    "Tests"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTestFolderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Test folder created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatedTestFolder"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Parent folder path not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A folder with that name already exists in the same parent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/shared-steps": {
@@ -3781,6 +3851,39 @@
                     "composite_test_id": {
                         "type": "string"
                     },
+                    "base_agent": {
+                        "type": "object",
+                        "nullable": true,
+                        "description": "Base agent this player ran with, as resolved when the run started. Null for runs started before base agents were recorded (late August 2026) and for base agents that aren't visible to your project.",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Base agent ID, shared by all of its versions"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Base agent name (e.g., nunu-max)"
+                            },
+                            "version_id": {
+                                "type": "string",
+                                "description": "ID of the exact base agent version the player ran with"
+                            },
+                            "version": {
+                                "type": "integer",
+                                "description": "Version number"
+                            },
+                            "version_key": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "Version label (defaults to the version number)"
+                            },
+                            "display_name": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "Display name of the version, if set"
+                            }
+                        }
+                    },
                     "step_count": {
                         "type": "integer"
                     },
@@ -4359,7 +4462,7 @@
                     "agent_config_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of an agent configuration to use"
+                        "description": "UUID of an agent configuration to use. Required when using instructions for an ephemeral run; optional as an override for existing test and test plan runs."
                     },
                     "additional_tags": {
                         "type": "array",
@@ -5566,6 +5669,81 @@
                     },
                     "pagination": {
                         "$ref": "#/components/schemas/Pagination"
+                    }
+                }
+            },
+            "CreateTestFolderRequest": {
+                "type": "object",
+                "required": [
+                    "test_folder"
+                ],
+                "properties": {
+                    "test_folder": {
+                        "type": "object",
+                        "required": [
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Folder name. Cannot contain \"/\" or leading/trailing whitespace."
+                            },
+                            "parent_path": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "Parent folder addressed by path. null or \"/\" means root. Mutually exclusive with parent_folder_id."
+                            },
+                            "parent_folder_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Pre-resolved parent folder id. Mutually exclusive with parent_path."
+                            },
+                            "description": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "create_intermediate_parents": {
+                                "type": "boolean",
+                                "default": false,
+                                "description": "Create missing segments of parent_path instead of returning 404."
+                            }
+                        }
+                    }
+                }
+            },
+            "CreatedTestFolder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "parent_folder_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "parent_path": {
+                        "type": "string"
+                    },
+                    "created_intermediate_paths": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Parents created on the way to the requested one. Empty unless create_intermediate_parents was set."
                     }
                 }
             },

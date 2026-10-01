@@ -91,7 +91,8 @@
                     {
                         "group": "Test Folders",
                         "pages": [
-                            "api-reference/test-folders/list-test-folders"
+                            "api-reference/test-folders/list-test-folders",
+                            "api-reference/test-folders/create-test-folder"
                         ]
                     },
                     {

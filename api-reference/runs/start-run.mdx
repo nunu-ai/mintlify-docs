@@ -44,7 +44,9 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="agent_config_id" type="string">
-  UUID of an agent configuration to use. Applies to all request variants.
+  UUID of an agent configuration to use. Required when using `instructions`
+  for an ephemeral run; optional as an override for existing test and test plan
+  runs.
 </ParamField>
 
 <ParamField body="additional_tags" type="string[]">
@@ -136,6 +138,7 @@ curl -X POST "https://nunu.ai/api/v1/runs" \
   -H "Content-Type: application/json" \
   -d '{
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "agent_config_id": "123e4567-e89b-12d3-a456-426614174000",
     "instructions": "Navigate to the main menu and verify all buttons are clickable",
     "name": "PR #123 Smoke Test",
     "additional_tags": ["pr-123", "smoke"]
