@@ -1,6 +1,6 @@
 ---
 title: 'Delete Test Plan'
-openapi: 'DELETE /test-plans/{testPlanId}'
+openapi: 'DELETE /project/{projectId}/test-plans/{testPlanId}'
 noindex: true
 ---
 
@@ -29,7 +29,7 @@ plan are not affected — only the plan itself is removed.
 
 <RequestExample>
 ```bash cURL
-curl -X DELETE "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
+curl -X DELETE "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

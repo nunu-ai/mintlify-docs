@@ -1,0 +1,126 @@
+---
+title: "Export to TestRail"
+description: "Export runs or a test-plan execution using your project’s saved TestRail integration"
+openapi: "POST /project/{projectId}/runs/export/testrail"
+noindex: true
+---
+
+<Info>
+  **Permission required:** `project:operate-runs`. TestRail must be enabled and
+  configured for the project, with TestRail case mappings for the results you
+  want to export.
+</Info>
+
+Export one nunu multiplayer run, several runs from the same project, or the completed runs in a test-plan execution. The export uses your project's saved TestRail connection and suite configuration. Results spanning multiple suites create a TestRail plan; a single suite creates a TestRail run.
+
+## Request body
+
+Supply **exactly one** source: `multiplayer_run_id`, `multiplayer_run_ids`, or `test_plan_execution_id`. Unknown fields are rejected.
+
+<ParamField body="multiplayer_run_id" type="string">
+  Export one run. nunu multiplayer run ID from [List
+  Runs](/api-reference/runs/list-runs). Do not use a job ID or per-player run
+  ID.
+</ParamField>
+
+<ParamField body="multiplayer_run_ids" type="string[]">
+  Export several runs together into one TestRail entry. 1 to 100 unique
+  multiplayer run IDs from [List Runs](/api-reference/runs/list-runs), all in
+  the same project.
+</ParamField>
+
+<ParamField body="test_plan_execution_id" type="string (uuid)">
+  Execution ID from [List Test Plan
+  Executions](/api-reference/test-plans/list-test-plan-executions), not the
+  test-plan definition ID. Only completed runs in the execution are exported.
+</ParamField>
+
+<ParamField body="custom_run_name" type="string">
+  Optional. Name for the created TestRail run or plan, replacing the generated
+  `nunu.ai` name. Must contain 1 to 250 characters after trimming whitespace.
+</ParamField>
+
+<ParamField body="close_run_on_completion" type="boolean" default="true">
+  Optional. Close the created TestRail run or plan after results are
+  submitted. Set to `false` to leave it open.
+</ParamField>
+
+<ParamField body="force_new_run" type="boolean" default="true">
+  Optional. Create a new TestRail entry even when the test-plan execution was
+  already exported. Set to `false` to return the existing TestRail links
+  instead. Run exports always create a new entry.
+</ParamField>
+
+## Existing exports and retries
+
+Every call creates a new TestRail entry by default. To avoid duplicating a test-plan export, send `force_new_run: false`: if the execution already has a saved TestRail export, the response includes `already_exported: true` and the existing IDs and links. No results are submitted again; `runs_processed` is empty and `total_test_cases` is `0`.
+
+Concurrent exports of the same execution return `409` while an export is in progress. An export performed before the execution finishes contains only the runs completed at that time.
+
+<Warning>
+  Do not blindly retry after a timeout: the remote entry may already exist.
+  Inspect TestRail before submitting another export, or use `force_new_run:
+  false` for test-plan executions.
+</Warning>
+
+## Response
+
+The response is the export result directly, without a `data` or `result` wrapper. It includes `success`, `export_type`, `export_trigger`, `export_strategy`, `runs_processed`, and `total_test_cases`.
+
+Depending on the suite configuration, the result includes `testrail_run_id` and `testrail_run_url`, or `testrail_plan_id` and `testrail_plan_url`. Names and `export_duration_ms` may also be present. Inspect optional `skipped_cases` and `warnings` for omitted cases or other export issues. Warning fields use `snake_case`, including `run_id` and `test_version_id`.
+
+Missing sources and sources belonging to another project both return `404`, including when any ID in `multiplayer_run_ids` is not found in the project. Invalid input returns `400`; missing permissions or a disabled TestRail integration returns `403`.
+
+## Using MCP
+
+The matching MCP tool is `export_testrail_run`. It accepts the same body fields and returns the same export result, with identical duplicate-export behavior. Both API and MCP exports use a manual trigger; callers cannot select the internal automatic completion trigger.
+
+For global MCP, the run or test-plan execution IDs you supply identify the owning project, so `project_id` is not required even when your credentials can access several projects. You may still pass it, in which case it is checked against the project that owns the source: a value that does not match returns a `project_scope_mismatch` error naming both projects. Project-scoped MCP uses the project from its context. MCP accepts authorized user or API-key credentials; this HTTP endpoint accepts API keys. Both require `project:operate-runs`.
+
+Example global MCP tool arguments:
+
+```json
+{
+  "test_plan_execution_id": "ffb62f53-7971-488b-a788-f57f2e967f62",
+  "custom_run_name": "CI regression"
+}
+```
+
+<Note>
+  The legacy `POST /api/v1/runs/export/testrail` endpoint accepts project API
+  keys only and infers the project from the key. Organization API keys must use
+  `/api/v1/project/{projectId}/runs/export/testrail`.
+</Note>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs/export/testrail" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"multiplayer_run_id":"nunu-multiplayer-run-id","custom_run_name":"CI regression"}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 Success
+{
+  "success": true,
+  "testrail_run_id": 123,
+  "testrail_run_name": "CI regression",
+  "testrail_run_url": "https://example.testrail.io/index.php?/runs/view/123",
+  "export_type": "single_run",
+  "export_trigger": "manual",
+  "export_strategy": "single_suite",
+  "runs_processed": ["nunu-multiplayer-run-id"],
+  "total_test_cases": 4,
+  "warnings": []
+}
+```
+
+```json 409 Export in progress
+{
+  "error": "an export for this test plan is already in progress"
+}
+```
+
+</ResponseExample>

@@ -1,6 +1,6 @@
 ---
 title: 'List Agent Configs'
-openapi: 'GET /agent-configs'
+openapi: 'GET /project/{projectId}/agent-configs'
 noindex: true
 ---
 
@@ -53,7 +53,7 @@ endpoint to discover valid `agent_config_id` values for
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/agent-configs?page=0&page_size=25" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/agent-configs?page=0&page_size=25" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

@@ -16,7 +16,7 @@
         }
     ],
     "paths": {
-        "/runs": {
+        "/project/{projectId}/runs": {
             "get": {
                 "operationId": "listRuns",
                 "summary": "List Runs",
@@ -172,6 +172,33 @@
                             }
                         }
                     },
+                    "207": {
+                        "description": "Multi-device run partially started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "No device runs started or internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/StartRunResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Error"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "400": {
                         "description": "Bad Request - Invalid parameters",
                         "content": {
@@ -193,7 +220,7 @@
                         }
                     },
                     "404": {
-                        "description": "Test or deployment config not found",
+                        "description": "Test, test plan, deployment config, or selected build not found in the project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -203,9 +230,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}": {
+        "/project/{projectId}/runs/{runId}": {
             "get": {
                 "operationId": "getRunDetails",
                 "summary": "Get Run Details",
@@ -257,9 +295,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}/bugs": {
+        "/project/{projectId}/runs/{runId}/bugs": {
             "get": {
                 "operationId": "listRunBugs",
                 "summary": "List Run Bugs",
@@ -310,9 +359,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/stop": {
+        "/project/{projectId}/runs/stop": {
             "post": {
                 "operationId": "stopRuns",
                 "summary": "Stop Runs",
@@ -362,9 +422,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/jobs": {
+        "/project/{projectId}/jobs": {
             "get": {
                 "operationId": "listJobs",
                 "summary": "List Jobs",
@@ -477,9 +548,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/jobs/{jobId}": {
+        "/project/{projectId}/jobs/{jobId}": {
             "get": {
                 "operationId": "getJobDetails",
                 "summary": "Get Job Details",
@@ -541,9 +623,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans": {
+        "/project/{projectId}/test-plans": {
             "get": {
                 "operationId": "listTestPlans",
                 "summary": "List Test Plans",
@@ -701,9 +794,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans/{testPlanId}": {
+        "/project/{projectId}/test-plans/{testPlanId}": {
             "get": {
                 "operationId": "getTestPlan",
                 "summary": "Get Test Plan",
@@ -899,9 +1003,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plan-executions": {
+        "/project/{projectId}/test-plan-executions": {
             "get": {
                 "operationId": "listTestPlanExecutions",
                 "summary": "List Test Plan Executions",
@@ -1021,17 +1136,47 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds": {
+        "/project/{projectId}/builds": {
             "get": {
                 "operationId": "listBuilds",
                 "summary": "List Builds",
-                "description": "Retrieve a paginated list of builds for your project.",
+                "description": "Retrieve a paginated list of builds for your project. Supply deployment_config_id to discover compatible builds for the saved main app, or add extra_app_number to target an extra app. Results satisfy the selected Build Storage source’s platform, file/ZIP format, required tags, and ready status (OK). SDK and WAIT_SDK restrict main-app discovery to SDK builds; extra apps have no automatic SDK restriction. Caller filters further narrow results and cannot override these requirements. Without a deployment config, general listing is unchanged.",
                 "tags": [
                     "Builds"
                 ],
                 "parameters": [
+                    {
+                        "name": "deployment_config_id",
+                        "in": "query",
+                        "description": "Deployment config UUID from this project. Selects its main app unless extra_app_number is supplied. The selected app must use Build Storage.",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "extra_app_number",
+                        "in": "query",
+                        "description": "One-based extra app number in the saved deployment config. Requires deployment_config_id; omission targets the main app.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 3
+                        }
+                    },
                     {
                         "name": "status",
                         "in": "query",
@@ -1115,7 +1260,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Invalid query parameters",
+                        "description": "Invalid query parameters, missing extra app, or selected app does not use Build Storage",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1143,11 +1288,32 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Deployment config not found in the selected project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/{buildId}": {
+        "/project/{projectId}/builds/{buildId}": {
             "get": {
                 "operationId": "getBuild",
                 "summary": "Get Build Details",
@@ -1281,9 +1447,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload": {
+        "/project/{projectId}/builds/upload": {
             "post": {
                 "operationId": "initiateUpload",
                 "summary": "Initiate Upload",
@@ -1413,9 +1590,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload/parts": {
+        "/project/{projectId}/builds/upload/parts": {
             "get": {
                 "operationId": "getUploadParts",
                 "summary": "Get Upload URLs for Parts",
@@ -1475,9 +1663,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/builds/upload/complete": {
+        "/project/{projectId}/builds/upload/complete": {
             "post": {
                 "operationId": "completeUpload",
                 "summary": "Complete Upload",
@@ -1527,9 +1726,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/runs/{runId}/live": {
+        "/project/{projectId}/runs/{runId}/live": {
             "get": {
                 "operationId": "getLiveRunSnapshot",
                 "summary": "Get Live Run Snapshot",
@@ -1590,9 +1800,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/bugs": {
+        "/project/{projectId}/bugs": {
             "get": {
                 "operationId": "listReviewedBugs",
                 "summary": "List Reviewed Bugs",
@@ -1718,9 +1939,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/bugs/{bugId}": {
+        "/project/{projectId}/bugs/{bugId}": {
             "get": {
                 "operationId": "getReviewedBug",
                 "summary": "Get Reviewed Bug",
@@ -1781,9 +2013,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/tests": {
+        "/project/{projectId}/tests": {
             "get": {
                 "operationId": "listTests",
                 "summary": "List Tests",
@@ -1946,9 +2189,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/tests/{testId}": {
+        "/project/{projectId}/tests/{testId}": {
             "get": {
                 "operationId": "getTest",
                 "summary": "Get Test",
@@ -2201,9 +2455,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-folders": {
+        "/project/{projectId}/test-folders": {
             "get": {
                 "operationId": "listTestFolders",
                 "summary": "List Test Folders",
@@ -2325,9 +2590,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/shared-steps": {
+        "/project/{projectId}/shared-steps": {
             "get": {
                 "operationId": "listSharedSteps",
                 "summary": "List Shared Steps",
@@ -2440,9 +2716,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/shared-steps/{sharedStepId}": {
+        "/project/{projectId}/shared-steps/{sharedStepId}": {
             "get": {
                 "operationId": "getSharedStep",
                 "summary": "Get Shared Step",
@@ -2664,9 +2951,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/test-plans/{testPlanId}/runs": {
+        "/project/{projectId}/test-plans/{testPlanId}/runs": {
             "post": {
                 "operationId": "startTestPlanRun",
                 "summary": "Start Test Plan Run",
@@ -2707,6 +3005,33 @@
                             }
                         }
                     },
+                    "207": {
+                        "description": "Multi-device test-plan run partially started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "No device runs started or internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/StartRunResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/Error"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "content": {
@@ -2738,7 +3063,7 @@
                         }
                     },
                     "404": {
-                        "description": "Test plan not found",
+                        "description": "Test, test plan, deployment config, or selected build not found in the project",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2748,9 +3073,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/agent-configs": {
+        "/project/{projectId}/agent-configs": {
             "get": {
                 "operationId": "listAgentConfigs",
                 "summary": "List Agent Configs",
@@ -2812,9 +3148,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/deployment-configs": {
+        "/project/{projectId}/deployment-configs": {
             "get": {
                 "operationId": "listDeploymentConfigs",
                 "summary": "List Deployment Configs",
@@ -2876,9 +3223,20 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
-        "/credential-kinds": {
+        "/project/{projectId}/credential-kinds": {
             "get": {
                 "operationId": "listCredentialKinds",
                 "summary": "List Credential Kinds",
@@ -2940,7 +3298,18 @@
                         }
                     }
                 }
-            }
+            },
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ]
         },
         "/runs/{runId}/artifacts": {
             "servers": [
@@ -3431,6 +3800,109 @@
                     }
                 }
             }
+        },
+        "/project/{projectId}/runs/export/testrail": {
+            "parameters": [
+                {
+                    "name": "projectId",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "description": "The project ID. You can copy it from the project settings page or the project URL in the dashboard."
+                }
+            ],
+            "post": {
+                "operationId": "exportTestrailRun",
+                "summary": "Export to TestRail",
+                "tags": [
+                    "Runs"
+                ],
+                "description": "Export one nunu multiplayer run, several runs from the same project, or the completed runs in a test-plan execution using the saved TestRail integration. Requires project:operate-runs and TestRail enabled. Every call creates a new TestRail entry by default; send force_new_run: false to reuse an existing test-plan export. Do not blindly retry after a timeout.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExportTestrailRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Export completed, or existing test-plan export returned",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExportTestrailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid JSON or input; supply exactly one source",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient project permissions or TestRail is not enabled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Project or export source not found in the authorized project, including any run in multiplayer_run_ids",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "An export for this test-plan execution is already in progress",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Export or data access failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -3742,12 +4214,17 @@
                     "result": {
                         "type": "string",
                         "enum": [
-                            "success",
-                            "failure",
-                            "error"
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
                         ],
                         "nullable": true,
-                        "description": "Result of the run (null if not completed)"
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "bug_info": {
                         "type": "object",
@@ -3840,7 +4317,19 @@
                         "type": "string"
                     },
                     "result": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "player_number": {
                         "type": "integer"
@@ -3888,7 +4377,8 @@
                         "type": "integer"
                     },
                     "completed_step_count": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of steps whose result is SUCCESS. Kept for backward compatibility; prefer step_result_summary."
                     },
                     "platform": {
                         "type": "object",
@@ -3900,6 +4390,13 @@
                                 "type": "string"
                             }
                         }
+                    },
+                    "step_result_summary": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "description": "Step counts per result label, e.g. {\"SUCCESS\": 5, \"FAILED\": 2, \"SKIPPED\": 1}."
                     }
                 }
             },
@@ -3943,7 +4440,18 @@
                     },
                     "result": {
                         "type": "string",
-                        "nullable": true
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the run (null if not completed). Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
                     },
                     "started_at": {
                         "type": "string",
@@ -4068,7 +4576,7 @@
                         "type": "integer",
                         "minimum": 0,
                         "default": 0,
-                        "description": "Number of retries for this test item"
+                        "description": "Number of retries for this test item after an execution failure; genuine test verdicts are not retried."
                     }
                 },
                 "required": [
@@ -4110,12 +4618,38 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TestPlanSlot"
+                        },
+                        "description": "Extra deployment slots of a cross-platform test plan (read-only via the API; managed in the test plan editor). Their indices key `slot_deployment_configs` when starting the plan; slot 1 is the implicit default slot."
+                    },
+                    "default_slot_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional display name of the implicit default slot (slot 1). Read-only via the API."
+                    },
                     "test_items": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/TestPlanTestItem"
                         },
                         "description": "Ordered list of tests in this plan"
+                    }
+                }
+            },
+            "TestPlanSlot": {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "Slot index (2 or higher; slot 1 is the implicit default slot and is not listed)"
+                    },
+                    "name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional display name. Names are labels only; slots are addressed by index"
                     }
                 }
             },
@@ -4192,7 +4726,12 @@
                         "type": "integer"
                     },
                     "failed": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Runs that ended FAILED, ERROR, TIMEOUT, BLOCKED or MAX_STEPS."
+                    },
+                    "skipped": {
+                        "type": "integer",
+                        "description": "Runs that ended SKIPPED."
                     },
                     "stopped": {
                         "type": "integer"
@@ -4302,30 +4841,20 @@
             "Build": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Unique identifier for the build"
-                    },
                     "name": {
                         "type": "string",
                         "description": "Build name"
                     },
                     "platform": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "description": "Target platform"
                     },
                     "status": {
                         "type": "string",
                         "description": "Build status (e.g., OK, UNHEALTHY)"
-                    },
-                    "file_name": {
-                        "type": "string",
-                        "description": "Original file name"
-                    },
-                    "file_size": {
-                        "type": "integer",
-                        "description": "File size in bytes"
                     },
                     "pinned": {
                         "type": "boolean",
@@ -4357,6 +4886,23 @@
                         "type": "string",
                         "nullable": true,
                         "description": "Build description"
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Unique identifier for the build"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "description": "Original file name"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "File size in bytes"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project owning the build."
                     }
                 }
             },
@@ -4433,6 +4979,24 @@
             },
             "StartRunRequest": {
                 "type": "object",
+                "anyOf": [
+                    {
+                        "required": [
+                            "deployment_config_id"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "multiplayer_test_id",
+                            "player_deployment_configs"
+                        ]
+                    }
+                ],
+                "dependentRequired": {
+                    "build_id": [
+                        "deployment_config_id"
+                    ]
+                },
                 "properties": {
                     "multiplayer_test_id": {
                         "type": "string",
@@ -4440,7 +5004,7 @@
                     },
                     "test_plan_id": {
                         "type": "string",
-                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id OR instructions)"
+                        "description": "UUID of the test plan to run (provide this OR multiplayer_test_id OR instructions). This endpoint starts test plans with a single deployment config; to supply per-slot configs for a cross-platform plan, use POST /test-plans/{testPlanId}/runs instead."
                     },
                     "instructions": {
                         "type": "string",
@@ -4448,12 +5012,41 @@
                     },
                     "deployment_config_id": {
                         "type": "string",
-                        "description": "UUID of the deployment configuration"
+                        "description": "UUID of the deployment configuration, used by every player that has no `player_deployment_configs` entry. Required, except for multiplayer tests where `player_deployment_configs` covers every player."
                     },
                     "build_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs."
+                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                    },
+                    "extra_build_ids": {
+                        "$ref": "#/components/schemas/ExtraBuildIds",
+                        "description": "Build pins for extra apps in the top-level deployment_config_id. A nonempty map requires that config ID; put per-player or per-slot pins inside their respective entries. Supported for all request variants."
+                    },
+                    "player_deployment_configs": {
+                        "type": "object",
+                        "description": "Per-player deployment configs for cross-platform multiplayer tests, keyed by player number (\"1\", \"2\", and so on). Only applies with `multiplayer_test_id`. The map does not need to cover every player: any player without an entry falls back to the default `deployment_config_id`. Omitting `deployment_config_id` is only allowed when every player has an entry; a partial map without a default returns a 400 error. Private device configs are allowed, but every player on a private device needs its own device; if the configs cannot give each player a distinct device, the request returns a 400 error.",
+                        "additionalProperties": {
+                            "type": "object",
+                            "required": [
+                                "deployment_config_id"
+                            ],
+                            "properties": {
+                                "deployment_config_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Deployment config to use for this player"
+                                },
+                                "build_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Optional Build Storage build for this player (build-storage configs only)"
+                                },
+                                "extra_build_ids": {
+                                    "$ref": "#/components/schemas/ExtraBuildIds"
+                                }
+                            }
+                        }
                     },
                     "name": {
                         "type": "string",
@@ -4476,7 +5069,7 @@
                         "default": 0,
                         "minimum": 0,
                         "maximum": 10,
-                        "description": "Number of times to retry the test if it fails. Only applies when using multiplayer_test_id."
+                        "description": "Number of times to retry the run after an execution failure (ERROR, TIMEOUT, STOPPED). Genuine test verdicts (FAILED, BLOCKED, SKIPPED) are final and are not retried. Only applies when using multiplayer_test_id."
                     },
                     "instances": {
                         "type": "integer",
@@ -4484,6 +5077,11 @@
                         "minimum": 1,
                         "maximum": 10,
                         "description": "Number of parallel instances to run. Only applies when using multiplayer_test_id."
+                    },
+                    "run_on_all_configured_devices": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Start one independent run on every device configured in `deployment_config_id`. Supported for mobile deployment configurations with multi-device runs enabled. Requires `deployment_config_id`; for multiplayer tests, cannot be combined with `player_deployment_configs`. For multiplayer tests, `instances` applies independently on each device."
                     },
                     "render_templates": {
                         "type": "boolean",
@@ -4498,21 +5096,30 @@
                         "$ref": "#/components/schemas/RunOptions"
                     }
                 },
-                "required": [
-                    "deployment_config_id"
+                "allOf": [
+                    {
+                        "if": {
+                            "required": [
+                                "extra_build_ids"
+                            ],
+                            "properties": {
+                                "extra_build_ids": {
+                                    "minProperties": 1
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "deployment_config_id"
+                            ]
+                        }
+                    }
                 ]
             },
             "RunOptions": {
                 "type": "object",
+                "description": "Per-run override knobs. The time budget is intentionally not overridable here; it lives on the test version itself (see `min_seconds` / `max_seconds` on the test body), so callers should edit the test (or create a new version) when they want to change the budget.",
                 "properties": {
-                    "min_time_seconds": {
-                        "type": "integer",
-                        "description": "Minimum test duration"
-                    },
-                    "max_time_seconds": {
-                        "type": "integer",
-                        "description": "Maximum test duration (timeout)"
-                    },
                     "performance_monitoring": {
                         "type": "boolean",
                         "description": "Enable performance data collection"
@@ -4526,15 +5133,22 @@
                         "description": "IP geolocation proxy location"
                     },
                     "mobile_gpslocation": {
-                        "type": "string|object",
+                        "type": [
+                            "string",
+                            "object"
+                        ],
                         "description": "GPS location proxy location, either 'auto' or an object with 'lat' and 'long' string properties. Note: 'auto' requires `mobile_geolocation` to be set"
                     }
                 }
             },
             "StartRunResponse": {
                 "type": "object",
-                "description": "Response body for POST /runs and POST /test-plans/{testPlanId}/runs. Returned with HTTP 201 on success. The body contains the started-run data directly (no { ok, status, message, data } envelope).",
+                "description": "Response body for POST /runs and POST /test-plans/{testPlanId}/runs. Single-device responses are returned with HTTP 201. Multi-device responses include per-device results and aggregate counts; HTTP 201 means all devices started, HTTP 207 means partial success, and HTTP 500 means none started.",
                 "properties": {
+                    "ok": {
+                        "type": "boolean",
+                        "description": "Whether at least one device run started. Returned for multi-device requests."
+                    },
                     "job_ids": {
                         "type": "array",
                         "items": {
@@ -4558,9 +5172,76 @@
                         "format": "uuid",
                         "description": "Test plan execution ID. Returned for test plan runs."
                     },
+                    "slot_build_ids": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "For cross-platform test plan runs: the build pinned for each extra slot, keyed by slot index. Only present when slot configs resolved to builds."
+                    },
                     "message": {
                         "type": "string",
                         "description": "Optional status message returned for multiplayer test and test plan runs."
+                    },
+                    "requested_count": {
+                        "type": "integer",
+                        "description": "Number of runs requested across configured devices. For multiplayer tests, includes the `instances` multiplier."
+                    },
+                    "started_count": {
+                        "type": "integer",
+                        "description": "Number of runs started successfully. For multiplayer tests, includes the `instances` multiplier."
+                    },
+                    "successful_count": {
+                        "type": "integer",
+                        "description": "Alias for `started_count` in multi-device existing-test and test-plan responses."
+                    },
+                    "failed_count": {
+                        "type": "integer",
+                        "description": "Number of requested runs that failed to start."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeviceRunResult"
+                        },
+                        "description": "Per-device start results for existing-test and test-plan requests."
+                    },
+                    "device_runs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeviceRunResult"
+                        },
+                        "description": "Per-device start results for ephemeral (`instructions`) requests."
+                    }
+                }
+            },
+            "DeviceRunResult": {
+                "type": "object",
+                "properties": {
+                    "device_label": {
+                        "type": "string",
+                        "description": "Label of the configured device."
+                    },
+                    "ok": {
+                        "type": "boolean",
+                        "description": "Whether the run started on this device."
+                    },
+                    "status": {
+                        "type": "integer",
+                        "description": "HTTP-like status for this device start attempt."
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Failure or status message for this device attempt."
+                    },
+                    "error": {
+                        "type": "string",
+                        "description": "Error returned for this device attempt, when present."
+                    },
+                    "data": {
+                        "type": "object",
+                        "description": "Upstream start response for this device, when present."
                     }
                 }
             },
@@ -4571,16 +5252,70 @@
                     },
                     {
                         "type": "object",
+                        "required": ["apps"],
                         "properties": {
                             "templating_enabled": {
                                 "type": "boolean"
                             },
                             "template_data": {
-                                "type": "object"
+                                "type": "object",
+                                "nullable": true,
+                                "description": "Rendered template values, or null when templating is disabled."
+                            },
+                            "apps": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunApp"
+                                },
+                                "description": "Recorded main and extra app selections. Player-scoped entries include player_number; unscoped entries describe the shared default. Historical build metadata may be null."
+                            },
+                            "players": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PlayerDetails"
+                                },
+                                "description": "Players with full step details; overrides the summary players list."
                             }
                         }
                     }
                 ]
+            },
+            "RunApp": {
+                "type": "object",
+                "required": ["role", "provider_kind", "build_id", "build_name", "build_url"],
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": ["main", "extra"]
+                    },
+                    "extra_app_number": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 3,
+                        "description": "Extra app number matching the deployment config and extra_build_ids keys; omitted for the main app."
+                    },
+                    "player_number": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Player number when deployments differ by player."
+                    },
+                    "provider_kind": {
+                        "type": "string",
+                        "description": "App source, such as build-storage, http, or skip-install. Provider configuration and credentials are not returned."
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "build_name": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "build_url": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
             },
             "BugOccurrence": {
                 "type": "object",
@@ -4730,7 +5465,7 @@
                 "properties": {
                     "project_id": {
                         "type": "string",
-                        "description": "Project ID for the build"
+                        "description": "Optional. The project is taken from the URL. If provided, it must match the projectId in the route."
                     },
                     "name": {
                         "type": "string",
@@ -4795,7 +5530,6 @@
                     }
                 },
                 "required": [
-                    "project_id",
                     "name",
                     "file_name",
                     "file_size",
@@ -5482,7 +6216,7 @@
             },
             "TestCase": {
                 "type": "object",
-                "description": "Full test case body. Shape varies by test_type (verification, discovery, task) — see the docs page for the exact shape.",
+                "description": "Full test case body. Shape varies by test_type (verification, discovery, task); see the docs page for the exact shape.",
                 "properties": {
                     "id": {
                         "type": "string",
@@ -5527,6 +6261,28 @@
                             "repository",
                             "bot"
                         ]
+                    },
+                    "min_seconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19800,
+                        "description": "Test-level minimum runtime in seconds. Allowed for `discovery` and `task` only; sending this on a `verification` test is rejected with 400. Defaults when omitted: discovery=3600 (1h), task=0. Must be ≤ `max_seconds` (validated against the effective budget after defaults are applied)."
+                    },
+                    "max_seconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19800,
+                        "description": "Test-level maximum runtime in seconds. Hard ceiling for any single run is 19800 (5.5h). Defaults when omitted: verification=19800 (5.5h), discovery=10800 (3h), task=19800 (5.5h)."
+                    },
+                    "memory": {
+                        "type": "string",
+                        "enum": [
+                            "disabled",
+                            "read_only",
+                            "read_write"
+                        ],
+                        "nullable": true,
+                        "description": "Test-level memory override. `null` or omitted means \"auto\" — inherit the project's default memory setting. `disabled` turns memory off for this test; `read_write` lets the agent read and write memory files across runs. Requires the project's knowledge feature to be enabled. Applies to all test types. On read it is always present (`null` = auto); on a patch, omit it to leave it unchanged."
                     },
                     "players_by_key": {
                         "type": "object",
@@ -5927,17 +6683,66 @@
             },
             "StartTestPlanRunRequest": {
                 "type": "object",
-                "required": [
-                    "deployment_config_id"
+                "anyOf": [
+                    {
+                        "required": [
+                            "deployment_config_id"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "slot_deployment_configs"
+                        ]
+                    }
                 ],
+                "dependentRequired": {
+                    "build_id": [
+                        "deployment_config_id"
+                    ]
+                },
                 "properties": {
                     "deployment_config_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "description": "UUID of the deployment config for the plan's default slot (slot 1), used by every player not assigned to an extra slot. Required unless the plan's slot assignments cover every player and `slot_deployment_configs` is supplied."
                     },
                     "agent_config_id": {
                         "type": "string",
                         "format": "uuid"
+                    },
+                    "build_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of a build from Build Storage for the default slot. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                    },
+                    "extra_build_ids": {
+                        "$ref": "#/components/schemas/ExtraBuildIds",
+                        "description": "Build pins for extra apps in the top-level deployment_config_id. A nonempty map requires that config ID; put per-player or per-slot pins inside their respective entries. Supported for all request variants."
+                    },
+                    "slot_deployment_configs": {
+                        "type": "object",
+                        "description": "Per-slot deployment configs for cross-platform test plans, keyed by slot index (\"2\", \"3\", and so on; see the plan's `slots`). The key \"1\" addresses the default slot and cannot be combined with `deployment_config_id`/`build_id`. Every slot used by the plan's player assignments needs an entry. Private device configs are allowed, but every player on a private device needs its own device; if the configs of a test cannot give each of its players a distinct device, the request returns a 400 error. Extra app numbers in each entry are local to that deployment config, not slot numbers.",
+                        "additionalProperties": {
+                            "type": "object",
+                            "required": [
+                                "deployment_config_id"
+                            ],
+                            "properties": {
+                                "deployment_config_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Deployment config to use for this slot"
+                                },
+                                "build_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Optional Build Storage build for this slot (build-storage configs only)"
+                                },
+                                "extra_build_ids": {
+                                    "$ref": "#/components/schemas/ExtraBuildIds"
+                                }
+                            }
+                        }
                     },
                     "additional_tags": {
                         "type": "array",
@@ -5954,8 +6759,32 @@
                     },
                     "options": {
                         "$ref": "#/components/schemas/RunOptions"
+                    },
+                    "run_on_all_configured_devices": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Start one independent test-plan run on every device configured in `deployment_config_id`. Supported for mobile deployment configurations with multi-device runs enabled. Requires `deployment_config_id` and cannot be combined with `slot_deployment_configs`."
                     }
-                }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "required": [
+                                "extra_build_ids"
+                            ],
+                            "properties": {
+                                "extra_build_ids": {
+                                    "minProperties": 1
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "deployment_config_id"
+                            ]
+                        }
+                    }
+                ]
             },
             "AgentConfig": {
                 "type": "object",
@@ -6009,9 +6838,22 @@
                     "pinned": {
                         "type": "boolean"
                     },
-                    "providerType": {
+                    "provider_type": {
                         "type": "string",
-                        "nullable": true
+                        "nullable": true,
+                        "description": "Main app provider type. Use summary.app and summary.extra_apps for app-selection requirements."
+                    },
+                    "allow_multi_device_runs": {
+                        "type": "boolean"
+                    },
+                    "device_labels": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "summary": {
+                        "$ref": "#/components/schemas/DeploymentConfigSummary"
                     }
                 }
             },
@@ -6058,6 +6900,571 @@
                     },
                     "pagination": {
                         "$ref": "#/components/schemas/Pagination"
+                    }
+                }
+            },
+            "RunResult": {
+                "type": "string",
+                "enum": [
+                    "SUCCESS",
+                    "FAILED",
+                    "SKIPPED",
+                    "BLOCKED",
+                    "TIMEOUT",
+                    "ERROR",
+                    "STOPPED",
+                    "MAX_STEPS"
+                ],
+                "description": "Run result label. SUCCESS, FAILED, SKIPPED and BLOCKED are test verdicts; TIMEOUT, ERROR and STOPPED are execution outcomes; MAX_STEPS is legacy (superseded by TIMEOUT)."
+            },
+            "VerificationItemResult": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Item identifier within the step (e.g. \"1a\")."
+                    },
+                    "expected": {
+                        "type": "string",
+                        "description": "The expected result the agent verified."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "passed",
+                            "failed",
+                            "skipped",
+                            "blocked",
+                            "stopped",
+                            "timeout",
+                            "error",
+                            "pending"
+                        ],
+                        "description": "Status of this item. The agent assigns passed/failed/skipped/blocked; stopped/timeout/error mean the run was cut off before the item could reach a verdict. pending only appears on runs recorded before cut-off statuses existed."
+                    },
+                    "comment": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional agent remark, e.g. why the item failed or an orthogonal observation."
+                    }
+                }
+            },
+            "RunStep": {
+                "type": "object",
+                "properties": {
+                    "step_number": {
+                        "type": "integer"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "duration_ms": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "run_state": {
+                        "type": "string",
+                        "enum": [
+                            "INITIALIZING",
+                            "RUNNING",
+                            "COMPLETED"
+                        ]
+                    },
+                    "run_result": {
+                        "type": "string",
+                        "enum": [
+                            "SUCCESS",
+                            "FAILED",
+                            "SKIPPED",
+                            "BLOCKED",
+                            "TIMEOUT",
+                            "ERROR",
+                            "STOPPED",
+                            "MAX_STEPS"
+                        ],
+                        "nullable": true,
+                        "description": "Result of the step, or null while the step is still initializing or running. See RunResult for what each label means."
+                    },
+                    "report": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Short summary the agent wrote for this step."
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VerificationItemResult"
+                        },
+                        "nullable": true,
+                        "description": "Per-item verdicts for verification steps ([] = step had no expected results). null for task/discovery steps and for runs recorded before item-level results were persisted."
+                    },
+                    "test": {
+                        "type": "object",
+                        "properties": {
+                            "test_step_id": {
+                                "type": "string"
+                            },
+                            "goal": {
+                                "type": "string"
+                            },
+                            "finish_condition": {
+                                "type": "string"
+                            },
+                            "test_type": {
+                                "type": "string",
+                                "enum": [
+                                    "task",
+                                    "verification",
+                                    "discovery"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "PlayerDetails": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Player"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "artifacts": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunDetailsArtifact"
+                                }
+                            },
+                            "steps": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/RunStep"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "RunDetailsArtifact": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "Size in bytes."
+                    },
+                    "uploaded_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ExportTestrailRequest": {
+                "description": "Supply exactly one source: multiplayer_run_id, multiplayer_run_ids, or test_plan_execution_id. Uses the saved project TestRail integration and a manual export trigger. Unknown fields are rejected.",
+                "oneOf": [
+                    {
+                        "title": "Single run",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "multiplayer_run_id"
+                        ],
+                        "properties": {
+                            "multiplayer_run_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "nunu multiplayer run ID from List Runs. Not a job ID or a per-player run ID."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
+                    },
+                    {
+                        "title": "Multiple runs",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "multiplayer_run_ids"
+                        ],
+                        "properties": {
+                            "multiplayer_run_ids": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "uniqueItems": true,
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "1 to 100 unique nunu multiplayer run IDs from List Runs, all in the same project. Exported together into one TestRail entry."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
+                    },
+                    {
+                        "title": "Test plan execution",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "test_plan_execution_id"
+                        ],
+                        "properties": {
+                            "test_plan_execution_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Execution ID from List Test Plan Executions, not the test-plan definition ID. Exports the completed runs in this execution."
+                            },
+                            "custom_run_name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 250,
+                                "description": "Optional. Name for the created TestRail run or plan. Leading and trailing whitespace is trimmed. Defaults to a generated nunu.ai name."
+                            },
+                            "close_run_on_completion": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Close the created TestRail run or plan after results are submitted. Set false to leave it open."
+                            },
+                            "force_new_run": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Optional. Create a new TestRail entry even if a test-plan execution was already exported. Set false to return the existing links with already_exported: true instead."
+                            }
+                        }
+                    }
+                ]
+            },
+            "ExportTestrailWarning": {
+                "type": "object",
+                "required": [
+                    "type",
+                    "message"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Warning category."
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable warning."
+                    },
+                    "run_id": {
+                        "type": "string",
+                        "description": "Affected nunu multiplayer run ID, when applicable."
+                    },
+                    "test_version_id": {
+                        "type": "string",
+                        "description": "Affected test version ID, when applicable."
+                    },
+                    "details": {
+                        "type": "string",
+                        "description": "Additional warning details."
+                    }
+                }
+            },
+            "ExportTestrailResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "export_type",
+                    "export_trigger",
+                    "export_strategy",
+                    "runs_processed",
+                    "total_test_cases"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "already_exported": {
+                        "type": "boolean",
+                        "description": "True when an existing test-plan export is returned without creating a new remote entry."
+                    },
+                    "export_duration_ms": {
+                        "type": "number"
+                    },
+                    "export_type": {
+                        "type": "string",
+                        "enum": [
+                            "single_run",
+                            "test_plan",
+                            "multiple_runs"
+                        ],
+                        "description": "This endpoint accepts single_run or test_plan sources."
+                    },
+                    "export_trigger": {
+                        "type": "string",
+                        "enum": [
+                            "manual",
+                            "auto"
+                        ],
+                        "description": "Always manual for this endpoint."
+                    },
+                    "export_strategy": {
+                        "type": "string",
+                        "enum": [
+                            "single_suite",
+                            "multi_suite_plan"
+                        ]
+                    },
+                    "runs_processed": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "nunu multiplayer run IDs processed by this export. Empty when already_exported is true."
+                    },
+                    "skipped_cases": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "description": "TestRail case IDs skipped during export."
+                    },
+                    "total_test_cases": {
+                        "type": "number",
+                        "description": "Number of aggregated TestRail cases. Zero when returning an existing export."
+                    },
+                    "warnings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ExportTestrailWarning"
+                        }
+                    },
+                    "error": {
+                        "type": "string"
+                    },
+                    "error_code": {
+                        "type": "string"
+                    },
+                    "testrail_run_id": {
+                        "type": "number"
+                    },
+                    "testrail_run_name": {
+                        "type": "string"
+                    },
+                    "testrail_run_url": {
+                        "type": "string"
+                    },
+                    "testrail_plan_id": {
+                        "type": "number"
+                    },
+                    "testrail_plan_name": {
+                        "type": "string"
+                    },
+                    "testrail_plan_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ExtraBuildIds": {
+                "type": "object",
+                "description": "Build Storage UUIDs keyed by one-based extra app number (\"1\", \"2\", \"3\") in the selected deployment config. Omitted entries retain saved source settings, filters, and build pins; {} makes no changes and does not remove apps. Explicit build IDs take precedence over required tags. Each selected app must use Build Storage and each build must be ready, in the same project, and on the matching platform. Extra apps can be pinned even when the main app skips installation.",
+                "propertyNames": {
+                    "pattern": "^[1-3]$"
+                },
+                "additionalProperties": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "example": {
+                    "1": "33333333-3333-4333-8333-333333333333"
+                }
+            },
+            "DeploymentAppMetadata": {
+                "type": "object",
+                "required": [
+                    "source"
+                ],
+                "description": "Safe app-selection requirements. Provider credentials and source internals are never included.",
+                "properties": {
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "build_storage",
+                            "skip_install",
+                            "preinstalled",
+                            "read_only"
+                        ]
+                    },
+                    "file_format": {
+                        "type": "string",
+                        "enum": [
+                            "file",
+                            "zip"
+                        ],
+                        "description": "Build Storage file format when available."
+                    },
+                    "required_tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "All tags required for discovery and latest-build resolution. Explicit build pins take precedence."
+                    },
+                    "editable": {
+                        "type": "boolean",
+                        "const": false,
+                        "description": "Present as false for read-only source metadata."
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Short description for a read-only source; omits provider credentials."
+                    }
+                }
+            },
+            "DeploymentConfigSummary": {
+                "type": "object",
+                "required": [
+                    "target_label",
+                    "deployment_config_id",
+                    "version",
+                    "name",
+                    "description",
+                    "pinned",
+                    "platform",
+                    "environment",
+                    "sdk_mode",
+                    "app",
+                    "extra_apps"
+                ],
+                "properties": {
+                    "target_label": {
+                        "type": "string",
+                        "description": "Readable deployment target."
+                    },
+                    "deployment_config_id": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pinned": {
+                        "type": "boolean"
+                    },
+                    "platform": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "android",
+                            "ios",
+                            "windows",
+                            "browser",
+                            "external",
+                            null
+                        ]
+                    },
+                    "environment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "standard_android_device",
+                            "private_android_device",
+                            "local_android_device",
+                            "standard_ios_device",
+                            "private_ios_device",
+                            "windows_vm",
+                            "local_windows_computer",
+                            "browser",
+                            "external",
+                            null
+                        ]
+                    },
+                    "sdk_mode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "no_sdk",
+                            "sdk",
+                            "wait_sdk",
+                            null
+                        ]
+                    },
+                    "app": {
+                        "$ref": "#/components/schemas/DeploymentAppMetadata"
+                    },
+                    "extra_apps": {
+                        "type": "array",
+                        "maxItems": 3,
+                        "description": "Extra apps in install order; [] means none configured. Numbers match extra_build_ids keys and extra_app_number.",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/DeploymentAppMetadata"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "extra_app_number"
+                                    ],
+                                    "properties": {
+                                        "extra_app_number": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 3
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }

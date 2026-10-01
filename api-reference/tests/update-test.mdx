@@ -1,6 +1,6 @@
 ---
 title: 'Update Test'
-openapi: 'PATCH /tests/{testId}'
+openapi: 'PATCH /project/{projectId}/tests/{testId}'
 noindex: true
 ---
 
@@ -56,6 +56,19 @@ replaced, not merged.
   Pre-resolved folder UUID. Mutually exclusive with `folder_path`.
 </ParamField>
 
+## Patching the time budget
+
+Time budgets live at the test level (`min_seconds` / `max_seconds` on the
+test body) — see [Create Test](/api-reference/tests/create-test#test-level-time-budget)
+for the per-framework rules. Patches accept the same fields with the same
+constraints:
+
+- `verification`: only `max_seconds` is allowed; sending `min_seconds` is
+  rejected with `400`.
+- `discovery` / `task`: either bound (or both) may be patched. The merged
+  result must satisfy `min_seconds <= max_seconds`; e.g. patching only
+  `min_seconds` to a value above the current `max_seconds` is rejected.
+
 ## Response
 
 Returns the updated test (same shape as [Get Test](/api-reference/tests/get-test))
@@ -73,7 +86,7 @@ On version conflict, returns `409` with:
 
 <RequestExample>
 ```bash cURL (rename test)
-curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -83,13 +96,23 @@ curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e
 ```
 
 ```bash cURL (move folder)
-curl -X PATCH "https://nunu.ai/api/v1/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "expected_version": 4,
     "patch": {},
     "folder_path": "regression/full"
+  }'
+```
+
+```bash cURL (raise budget on a discovery test)
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/tests/a5060a07-d386-4269-98ce-b33fb894201e" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expected_version": 4,
+    "patch": { "max_seconds": 14400 }
   }'
 ```
 </RequestExample>

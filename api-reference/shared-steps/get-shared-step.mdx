@@ -1,6 +1,6 @@
 ---
 title: 'Get Shared Step'
-openapi: 'GET /shared-steps/{sharedStepId}'
+openapi: 'GET /project/{projectId}/shared-steps/{sharedStepId}'
 noindex: true
 ---
 
@@ -57,9 +57,11 @@ step.
 
 <ResponseField name="steps_by_key" type="object" required>
   Map of step key (`"1"`, `"2"`, …) → step body. Each step has the same shape
-  used inside test cases (`goal`, `finish_condition`, `min_seconds`,
-  `max_seconds`, `screenshots`, `pause_game`, `performance_monitoring`,
-  `hint_manual`).
+  used inside test cases (`goal`, `expected_results`, `finish_condition`,
+  `screenshots`, `pause_game`, `performance_monitoring`, `hint_manual`). See
+  [Get Test → Verification step shape](/api-reference/tests/get-test#verification-step-shape)
+  for the field details — `expected_results` is the structured list of checks
+  and `finish_condition` is its legacy single-string rendering.
 </ResponseField>
 
 <ResponseField name="step_order" type="string[]" required>
@@ -68,7 +70,7 @@ step.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/shared-steps/ssc_login" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/shared-steps/ssc_login" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>
@@ -87,9 +89,10 @@ curl -X GET "https://nunu.ai/api/v1/shared-steps/ssc_login" \
     "1": {
       "test_step_id": "step_1",
       "goal": "Open login screen",
+      "expected_results": [
+        { "expected": "login fields are visible" }
+      ],
       "finish_condition": "login fields are visible",
-      "min_seconds": 0,
-      "max_seconds": 30,
       "screenshots": 1,
       "pause_game": false,
       "performance_monitoring": false,

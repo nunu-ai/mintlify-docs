@@ -1,6 +1,6 @@
 ---
 title: 'Update Shared Step'
-openapi: 'PATCH /shared-steps/{sharedStepId}'
+openapi: 'PATCH /project/{projectId}/shared-steps/{sharedStepId}'
 noindex: true
 ---
 
@@ -51,7 +51,7 @@ On version conflict, returns `409` with:
 
 <RequestExample>
 ```bash cURL
-curl -X PATCH "https://nunu.ai/api/v1/shared-steps/ssc_login" \
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/shared-steps/ssc_login" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

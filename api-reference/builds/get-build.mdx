@@ -1,6 +1,6 @@
 ---
 title: 'Get Build Details'
-openapi: 'GET /builds/{buildId}'
+openapi: 'GET /project/{projectId}/builds/{buildId}'
 noindex: true
 ---
 
@@ -55,7 +55,7 @@ The response includes all fields from the [List Builds](/api-reference/builds/li
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/builds/123e4567-e89b-12d3-a456-426614174000" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/builds/123e4567-e89b-12d3-a456-426614174000" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>
@@ -63,12 +63,12 @@ curl -X GET "https://nunu.ai/api/v1/builds/123e4567-e89b-12d3-a456-426614174000"
 <ResponseExample>
 ```json 200
 {
-  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "build_id": "123e4567-e89b-12d3-a456-426614174000",
   "name": "Production Build v1.2.3",
   "platform": "android",
   "status": "OK",
-  "file_name": "app-release.apk",
-  "file_size": 52428800,
+  "filename": "app-release.apk",
+  "size": 52428800,
   "pinned": true,
   "nunu_sdk": true,
   "tags": ["version:1.2.3", "env:production"],

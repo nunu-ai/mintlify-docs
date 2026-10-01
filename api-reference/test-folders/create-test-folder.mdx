@@ -1,6 +1,6 @@
 ---
 title: 'Create Test Folder'
-openapi: 'POST /test-folders'
+openapi: 'POST /project/{projectId}/test-folders'
 noindex: true
 ---
 
@@ -90,7 +90,7 @@ Returns the newly created folder with status `201`.
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/test-folders" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-folders" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

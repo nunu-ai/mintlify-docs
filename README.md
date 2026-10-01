@@ -27,16 +27,17 @@ Endpoints for managing game builds:
 
 ## Local Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview documentation changes locally:
+Enter the Nix development shell and install the pinned Yarn dependencies:
 
 ```bash
-npm i -g mint
+nix develop
+yarn install
 ```
 
 Run the development server from this directory:
 
 ```bash
-mint dev
+just dev
 ```
 
 View your local preview at `http://localhost:3000`.

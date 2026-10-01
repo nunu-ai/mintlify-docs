@@ -1,6 +1,6 @@
 ---
 title: 'List Deployment Configs'
-openapi: 'GET /deployment-configs'
+openapi: 'GET /project/{projectId}/deployment-configs'
 noindex: true
 ---
 
@@ -56,14 +56,33 @@ this endpoint to discover valid `deployment_config_id` values for
   Whether the config is pinned
 </ResponseField>
 
-<ResponseField name="providerType" type="string">
+<ResponseField name="provider_type" type="string | null">
   Underlying build provider (e.g. `build-storage`, `direct-url`), or `null` if
   unknown
 </ResponseField>
 
+<ResponseField name="allow_multi_device_runs" type="boolean">
+  Whether this config supports running on all configured devices
+</ResponseField>
+
+<ResponseField name="device_labels" type="string[]">
+  Labels for devices configured by this deployment config
+</ResponseField>
+
+<ResponseField name="summary" type="object">
+  Compact deployment metadata used to discover app build requirements. It
+  contains `target_label`, `deployment_config_id`, `version`, `name`,
+  `description`, `pinned`, `platform`, `environment`, `sdk_mode`, `app`, and
+  `extra_apps`. `app` describes the main app. Each `extra_apps` entry includes
+  its one-based `extra_app_number`. App metadata may include `source`
+  (`build_storage`, `skip_install`, `preinstalled`, or `read_only`),
+  `file_format` (`file` or `zip`), and `required_tags`; `read_only` entries
+  include `editable: false` and a safe summary. This metadata omits credentials.
+</ResponseField>
+
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/deployment-configs?page=0&page_size=25" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/deployment-configs?page=0&page_size=25" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>
@@ -78,7 +97,33 @@ curl -X GET "https://nunu.ai/api/v1/deployment-configs?page=0&page_size=25" \
       "description": "Build storage based android deployment",
       "kind": "android",
       "pinned": true,
-      "providerType": "build-storage"
+      "provider_type": "build-storage",
+      "allow_multi_device_runs": true,
+      "device_labels": ["Galaxy S24"],
+      "summary": {
+        "target_label": "Galaxy S24",
+        "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+        "version": 3,
+        "name": "Android prod",
+        "description": "Build storage based android deployment",
+        "pinned": true,
+        "platform": "android",
+        "environment": "standard_android_device",
+        "sdk_mode": "sdk",
+        "app": {
+          "source": "build_storage",
+          "file_format": "file",
+          "required_tags": ["release"]
+        },
+        "extra_apps": [
+          {
+            "extra_app_number": 1,
+            "source": "build_storage",
+            "file_format": "zip",
+            "required_tags": ["companion"]
+          }
+        ]
+      }
     }
   ],
   "pagination": {

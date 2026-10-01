@@ -1,6 +1,6 @@
 ---
 title: 'Start Test Plan Run'
-openapi: 'POST /test-plans/{testPlanId}/runs'
+openapi: 'POST /project/{projectId}/test-plans/{testPlanId}/runs'
 noindex: true
 ---
 
@@ -9,8 +9,10 @@ noindex: true
 </Info>
 
 Start a run for a specific test plan. This is the test-plan-scoped equivalent
-of [Start a Run](/api-reference/runs/start-run) — instead of supplying
-`test_plan_id` in the body, the plan is identified by the URL path.
+of [Start a Run](/api-reference/runs/start-run): instead of supplying
+`test_plan_id` in the body, the plan is identified by the URL path. It is also
+the only endpoint that accepts `slot_deployment_configs` for cross-platform
+plans.
 
 The response contains one `job_id` per test in the plan; poll each one with
 [Get Job Details](/api-reference/jobs/get-job) to wait for completion.
@@ -23,12 +25,72 @@ The response contains one `job_id` per test in the plan; poll each one with
 
 ## Request Body
 
-<ParamField body="deployment_config_id" type="string" required>
-  UUID of the deployment configuration to use for every test in the plan.
+<ParamField body="deployment_config_id" type="string">
+  UUID of the deployment configuration for the plan's **default slot** (slot 1),
+  used by every player not assigned to an extra slot; for plans without extra
+  slots this is simply the config used by every test. Required unless the
+  plan's slot assignments cover every player of every test and
+  `slot_deployment_configs` is supplied.
 </ParamField>
 
 <ParamField body="agent_config_id" type="string">
   UUID of an agent configuration applied to every test in the plan.
+</ParamField>
+
+<ParamField body="build_id" type="string">
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) for
+  the default slot. Only works with deployment configs that use Build Storage
+  as their build source, and requires `deployment_config_id`; otherwise the
+  request returns a `400` error.
+</ParamField>
+
+<ParamField body="extra_build_ids" type="object">
+  Optional Build Storage build IDs for extra apps in the top-level
+  `deployment_config_id`, keyed by extra app number (`"1"`, `"2"`, or `"3"`).
+  These numbers refer to apps within a deployment config; they are independent
+  of the plan's slot indexes.
+
+  Omit an entry to keep that app's saved build selection. Omitting the whole
+  field preserves all saved extra-app selections; `{}` is a no-op. A non-empty
+  top-level map requires top-level `deployment_config_id`. When slot `"1"` is
+  supplied instead, use `extra_build_ids` inside that slot entry.
+
+  <Warning>
+    Explicit extra build IDs work only when the corresponding extra app uses
+    Build Storage. Each build must belong to the project, be ready, and match
+    the extra app's platform. An explicit ID takes precedence over that app's
+    `required_tags` filter.
+  </Warning>
+</ParamField>
+
+<ParamField body="slot_deployment_configs" type="object">
+  Per-slot deployment configs for cross-platform test plans, keyed by slot
+  index (`"2"`, `"3"`, and so on). Fetch the plan with
+  [Get Test Plan](/api-reference/test-plans/get-test-plan) to see its `slots`.
+  Every slot used by the plan's player assignments needs an entry; keys
+  referencing slots the plan does not define return a `400` error. The key
+  `"1"` addresses the default slot as an alternative to the top-level
+  `deployment_config_id`/`build_id` (supplying both returns a `400` error).
+  Private device configs are allowed, but every player on a private device
+  needs its own device; if the configs of a test cannot give each of its
+  players a distinct device, the request returns a `400` error.
+
+  <Expandable title="entry properties">
+    <ParamField body="slot_deployment_configs.{index}.deployment_config_id" type="string" required>
+      Deployment config to use for this slot.
+    </ParamField>
+    <ParamField body="slot_deployment_configs.{index}.build_id" type="string">
+      Optional Build Storage build for this slot (build-storage configs only).
+    </ParamField>
+    <ParamField body="slot_deployment_configs.{index}.extra_build_ids" type="object">
+      Optional extra-app Build Storage build IDs for this slot's deployment
+      config, keyed by extra app number (`"1"`–`"3"`). These numbers are
+      independent of the slot index. Omitted entries preserve saved selections;
+      `{}` is a no-op. Each explicit build must belong to the project, be ready,
+      match the extra app platform, and use a Build Storage source. Explicit
+      IDs take precedence over `required_tags`.
+    </ParamField>
+  </Expandable>
 </ParamField>
 
 <ParamField body="additional_tags" type="string[]">
@@ -44,16 +106,26 @@ The response contains one `job_id` per test in the plan; poll each one with
 </ParamField>
 
 <ParamField body="options" type="object">
-  Test execution overrides — same shape as `options` on
-  [Start a Run](/api-reference/runs/start-run) (`min_time_seconds`,
-  `max_time_seconds`, `performance_monitoring`, `mobile_auto_grant_permissions`,
-  `mobile_geolocation`, `mobile_gpslocation`).
+  Per-run override knobs, with the same shape as `options` on
+  [Start a Run](/api-reference/runs/start-run) (`performance_monitoring`,
+  `mobile_auto_grant_permissions`, `mobile_geolocation`, `mobile_gpslocation`).
+  Time-budget overrides are intentionally **not** accepted here; the budget
+  lives on the test version itself (`min_seconds` / `max_seconds`).
+</ParamField>
+
+<ParamField body="run_on_all_configured_devices" type="boolean" default="false">
+  Start one independent test-plan run on every device configured in
+  `deployment_config_id`. Supported for mobile deployment configurations
+  with multi-device runs enabled. Requires `deployment_config_id` and cannot
+  be combined with `slot_deployment_configs`. Normal concurrency and billing
+  rules apply.
 </ParamField>
 
 ## Response
 
-Returns `201 Created` on success. The body contains the started-run data
-directly (no `{ ok, status, message, data }` envelope) — typically including
+Single-device requests return `201 Created`. Multi-device requests return
+aggregate per-device results; see the fields below. The body contains the
+started-run data directly (no `{ ok, status, message, data }` envelope), typically including
 `job_ids[]` (one per test in the plan) and `test_plan_execution_id`, so the
 caller can correlate results via
 [List Test Plan Executions](/api-reference/test-plans/list-test-plan-executions).
@@ -66,16 +138,78 @@ caller can correlate results via
   ID of the test plan execution
 </ResponseField>
 
+<ResponseField name="slot_build_ids" type="object">
+  For cross-platform plans: the build pinned for each extra slot, keyed by slot
+  index. Only present when slot configs resolved to builds.
+</ResponseField>
+
+<ResponseField name="ok" type="boolean">
+  Whether at least one device run started. Returned for multi-device requests.
+</ResponseField>
+
+<ResponseField name="requested_count" type="integer">
+  Number of test-plan runs requested across configured devices.
+</ResponseField>
+
+<ResponseField name="started_count" type="integer">
+  Number of test-plan runs started successfully.
+</ResponseField>
+
+<ResponseField name="successful_count" type="integer">
+  Alias for `started_count` in multi-device responses.
+</ResponseField>
+
+<ResponseField name="failed_count" type="integer">
+  Number of test-plan runs that failed to start.
+</ResponseField>
+
+<ResponseField name="results" type="object[]">
+  Per-device start results. Each item includes `device_label`, `ok`, `status`,
+  and failure `message`; successful items may include the upstream response
+  under `data`.
+</ResponseField>
+
+<Note>
+  Multi-device requests return `201` when every device run starts, `207` when
+  only some start, and `500` when none start.
+</Note>
+
 On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status.
 
 <RequestExample>
 ```bash cURL
-curl -X POST "https://nunu.ai/api/v1/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
     "additional_tags": ["nightly"]
+  }'
+```
+
+```bash cURL (cross-platform slots)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "extra_build_ids": { "1": "123e4567-e89b-12d3-a456-426614174001" },
+    "slot_deployment_configs": {
+      "2": {
+        "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7",
+        "extra_build_ids": { "2": "123e4567-e89b-12d3-a456-426614174002" }
+      }
+    }
+  }'
+```
+
+```bash cURL (All configured devices)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/test-plans/b3f1a2c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "run_on_all_configured_devices": true
   }'
 ```
 </RequestExample>

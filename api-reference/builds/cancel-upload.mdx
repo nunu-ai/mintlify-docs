@@ -1,6 +1,6 @@
 ---
 title: 'Cancel Upload'
-openapi: 'DELETE /builds/upload'
+openapi: 'DELETE /project/{projectId}/builds/upload'
 noindex: true
 ---
 
@@ -32,12 +32,12 @@ Cancel an in-progress upload. This is especially useful for multipart uploads wh
 
 <RequestExample>
 ```bash cURL (Single-Part)
-curl -X DELETE "https://nunu.ai/api/v1/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk" \
+curl -X DELETE "https://nunu.ai/api/v1/project/your-project-id/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```bash cURL (Multipart)
-curl -X DELETE "https://nunu.ai/api/v1/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk&upload_id=ExampleUploadId123" \
+curl -X DELETE "https://nunu.ai/api/v1/project/your-project-id/builds/upload?build_id=123e4567-e89b-12d3-a456-426614174000&object_key=abc123-def456/app.apk&upload_id=ExampleUploadId123" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
@@ -50,7 +50,7 @@ const params = new URLSearchParams({
 });
 
 const response = await fetch(
-  `https://nunu.ai/api/v1/builds/upload?${params}`,
+  `https://nunu.ai/api/v1/project/your-project-id/builds/upload?${params}`,
   {
     method: "DELETE",
     headers: {
@@ -73,7 +73,7 @@ params = {
 }
 
 response = requests.delete(
-    "https://nunu.ai/api/v1/builds/upload",
+    "https://nunu.ai/api/v1/project/your-project-id/builds/upload",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
     params=params
 )

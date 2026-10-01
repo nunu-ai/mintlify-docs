@@ -13,6 +13,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             nodejs
+            yarn-berry
             just
           ];
         };

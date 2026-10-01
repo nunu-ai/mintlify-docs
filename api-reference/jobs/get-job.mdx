@@ -1,6 +1,6 @@
 ---
 title: 'Get Job Details'
-openapi: 'GET /jobs/{jobId}'
+openapi: 'GET /project/{projectId}/jobs/{jobId}'
 noindex: true
 ---
 
@@ -22,7 +22,7 @@ The response uses the same Job object described in [List Jobs](/api-reference/jo
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/jobs/f80f6230-3a4f-431a-9d55-d11b867fed4e" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/jobs/f80f6230-3a4f-431a-9d55-d11b867fed4e" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 </RequestExample>

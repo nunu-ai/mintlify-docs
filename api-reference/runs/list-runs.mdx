@@ -1,6 +1,6 @@
 ---
 title: 'List Runs'
-openapi: 'GET /runs'
+openapi: 'GET /project/{projectId}/runs'
 noindex: true
 ---
 
@@ -92,7 +92,18 @@ Retrieve a paginated list of runs for your project.
 </ResponseField>
 
 <ResponseField name="result" type="string">
-  Result: `success`, `failure`, `error`, or `null` if not completed
+  Result of the run, or `null` if not completed:
+
+  | Value | Meaning |
+  | --- | --- |
+  | `SUCCESS` | The run completed; for verification tests, every check passed |
+  | `FAILED` | Verdict: at least one verification check failed |
+  | `SKIPPED` | Verdict: the test could not be executed and was skipped |
+  | `BLOCKED` | Verdict: a precondition prevented the checks from being evaluated |
+  | `TIMEOUT` | The run hit its time limit before finishing |
+  | `ERROR` | The run failed for technical reasons (setup, infrastructure) |
+  | `STOPPED` | The run was stopped before finishing (e.g. by a user) |
+  | `MAX_STEPS` | Legacy: the agent ran out of steps (superseded by `TIMEOUT`) |
 </ResponseField>
 
 <ResponseField name="bug_info" type="object">
@@ -168,13 +179,13 @@ Retrieve a paginated list of runs for your project.
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://nunu.ai/api/v1/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10" \
+curl -X GET "https://nunu.ai/api/v1/project/your-project-id/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10" \
   -H "X-Api-Key: YOUR_API_TOKEN"
 ```
 
 ```typescript JavaScript
 const response = await fetch(
-  "https://nunu.ai/api/v1/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10",
+  "https://nunu.ai/api/v1/project/your-project-id/runs?state=completed&tags=nightly&bugs=true&page=0&page_size=10",
   {
     headers: {
       "X-Api-Key": process.env.NUNU_API_TOKEN,
@@ -189,7 +200,7 @@ import requests
 import os
 
 response = requests.get(
-    "https://nunu.ai/api/v1/runs",
+    "https://nunu.ai/api/v1/project/your-project-id/runs",
     headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
     params={"state": "completed", "tags": "nightly", "bugs": True, "page": 0, "page_size": 10}
 )
@@ -241,6 +252,9 @@ data = response.json()
           },
           "step_count": 1,
           "completed_step_count": 1,
+          "step_result_summary": {
+            "SUCCESS": 1
+          },
           "platform": {
             "kind": "android-native",
             "config": {

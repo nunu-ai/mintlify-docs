@@ -1,6 +1,6 @@
 ---
 title: 'Start a Run'
-openapi: 'POST /runs'
+openapi: 'POST /project/{projectId}/runs'
 noindex: true
 ---
 
@@ -14,9 +14,9 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 
 <Note>
   Provide exactly one of `multiplayer_test_id`, `test_plan_id`, or `instructions`:
-  - **`multiplayer_test_id`** — run an existing test
-  - **`test_plan_id`** — run an existing test plan
-  - **`instructions`** — run an ephemeral (one-off) test without creating a test case first
+  - **`multiplayer_test_id`**: run an existing test
+  - **`test_plan_id`**: run an existing test plan
+  - **`instructions`**: run an ephemeral (one-off) test without creating a test case first
 </Note>
 
 <ParamField body="multiplayer_test_id" type="string">
@@ -24,15 +24,20 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="test_plan_id" type="string">
-  UUID of the test plan to run. Mutually exclusive with `multiplayer_test_id` and `instructions`.
+  UUID of the test plan to run. Mutually exclusive with `multiplayer_test_id`
+  and `instructions`. This endpoint starts test plans with a single deployment
+  config; to supply per-slot configs for a cross-platform plan, use
+  [Start Test Plan Run](/api-reference/test-plans/start-test-plan-run) instead.
 </ParamField>
 
 <ParamField body="instructions" type="string">
   Test instructions to execute as an ephemeral (one-off) test. Mutually exclusive with `multiplayer_test_id` and `test_plan_id`.
 </ParamField>
 
-<ParamField body="deployment_config_id" type="string" required>
-  UUID of the deployment configuration
+<ParamField body="deployment_config_id" type="string">
+  UUID of the deployment configuration, used by every player that has no
+  `player_deployment_configs` entry. Required, except for multiplayer tests
+  where `player_deployment_configs` covers every player.
 </ParamField>
 
 <ParamField body="name" type="string">
@@ -40,7 +45,59 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="build_id" type="string">
-  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to use for this run. See [Using Build Storage Builds](#using-build-storage-builds) below.
+  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to
+  use for the main app. Requires `deployment_config_id`. Extra apps use
+  `extra_build_ids`. See [Using Build Storage Builds](#using-build-storage-builds)
+  below.
+</ParamField>
+
+<ParamField body="extra_build_ids" type="object">
+  Optional Build Storage build IDs for extra apps on the selected deployment
+  config, keyed by extra app number (`"1"`, `"2"`, or `"3"`). The number is
+  the app's position in that config's `summary.extra_apps`; it is independent
+  of the player number. Supported for existing tests, test plans, and ephemeral
+  runs (`instructions`). The main app can use `skip_install` while extra apps
+  are pinned.
+
+  Omit an entry to keep that app's saved build selection. Omitting the whole
+  field preserves all saved extra-app selections; `{}` is a no-op. A non-empty
+  top-level map requires top-level `deployment_config_id`.
+
+  <Warning>
+    Explicit extra build IDs work only when the corresponding extra app uses
+    Build Storage. Each build must belong to the project, be ready, and match
+    the extra app's platform. An explicit ID takes precedence over that app's
+    `required_tags` filter.
+  </Warning>
+</ParamField>
+
+<ParamField body="player_deployment_configs" type="object">
+  Per-player deployment configs for cross-platform multiplayer tests, keyed by
+  player number (`"1"`, `"2"`, and so on). Only applies with `multiplayer_test_id`,
+  and keys must be within the test's player count. The map does not need to
+  cover every player: any player without an entry falls back to the default
+  `deployment_config_id`. Omitting `deployment_config_id` is only allowed when
+  every player has an entry; a partial map without a default returns a `400`
+  error listing the missing players. Private device configs are allowed, but
+  every player on a private device needs its own device; if the configs cannot
+  give each player a distinct device, the request returns a `400` error.
+
+  <Expandable title="entry properties">
+    <ParamField body="player_deployment_configs.{player}.deployment_config_id" type="string" required>
+      Deployment config to use for this player.
+    </ParamField>
+    <ParamField body="player_deployment_configs.{player}.build_id" type="string">
+      Optional Build Storage build for this player (build-storage configs only).
+    </ParamField>
+    <ParamField body="player_deployment_configs.{player}.extra_build_ids" type="object">
+      Optional extra-app Build Storage build IDs for this player's deployment
+      config. Keys are extra app numbers (`"1"`–`"3"`), independent of this
+      entry's player number. Omitted entries preserve saved selections; `{}` is
+      a no-op. Each explicit build must belong to the project, be ready, match
+      the extra app platform, and use a Build Storage source. Explicit IDs take
+      precedence over `required_tags`.
+    </ParamField>
+  </Expandable>
 </ParamField>
 
 <ParamField body="agent_config_id" type="string">
@@ -54,11 +111,21 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="retries" type="integer" default="0">
-  Number of times to retry the test if it fails. Only applies when using `multiplayer_test_id`. Must be between 0 and 10.
+  Number of times to retry the run after an execution failure (`ERROR`, `TIMEOUT`, `STOPPED`). Genuine test verdicts (`FAILED`, `BLOCKED`, `SKIPPED`) are final and are not retried. Only applies when using `multiplayer_test_id`. Must be between 0 and 10.
 </ParamField>
 
 <ParamField body="instances" type="integer" default="1">
   Number of parallel instances to run. Only applies when using `multiplayer_test_id`. Must be between 1 and 10.
+</ParamField>
+
+<ParamField body="run_on_all_configured_devices" type="boolean" default="false">
+  Start one independent run on every device configured in
+  `deployment_config_id`. Supported for mobile deployment configurations
+  with multi-device runs enabled. Requires `deployment_config_id` and cannot
+  be combined with `player_deployment_configs`. For existing tests,
+  `instances` applies independently on each device, so the aggregate run
+  count is `instances` multiplied by the number of configured devices. Normal
+  concurrency and billing rules apply.
 </ParamField>
 
 <ParamField body="render_templates" type="boolean" default="false">
@@ -70,15 +137,13 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="options" type="object">
-  Test execution options
+  Per-run override knobs.
+
+  <Note>
+    The test time budget is **not** overridable here. It lives on the test version itself (`min_seconds` / `max_seconds` on the test body). Edit the test, or create a new version, when you want to change the budget. See [Create a Test](/api-reference/tests/create-test) for the per-framework defaults and rules.
+  </Note>
 
   <Expandable title="options properties">
-    <ParamField body="options.min_time_seconds" type="integer">
-      Minimum test duration in seconds
-    </ParamField>
-    <ParamField body="options.max_time_seconds" type="integer">
-      Maximum test duration (timeout) in seconds
-    </ParamField>
     <ParamField body="options.performance_monitoring" type="boolean">
       Enable performance data collection
     </ParamField>
@@ -96,8 +161,9 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 
 ## Response
 
-Returns `201 Created` on success. The body contains the started-run data
-directly (no `{ ok, status, message, data }` envelope).
+Single-device requests return `201 Created`. Multi-device requests return
+aggregate per-device results; see the fields below. The body contains the
+started-run data directly (no `{ ok, status, message, data }` envelope).
 
 <ResponseField name="job_ids" type="string[]" required>
   Array of job IDs created. For a single test, this contains one job. For a
@@ -117,23 +183,68 @@ directly (no `{ ok, status, message, data }` envelope).
   Optional status message returned for multiplayer test and test plan runs.
 </ResponseField>
 
+<ResponseField name="ok" type="boolean">
+  Whether at least one device run started. Returned for multi-device requests.
+</ResponseField>
+
+<ResponseField name="requested_count" type="integer">
+  Number of runs requested across configured devices. Returned for multi-device
+  existing-test and test-plan requests.
+</ResponseField>
+
+<ResponseField name="started_count" type="integer">
+  Number of runs started successfully. Returned for multi-device existing-test
+  and test-plan requests.
+</ResponseField>
+
+<ResponseField name="successful_count" type="integer">
+  Alias for `started_count` in multi-device existing-test and test-plan
+  responses.
+</ResponseField>
+
+<ResponseField name="failed_count" type="integer">
+  Number of requested runs that failed to start. Returned for multi-device
+  existing-test and test-plan requests.
+</ResponseField>
+
+<ResponseField name="results" type="object[]">
+  Per-device start results for existing-test and test-plan requests. Each item
+  includes `device_label`, `ok`, `status`, and failure `message`; successful
+  items may include the upstream response under `data`.
+</ResponseField>
+
+<ResponseField name="device_runs" type="object[]">
+  Per-device start results for ephemeral (`instructions`) requests. Each item
+  includes `device_label`, `ok`, and, when available, `status` and `message`.
+</ResponseField>
+
+<Note>
+  Multi-device requests return `201` when every device run starts and `207`
+  when only some start. A request that cannot start any saved-test or test-plan
+  run returns `500`.
+</Note>
+
 On failure, returns `{ "error": "<message>" }` with an appropriate HTTP status
 (`400`, `401`, `403`, `404`, `500`).
 
 <RequestExample>
 ```bash cURL (Test)
-curl -X POST "https://nunu.ai/api/v1/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
     "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "extra_build_ids": {
+      "1": "123e4567-e89b-12d3-a456-426614174001",
+      "2": "123e4567-e89b-12d3-a456-426614174002"
+    },
     "additional_tags": ["ci", "pr-123"]
   }'
 ```
 
 ```bash cURL (Ephemeral)
-curl -X POST "https://nunu.ai/api/v1/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -145,8 +256,35 @@ curl -X POST "https://nunu.ai/api/v1/runs" \
   }'
 ```
 
+```bash cURL (Cross-platform)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "player_deployment_configs": {
+      "2": {
+        "deployment_config_id": "9a1b2c3d-4e5f-6789-a0b1-c2d3e4f5a6b7",
+        "extra_build_ids": { "1": "123e4567-e89b-12d3-a456-426614174003" }
+      }
+    }
+  }'
+```
+
+```bash cURL (All configured devices)
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "multiplayer_test_id": "789e0123-e89b-12d3-a456-426614174000",
+    "deployment_config_id": "456e7890-e89b-12d3-a456-426614174000",
+    "run_on_all_configured_devices": true
+  }'
+```
+
 ```typescript JavaScript
-const response = await fetch("https://nunu.ai/api/v1/runs", {
+const response = await fetch("https://nunu.ai/api/v1/project/your-project-id/runs", {
   method: "POST",
   headers: {
     "X-Api-Key": process.env.NUNU_API_TOKEN,
@@ -167,7 +305,7 @@ import requests
 import os
 
 response = requests.post(
-    "https://nunu.ai/api/v1/runs",
+    "https://nunu.ai/api/v1/project/your-project-id/runs",
     headers={
         "X-Api-Key": os.environ["NUNU_API_TOKEN"],
         "Content-Type": "application/json"
@@ -226,7 +364,7 @@ You can run tests against a specific build from [Build Storage](/api-reference/b
 BUILD_ID="123e4567-e89b-12d3-a456-426614174000"
 
 # 2. Start a test using that build
-curl -X POST "https://nunu.ai/api/v1/runs" \
+curl -X POST "https://nunu.ai/api/v1/project/your-project-id/runs" \
   -H "X-Api-Key: YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -247,7 +385,8 @@ Here's a complete example that starts a test and polls for completion:
 
 ```typescript JavaScript/TypeScript
 const API_TOKEN = process.env.NUNU_API_TOKEN;
-const BASE_URL = "https://nunu.ai/api/v1";
+const PROJECT_ID = process.env.NUNU_PROJECT_ID;
+const BASE_URL = `https://nunu.ai/api/v1/project/${PROJECT_ID}`;
 
 async function startAndWaitForTest(
   testId: string,
@@ -301,7 +440,8 @@ import os
 import time
 
 API_TOKEN = os.environ["NUNU_API_TOKEN"]
-BASE_URL = "https://nunu.ai/api/v1"
+PROJECT_ID = os.environ["NUNU_PROJECT_ID"]
+BASE_URL = f"https://nunu.ai/api/v1/project/{PROJECT_ID}"
 
 def start_and_wait_for_test(test_id: str, deployment_config_id: str) -> dict:
     headers = {"X-Api-Key": API_TOKEN}
@@ -345,7 +485,8 @@ set -e
 API_TOKEN="${NUNU_API_TOKEN}"
 TEST_ID="${NUNU_TEST_ID}"
 DEPLOYMENT_ID="${NUNU_DEPLOYMENT_ID}"
-BASE_URL="https://nunu.ai/api/v1"
+PROJECT_ID="${NUNU_PROJECT_ID}"
+BASE_URL="https://nunu.ai/api/v1/project/${PROJECT_ID}"
 
 # Start the test
 START_RESPONSE=$(curl -s -X POST "${BASE_URL}/runs" \
