@@ -137,6 +137,12 @@
                             "api-reference/builds/complete-upload",
                             "api-reference/builds/cancel-upload"
                         ]
+                    },
+                    {
+                        "group": "Minions",
+                        "pages": [
+                            "api-reference/minions/download-minion"
+                        ]
                     }
                 ]
             }

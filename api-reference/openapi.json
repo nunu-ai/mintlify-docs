@@ -3903,6 +3903,102 @@
                     }
                 }
             }
+        },
+        "/minions/download": {
+            "get": {
+                "operationId": "downloadMinion",
+                "summary": "Download Minion",
+                "description": "Download the latest stable Minion installer for the selected platform. Requires a project or organization API key with project:manage-minions.",
+                "tags": [
+                    "Minions"
+                ],
+                "parameters": [
+                    {
+                        "name": "platform",
+                        "in": "query",
+                        "required": true,
+                        "description": "Platform and architecture of the Minion installer.",
+                        "schema": {
+                            "$ref": "#/components/schemas/MinionDownloadPlatform"
+                        },
+                        "example": "linux-x86_64"
+                    }
+                ],
+                "responses": {
+                    "307": {
+                        "description": "Redirect to the latest stable installer. ",
+                        "headers": {
+                            "Location": {
+                                "description": "Installer download URL, valid for 24 hours.",
+                                "schema": {
+                                    "type": "string",
+                                    "format": "uri"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or unsupported platform.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required or invalid API key.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Access denied, may mean missing project:manage-minions permission.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Minion release not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Invalid release metadata or an internal error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Minion update service unavailable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -7467,6 +7563,15 @@
                         }
                     }
                 }
+            },
+            "MinionDownloadPlatform": {
+                "type": "string",
+                "enum": [
+                    "windows-x86_64",
+                    "linux-x86_64",
+                    "darwin-aarch64"
+                ],
+                "description": "Windows x64, Linux x64, or macOS Apple Silicon."
             }
         },
         "securitySchemes": {

@@ -1,0 +1,36 @@
+---
+title: 'Download Minion'
+openapi: 'GET /minions/download'
+noindex: true
+---
+
+## Query Parameters
+
+<ParamField query="platform" type="string" required>
+  Target platform: `windows-x86_64`, `linux-x86_64`, or `darwin-aarch64`.
+</ParamField>
+
+## Response
+
+The endpoint responds with `307 Temporary Redirect`. The `Location` header
+contains a download URL valid for 24 hours.
+
+| Status | Meaning |
+| --- | --- |
+| `307` | Redirect to the installer download |
+| `400` | Missing or unsupported platform |
+| `401` | Unauthenticated |
+| `403` | Missing `project:manage-minions` permission |
+| `404` | No release is available |
+| `500` | Invalid release metadata or internal error |
+| `503` | Minion downloads are unavailable |
+
+<RequestExample>
+```bash cURL
+curl --fail --location \
+  --output minion-installer \
+  --header "X-API-Key: $NUNU_API_KEY" \
+  "https://nunu.ai/api/v1/minions/download?platform=linux-x86_64"
+```
+</RequestExample>
+
