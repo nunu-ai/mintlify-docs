@@ -1153,7 +1153,7 @@
             "get": {
                 "operationId": "listBuilds",
                 "summary": "List Builds",
-                "description": "Retrieve a paginated list of builds for your project. Supply deployment_config_id to discover compatible builds for the saved main app, or add extra_app_number to target an extra app. Results satisfy the selected Build Storage source’s platform, file/ZIP format, required tags, and ready status (OK). SDK and WAIT_SDK restrict main-app discovery to SDK builds; extra apps have no automatic SDK restriction. Caller filters further narrow results and cannot override these requirements. Without a deployment config, general listing is unchanged.",
+                "description": "Retrieve a paginated list of builds for your project. Without deployment_config_id, results are from Build Storage. With a deployment config, the selected app's source determines the results: Build Storage builds satisfy the app's platform, file/ZIP format, required tags, and ready status (OK), while an external-platform source returns builds from that platform. SDK and WAIT_SDK restrict main-app Build Storage discovery to SDK builds; Build Storage extra apps have no automatic SDK restriction. For external-platform results, status, pinned, nunu_sdk, platform, and tags filters are unsupported and return 400; pagination remains available.",
                 "tags": [
                     "Builds"
                 ],
@@ -1161,7 +1161,7 @@
                     {
                         "name": "deployment_config_id",
                         "in": "query",
-                        "description": "Deployment config UUID from this project. Selects its main app unless extra_app_number is supplied. The selected app must use Build Storage.",
+                        "description": "Deployment config UUID from this project. Selects its main app unless extra_app_number is supplied. The selected app's source determines whether results come from Build Storage or an external platform.",
                         "schema": {
                             "type": "string",
                             "format": "uuid"
@@ -1170,7 +1170,7 @@
                     {
                         "name": "extra_app_number",
                         "in": "query",
-                        "description": "One-based extra app number in the saved deployment config. Requires deployment_config_id; omission targets the main app.",
+                        "description": "One-based Build Storage extra app number in the saved deployment config. Requires deployment_config_id; omission targets the main app.",
                         "schema": {
                             "type": "integer",
                             "minimum": 1,
@@ -1180,7 +1180,7 @@
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "Filter by build status (e.g., OK, UNHEALTHY)",
+                        "description": "Filter by build status (e.g., OK, UNHEALTHY). Unsupported when deployment_config_id selects an external platform; returns 400.",
                         "schema": {
                             "type": "string"
                         }
@@ -1188,7 +1188,7 @@
                     {
                         "name": "pinned",
                         "in": "query",
-                        "description": "Filter by pinned status",
+                        "description": "Filter by pinned status. Unsupported when deployment_config_id selects an external platform; returns 400.",
                         "schema": {
                             "type": "boolean"
                         }
@@ -1196,7 +1196,7 @@
                     {
                         "name": "nunu_sdk",
                         "in": "query",
-                        "description": "Filter by nunu SDK integration",
+                        "description": "Filter by nunu SDK integration. Unsupported when deployment_config_id selects an external platform; returns 400.",
                         "schema": {
                             "type": "boolean"
                         }
@@ -1204,7 +1204,7 @@
                     {
                         "name": "platform",
                         "in": "query",
-                        "description": "Filter by platform",
+                        "description": "Filter by platform. Unsupported when deployment_config_id selects an external platform; returns 400.",
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -1222,7 +1222,7 @@
                     {
                         "name": "tags",
                         "in": "query",
-                        "description": "Filter by tags (comma-separated). All specified tags must match.",
+                        "description": "Filter by tags (comma-separated). All specified tags must match. Unsupported when deployment_config_id selects an external platform; returns 400.",
                         "schema": {
                             "type": "string"
                         }
@@ -1260,7 +1260,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid query parameters, missing extra app, or selected app does not use Build Storage",
+                        "description": "Invalid query parameters, missing extra app, unsupported selected build source, or unsupported filters for an external-platform app",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -5002,6 +5002,46 @@
                     }
                 }
             },
+            "ExternalPlatformBuildSummary": {
+                "type": "object",
+                "required": [
+                    "build_id",
+                    "project_id",
+                    "name",
+                    "platform",
+                    "created_at"
+                ],
+                "properties": {
+                    "build_id": {
+                        "type": "string",
+                        "description": "Opaque external-platform build ID; not necessarily a UUID."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Project for which builds were listed."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Build name."
+                    },
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "external-platform"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Timestamp when the build was created, or null if unavailable."
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "External platform build version when available."
+                    }
+                }
+            },
             "BuildWithDetails": {
                 "allOf": [
                     {
@@ -5023,7 +5063,14 @@
                     "data": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Build"
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/Build"
+                                },
+                                {
+                                    "$ref": "#/components/schemas/ExternalPlatformBuildSummary"
+                                }
+                            ]
                         }
                     },
                     "pagination": {
@@ -5112,8 +5159,9 @@
                     },
                     "build_id": {
                         "type": "string",
-                        "format": "uuid",
-                        "description": "UUID of a build from Build Storage to use for this run. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                        "minLength": 1,
+                        "pattern": "\\S",
+                        "description": "Nonblank main-app build ID interpreted by the selected deployment config's source: a UUID for Build Storage or an opaque external-platform ID. Requires `deployment_config_id`; applies to the default config and ephemeral runs. Omit it to use the config's saved or default selection."
                     },
                     "extra_build_ids": {
                         "$ref": "#/components/schemas/ExtraBuildIds",
@@ -5135,8 +5183,9 @@
                                 },
                                 "build_id": {
                                     "type": "string",
-                                    "format": "uuid",
-                                    "description": "Optional Build Storage build for this player (build-storage configs only)"
+                                    "minLength": 1,
+                                    "pattern": "\\S",
+                                    "description": "Optional nonblank main-app build ID for this player, interpreted by the player's deployment config as a Build Storage UUID or opaque external-platform ID. Omit it to use that config's saved or default selection."
                                 },
                                 "extra_build_ids": {
                                     "$ref": "#/components/schemas/ExtraBuildIds"
@@ -6808,8 +6857,9 @@
                     },
                     "build_id": {
                         "type": "string",
-                        "format": "uuid",
-                        "description": "UUID of a build from Build Storage for the default slot. Only works with build-storage deployment configs, and requires `deployment_config_id`. Selects the main app only; explicit pins take precedence over required tags."
+                        "minLength": 1,
+                        "pattern": "\\S",
+                        "description": "Nonblank main-app build ID for the default slot, interpreted by the selected deployment config's source: a UUID for Build Storage or an opaque external-platform ID. Requires `deployment_config_id`. Omit it to use the config's saved or default selection."
                     },
                     "extra_build_ids": {
                         "$ref": "#/components/schemas/ExtraBuildIds",
@@ -6831,8 +6881,9 @@
                                 },
                                 "build_id": {
                                     "type": "string",
-                                    "format": "uuid",
-                                    "description": "Optional Build Storage build for this slot (build-storage configs only)"
+                                    "minLength": 1,
+                                    "pattern": "\\S",
+                                    "description": "Optional nonblank main-app build ID for this slot, interpreted by the slot's deployment config as a Build Storage UUID or opaque external-platform ID. Omit it to use that config's saved or default selection."
                                 },
                                 "extra_build_ids": {
                                     "$ref": "#/components/schemas/ExtraBuildIds"

@@ -38,14 +38,15 @@ The response contains one `job_id` per test in the plan; poll each one with
 </ParamField>
 
 <ParamField body="build_id" type="string">
-  UUID of a build from [Build Storage](/api-reference/builds/list-builds) for
-  the default slot. Only works with deployment configs that use Build Storage
-  as their build source, and requires `deployment_config_id`; otherwise the
-  request returns a `400` error.
+  Nonblank build ID for the default slot. Requires `deployment_config_id`.
+  The selected config determines its meaning: a Build Storage UUID or the
+  opaque ID returned by an external platform. Get the ID with
+  [List Builds](/api-reference/builds/list-builds). Omit it to use the config's
+  saved or default selection.
 </ParamField>
 
 <ParamField body="extra_build_ids" type="object">
-  Optional Build Storage build IDs for extra apps in the top-level
+  Optional Build Storage UUIDs for extra apps in the top-level
   `deployment_config_id`, keyed by extra app number (`"1"`, `"2"`, or `"3"`).
   These numbers refer to apps within a deployment config; they are independent
   of the plan's slot indexes.
@@ -80,7 +81,10 @@ The response contains one `job_id` per test in the plan; poll each one with
       Deployment config to use for this slot.
     </ParamField>
     <ParamField body="slot_deployment_configs.{index}.build_id" type="string">
-      Optional Build Storage build for this slot (build-storage configs only).
+      Optional nonblank build ID for this slot's main app. Its deployment
+      config determines its meaning: a Build Storage UUID or an opaque ID from
+      an external platform. Omit it to use that config's saved or default
+      selection.
     </ParamField>
     <ParamField body="slot_deployment_configs.{index}.extra_build_ids" type="object">
       Optional extra-app Build Storage build IDs for this slot's deployment

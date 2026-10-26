@@ -8,7 +8,11 @@ noindex: true
   **Permission Required**: `project:manage-build-storage`
 </Info>
 
-Retrieve a paginated list of builds for your project.
+Retrieve a paginated list of builds for your project. Without
+`deployment_config_id`, this lists Build Storage builds. With a deployment
+config, the selected app's source determines the results: Build Storage builds
+are filtered by the app's requirements, while an external-platform source
+returns that platform's builds. Pagination is supported for both.
 
 ## Query Parameters
 
@@ -33,27 +37,29 @@ Retrieve a paginated list of builds for your project.
 </ParamField>
 
 <ParamField query="deployment_config_id" type="string">
-  Restrict results to builds compatible with this deployment config's main
-  app. The config must belong to the project. Compatible builds must match its
-  platform and file format, include its `required_tags`, and be ready
-  (`OK`). The selected app must use Build Storage. If its main app requires
-  nunu SDK, results must include the SDK. A missing or foreign deployment
-  config returns `404`.
+  Resolve builds for the selected app in this deployment config. The config
+  must belong to the project. Build Storage results must match the app's
+  platform and file format, include its `required_tags`, and be ready (`OK`).
+  If the main app requires nunu SDK, results must include the SDK. If the app
+  uses an external-platform source, results come from that platform instead.
+  A missing or foreign deployment config returns `404`.
 </ParamField>
 
 <ParamField query="extra_app_number" type="integer">
-  Select an extra app (`1`–`3`) from `summary.extra_apps` on the deployment
-  config. Requires `deployment_config_id`. Omit it to select the main app.
-  Extra apps are filtered by their own platform, file format, and
+  Select a Build Storage extra app (`1`–`3`) from `summary.extra_apps` on the
+  deployment config. Requires `deployment_config_id`. Omit it to select the
+  main app. Extra apps are filtered by their own platform, file format, and
   `required_tags`; the main app's SDK requirement does not apply to them. An
-  invalid extra app number or an app without a Build Storage source returns
+  invalid extra app number or an app with an unsupported build source returns
   `400`.
 </ParamField>
 
 <Note>
-  Config requirements are applied together with any caller-supplied filters:
-  filters can narrow the results but cannot broaden them. Without
-  `deployment_config_id`, this endpoint keeps its general build-list behavior.
+  For Build Storage, config requirements are applied together with
+  caller-supplied filters: filters can narrow results but cannot broaden them.
+  When the selected app uses an external platform, `status`, `pinned`,
+  `nunu_sdk`, `platform`, and `tags` are unsupported and return `400`. Page
+  and `page_size` continue to work.
 </Note>
 
 <ParamField query="page" type="integer" default="0">
@@ -89,15 +95,16 @@ Retrieve a paginated list of builds for your project.
   </Expandable>
 </ResponseField>
 
-### Build Object
+### Build Storage Build Object
 
 <ResponseField name="build_id" type="string" required>
-  Unique identifier for the build (UUID). Use this value as `build_id` or as
-  a value in `extra_build_ids` when starting a run.
+  Unique identifier for the Build Storage build (UUID). Use this value as
+  `build_id` or as a value in `extra_build_ids` when starting a run with a
+  Build Storage source.
 </ResponseField>
 
 <ResponseField name="project_id" type="string" required>
-  Project that owns the build
+  Project for which builds were listed
 </ResponseField>
 
 <ResponseField name="name" type="string" required>
@@ -142,6 +149,38 @@ Retrieve a paginated list of builds for your project.
 
 <ResponseField name="description" type="string">
   Build description
+</ResponseField>
+
+### External Platform Build Object
+
+When the selected app uses an external platform, each item contains only these
+fields. Build Storage fields such as `filename`, `status`, `size`, `pinned`,
+`nunu_sdk`, `tags`, `last_used`, and `description` are omitted.
+
+<ResponseField name="build_id" type="string" required>
+  Opaque build ID returned by the external platform. Use it as `build_id` when
+  starting a run with this deployment config.
+</ResponseField>
+
+<ResponseField name="project_id" type="string" required>
+  Project for which builds were listed
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Build name
+</ResponseField>
+
+<ResponseField name="platform" type="string" required>
+  Always `external-platform`
+</ResponseField>
+
+<ResponseField name="created_at" type="string | null" required>
+  ISO 8601 creation timestamp, or `null` if the external platform does not
+  provide one
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  External platform build version, when available
 </ResponseField>
 
 <RequestExample>

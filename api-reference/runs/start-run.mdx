@@ -45,14 +45,16 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
 </ParamField>
 
 <ParamField body="build_id" type="string">
-  UUID of a build from [Build Storage](/api-reference/builds/list-builds) to
-  use for the main app. Requires `deployment_config_id`. Extra apps use
-  `extra_build_ids`. See [Using Build Storage Builds](#using-build-storage-builds)
-  below.
+  Nonblank build ID to use for the main app. Requires `deployment_config_id`.
+  The selected deployment config determines its meaning: Build Storage uses a
+  UUID, while an external-platform source uses the opaque ID returned by
+  [List Builds](/api-reference/builds/list-builds). Extra apps use
+  `extra_build_ids`. Omit `build_id` to use the config's saved or default
+  selection.
 </ParamField>
 
 <ParamField body="extra_build_ids" type="object">
-  Optional Build Storage build IDs for extra apps on the selected deployment
+  Optional Build Storage UUIDs for extra apps on the selected deployment
   config, keyed by extra app number (`"1"`, `"2"`, or `"3"`). The number is
   the app's position in that config's `summary.extra_apps`; it is independent
   of the player number. Supported for existing tests, test plans, and ephemeral
@@ -87,7 +89,10 @@ Start a new test run using a multiplayer test, a test plan, or ephemeral instruc
       Deployment config to use for this player.
     </ParamField>
     <ParamField body="player_deployment_configs.{player}.build_id" type="string">
-      Optional Build Storage build for this player (build-storage configs only).
+      Optional nonblank build ID for this player's main app. Its deployment
+      config determines its meaning: a Build Storage UUID or an opaque ID from
+      an external platform. Omit it to use that config's saved or default
+      selection.
     </ParamField>
     <ParamField body="player_deployment_configs.{player}.extra_build_ids" type="object">
       Optional extra-app Build Storage build IDs for this player's deployment
@@ -172,7 +177,8 @@ started-run data directly (no `{ ok, status, message, data }` envelope).
 </ResponseField>
 
 <ResponseField name="build_id" type="string">
-  Build ID used for the run. Returned for multiplayer test and test plan runs.
+  Build ID used for the run, interpreted by the selected deployment config's
+  source. Returned for multiplayer test and test plan runs.
 </ResponseField>
 
 <ResponseField name="test_id" type="string">
@@ -349,15 +355,19 @@ data = response.json()
 
 ---
 
-## Using Build Storage Builds
+## Selecting a Build
 
-You can run tests against a specific build from [Build Storage](/api-reference/builds/list-builds) by providing the `build_id` parameter.
+Use `build_id` to select the main app build for the deployment config. For a
+Build Storage source, pass its UUID from [List Builds](/api-reference/builds/list-builds).
+For an external-platform source, pass the nonblank opaque ID returned by that
+endpoint with `deployment_config_id`. The same source-aware rule applies to
+the default deployment config, per-player configs, and ephemeral runs.
+Omitting `build_id` uses the selected config's saved or default build
+selection.
 
-<Warning>
-  The `build_id` parameter only works with deployment configs that use Build Storage as their build source. If the deployment config uses a different build source (e.g., direct URL), the request will return a `400` error.
-</Warning>
+`extra_build_ids` remains limited to Build Storage UUIDs for extra apps.
 
-### Example: Upload and Test
+### Example: Build Storage Upload and Test
 
 ```bash
 # 1. Upload a new build (see Build Storage docs)
