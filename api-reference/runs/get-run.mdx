@@ -10,6 +10,8 @@ noindex: true
 
 Retrieve detailed information about a specific run, including step-by-step results and artifacts.
 
+The `archived` field indicates whether the run is archived. Archived runs remain accessible through this endpoint.
+
 `build` summarizes the main app. `apps` lists recorded main and extra app selections, with `player_number` when deployments differ by player. Extra app numbers match the deployment config and `extra_build_ids` keys. Unavailable historical build metadata is `null`.
 
 
@@ -50,6 +52,7 @@ data = response.json()
   "multiplayer_run_id": "lkkg6t5612m",
   "job_id": "f80f6230-3a4f-431a-9d55-d11b867fed4e",
   "project_id": "test",
+  "archived": false,
   "state": "COMPLETED",
   "result": "FAILED",
   "bug_info": {

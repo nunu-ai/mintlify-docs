@@ -16,6 +16,10 @@ Retrieve a paginated list of runs for your project.
   Filter by state: `running`, `completed`, or `all`
 </ParamField>
 
+<ParamField query="archived" type="boolean">
+  Use `true` for archived runs or `false` for unarchived runs. Omit to include both.
+</ParamField>
+
 <ParamField query="multiplayer_test_id" type="string">
   Filter by test ID
 </ParamField>
@@ -85,6 +89,10 @@ Retrieve a paginated list of runs for your project.
 
 <ResponseField name="project_id" type="string" required>
   Project the run belongs to
+</ResponseField>
+
+<ResponseField name="archived" type="boolean" required>
+  Whether the run is archived. Archived runs remain accessible by ID.
 </ResponseField>
 
 <ResponseField name="state" type="string" required>
@@ -216,6 +224,7 @@ data = response.json()
       "job_id": "f80f6230-3a4f-431a-9d54-d11b867fed4e",
       "multiplayer_run_id": "lkkg6t5612m",
       "project_id": "test",
+      "archived": false,
       "state": "COMPLETED",
       "result": "SUCCESS",
       "bug_info": null,

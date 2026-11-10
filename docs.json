@@ -42,6 +42,7 @@
                         "pages": [
                             "api-reference/runs/list-runs",
                             "api-reference/runs/start-run",
+                            "api-reference/runs/update-runs",
                             "api-reference/runs/get-run",
                             "api-reference/runs/get-live-run",
                             "api-reference/runs/list-bugs",

@@ -40,6 +40,14 @@
                         }
                     },
                     {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Filter by archive status: true returns archived runs, false returns unarchived runs. Omit to include both.",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
                         "name": "multiplayer_test_id",
                         "in": "query",
                         "description": "Filter by test ID",
@@ -142,6 +150,70 @@
                             }
                         }
                     }
+                }
+            },
+            "patch": {
+                "operationId": "updateRuns",
+                "summary": "Update Runs",
+                "description": "Archive or restore runs and/or replace their tags. All run IDs must belong to the project. Any project member or project/org API key with access to the project may update runs.",
+                "tags": ["Runs"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["run_ids"],
+                                "anyOf": [
+                                    { "required": ["archived"] },
+                                    { "required": ["tags"] }
+                                ],
+                                "properties": {
+                                    "run_ids": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "maxItems": 100,
+                                        "uniqueItems": true,
+                                        "items": { "type": "string", "minLength": 1 },
+                                        "description": "Unique multiplayer run IDs in the project."
+                                    },
+                                    "archived": {
+                                        "type": "boolean",
+                                        "description": "True archives the runs; false restores them."
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": { "type": "string" },
+                                        "description": "Replaces each run's tags. An empty array clears all tags."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated runs and supplied fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": ["run_ids"],
+                                    "properties": {
+                                        "run_ids": { "type": "array", "items": { "type": "string" } },
+                                        "archived": { "type": "boolean" },
+                                        "tags": { "type": "array", "items": { "type": "string" } }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "403": { "description": "No access to the project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "404": { "description": "One or more runs were not found in the project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+                    "500": { "description": "Failed to update runs", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
                 }
             },
             "post": {
@@ -4297,6 +4369,10 @@
                     "project_id": {
                         "type": "string",
                         "description": "Project the run belongs to"
+                    },
+                    "archived": {
+                        "type": "boolean",
+                        "description": "Whether the run is archived. Archived runs remain accessible by ID."
                     },
                     "state": {
                         "type": "string",

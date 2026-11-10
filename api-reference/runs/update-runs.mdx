@@ -1,0 +1,71 @@
+---
+title: 'Update Runs'
+openapi: 'PATCH /project/{projectId}/runs'
+noindex: true
+---
+
+Archive or restore runs and replace their tags. Any project member or project or organization API key with access to the project can update runs; no additional run permission is required. Test-scoped tokens cannot update runs.
+
+## Request body
+
+<ParamField body="run_ids" type="string[]" required>
+  One to 100 unique multiplayer run IDs from the project. If any ID is missing or belongs to another project, the request returns `404` and no runs are updated.
+</ParamField>
+
+<ParamField body="archived" type="boolean">
+  Set to `true` to archive the runs, or `false` to restore them. Omit to leave archive status unchanged.
+</ParamField>
+
+<ParamField body="tags" type="string[]">
+  Replace the tags on every selected run. Pass an empty array to clear them; omit to leave tags unchanged.
+</ParamField>
+
+Supply `archived`, `tags`, or both. Unknown fields are rejected. Archiving does not stop or delete runs or remove their artifacts; archived runs remain accessible by ID and in test-plan results.
+
+## Response
+
+The response contains the updated `run_ids` and the supplied fields. For example, an archive-only request returns `run_ids` and `archived`; a tags-only request returns `run_ids` and `tags`.
+
+<RequestExample>
+```bash cURL
+curl -X PATCH "https://nunu.ai/api/v1/project/your-project-id/runs" \
+  -H "X-Api-Key: YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"run_ids": ["lkkg6t5612m"], "archived": true}'
+```
+
+```typescript JavaScript
+const response = await fetch("https://nunu.ai/api/v1/project/your-project-id/runs", {
+  method: "PATCH",
+  headers: {
+    "X-Api-Key": process.env.NUNU_API_TOKEN,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ run_ids: ["lkkg6t5612m"], archived: true }),
+});
+const data = await response.json();
+```
+
+```python Python
+import os
+import requests
+
+response = requests.patch(
+    "https://nunu.ai/api/v1/project/your-project-id/runs",
+    headers={"X-Api-Key": os.environ["NUNU_API_TOKEN"]},
+    json={"run_ids": ["lkkg6t5612m"], "archived": True},
+)
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "run_ids": ["lkkg6t5612m"],
+  "archived": true
+}
+```
+</ResponseExample>
+
+To find archived runs, use [`GET /runs` with `archived=true`](/api-reference/runs/list-runs). To restore them, send the same request with `archived: false`.
